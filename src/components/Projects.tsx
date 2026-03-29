@@ -43,7 +43,9 @@ const projects = [
   }
 ];
 
-export default function Projects() {
+export default function Projects({ data }: { data?: any[] }) {
+  const displayProjects = data && data.length > 0 ? data : projects;
+
   return (
     <section id="projects" className="py-24 bg-white dark:bg-black relative">
       <div className="container px-4 mx-auto max-w-6xl">
@@ -68,7 +70,7 @@ export default function Projects() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {projects.map((project, idx) => (
+          {displayProjects.map((project, idx) => (
             <motion.div
               key={idx}
               initial={{ opacity: 0, y: 20 }}
@@ -101,7 +103,7 @@ export default function Projects() {
                   {project.description}
                 </p>
                 <div className="flex flex-wrap gap-2 mt-auto">
-                  {project.tags.map(tag => (
+                  {project.tags.map((tag: string) => (
                     <span 
                       key={tag}
                       className="px-3 py-1 bg-white dark:bg-black text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 text-xs font-semibold rounded-full"

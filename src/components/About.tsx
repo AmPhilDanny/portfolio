@@ -26,7 +26,7 @@ const features = [
   },
 ];
 
-export default function About() {
+export default function About({ data }: { data?: any }) {
   return (
     <section id="about" className="py-24 bg-white dark:bg-black relative">
       <div className="container px-4 mx-auto max-w-6xl">
@@ -40,16 +40,8 @@ export default function About() {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
               About Me
             </h2>
-            <div className="space-y-6 text-lg text-gray-600 dark:text-gray-400">
-              <p>
-                I am a passionate and detail-oriented Certified Data Analyst and Junior Full-Stack Developer. With a strong foundation in both interpreting complex datasets and building robust web applications, I bring a unique perspective to technology solutions.
-              </p>
-              <p>
-                My journey in tech has equipped me with the ability to not just write clean, efficient code, but to understand the <span className="text-gray-900 dark:text-gray-200 font-medium">"why"</span> behind the data. I thrive in environments where I can leverage my analytical skills to drive business decisions while simultaneously executing technical implementations.
-              </p>
-              <p>
-                When I'm not coding or analyzing data, you can find me continuously learning new technologies and keeping up with the latest industry trends.
-              </p>
+            <div className="space-y-6 text-lg text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
+              {data?.description || "I am a passionate and detail-oriented Certified Data Analyst and Junior Full-Stack Developer. With a strong foundation in both interpreting complex datasets and building robust web applications, I bring a unique perspective to technology solutions.\n\nMy journey in tech has equipped me with the ability to not just write clean, efficient code, but to understand the 'why' behind the data. I thrive in environments where I can leverage my analytical skills to drive business decisions while simultaneously executing technical implementations.\n\nWhen I'm not coding or analyzing data, you can find me continuously learning new technologies and keeping up with the latest industry trends."}
             </div>
             
             <div className="mt-10 grid grid-cols-2 gap-6">

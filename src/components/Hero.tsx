@@ -12,7 +12,16 @@ const LinkedinIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
 );
 
-export default function Hero() {
+export default function Hero({ 
+  data 
+}: { 
+  data?: { name?: string, title?: string, description?: string, cvUrl?: string | null } | null 
+}) {
+  const name = data?.name || "Amaechi Philip Ekaba";
+  const title = data?.title || "Certified Data Analyst & Junior Full-Stack Developer";
+  const description = data?.description || "Transforming complex data into actionable insights and building modern, responsive web applications. Passionate about solving problems at the intersection of data and development.";
+  const cvUrl = data?.cvUrl || "/resume.pdf";
+
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-24 pb-12 overflow-hidden">
       {/* Background effect */}
@@ -45,7 +54,7 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 dark:text-white mb-6"
           >
-            Hi, I'm <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">Amaechi Philip Ekaba</span>
+            Hi, I'm <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">{name}</span>
           </motion.h1>
 
           <motion.h2
@@ -54,7 +63,7 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="text-2xl md:text-3xl font-medium text-gray-700 dark:text-gray-300 mb-8"
           >
-            Certified Data Analyst & Junior Full-Stack Developer
+            {title}
           </motion.h2>
 
           <motion.p
@@ -63,7 +72,7 @@ export default function Hero() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl"
           >
-            Transforming complex data into actionable insights and building modern, responsive web applications. Passionate about solving problems at the intersection of data and development.
+            {description}
           </motion.p>
 
           <motion.div
@@ -81,7 +90,7 @@ export default function Hero() {
             </Link>
             
             <a
-              href="/resume.pdf"
+              href={cvUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 text-sm font-medium text-gray-900 transition-all bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-900 dark:text-white dark:border-gray-800 dark:hover:bg-gray-800 dark:hover:text-blue-400"
