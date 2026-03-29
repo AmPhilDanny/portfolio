@@ -13,7 +13,7 @@ const navigation = [
   { name: "Contact", href: "#contact" },
 ];
 
-export function Navbar({ logoUrl }: { logoUrl?: string }) {
+export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   return (
