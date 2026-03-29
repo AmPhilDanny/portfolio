@@ -61,6 +61,7 @@ export const certifications = pgTable('certifications', {
   date: text('date').notNull(),
   description: text('description').notNull(),
   link: text('link'),
+  imageUrl: text('image_url'),
 });
 
 export const contacts = pgTable('contacts', {
@@ -68,4 +69,13 @@ export const contacts = pgTable('contacts', {
   email: text('email').notNull(),
   phone: text('phone'),
   location: text('location'),
+});
+
+export const settings = pgTable('settings', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  logoUrl: text('logo_url'),
+  faviconUrl: text('favicon_url'),
+  githubUrl: text('github_url'),
+  linkedinUrl: text('linkedin_url'),
+  email: text('email'),
 });

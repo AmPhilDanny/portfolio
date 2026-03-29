@@ -7,6 +7,8 @@ import { Plus } from "lucide-react";
 export default function ProjectForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -20,6 +22,7 @@ export default function ProjectForm() {
     if (result.success) {
       setMessage("Project added successfully.");
       form.reset();
+      setImageUrl("");
     } else {
       setMessage("Failed to add project.");
     }
@@ -56,11 +59,28 @@ export default function ProjectForm() {
         </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Emoji / Icon string</label>
-        <input type="text" name="image" placeholder="📊" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" />
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Project Image</label>
+        <input 
+          type="file" 
+          accept="image/*"
+          onChange={async (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              setUploading(true);
+              const file = e.target.files[0];
+              const res = await fetch(`/api/upload?filename=${file.name}`, { method: 'POST', body: file });
+              const newBlob = await res.json();
+              if (newBlob.url) setImageUrl(newBlob.url);
+              setUploading(false);
+            }
+          }}
+          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" 
+        />
+        <input type="hidden" name="image" value={imageUrl} />
+        {imageUrl && <p className="text-sm mt-1 text-green-600 dark:text-green-400 truncate">Uploaded: {imageUrl}</p>}
+        {uploading && <p className="text-sm mt-1 text-blue-600 dark:text-blue-400 animate-pulse">Uploading Image...</p>}
       </div>
       <div className="pt-2">
-        <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 transition-colors">
+        <button type="submit" disabled={loading || uploading} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 transition-colors">
           <Plus className="w-4 h-4" /> Add Project
         </button>
       </div>

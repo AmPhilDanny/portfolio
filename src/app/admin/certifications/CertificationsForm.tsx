@@ -1,0 +1,87 @@
+"use client";
+import { useState } from "react";
+import { createCertification } from "@/app/actions/certifications";
+import { Plus } from "lucide-react";
+
+export default function CertificationsForm() {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+    
+    const form = e.currentTarget;
+    const result = await createCertification(new FormData(form));
+    
+    if (result.success) {
+      setMessage("Certification added successfully.");
+      form.reset();
+      setImageUrl("");
+    } else {
+      setMessage("Failed to add certification.");
+    }
+    setLoading(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {message && (
+        <div className={`p-3 rounded-lg text-sm ${message.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          {message}
+        </div>
+      )}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+        <input type="text" name="name" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none text-gray-900 dark:text-white" required />
+      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Issuer</label>
+          <input type="text" name="issuer" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none text-gray-900 dark:text-white" required />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date</label>
+          <input type="text" name="date" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none text-gray-900 dark:text-white" required />
+        </div>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+        <textarea name="description" rows={2} className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none text-gray-900 dark:text-white resize-none" required />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Badge Link</label>
+        <input type="url" name="link" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none text-gray-900 dark:text-white" />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Certificate Image</label>
+        <input 
+          type="file" 
+          accept="image/*"
+          onChange={async (e) => {
+            if (e.target.files && e.target.files.length > 0) {
+              setUploading(true);
+              const file = e.target.files[0];
+              const res = await fetch(`/api/upload?filename=${file.name}`, { method: 'POST', body: file });
+              const newBlob = await res.json();
+              if (newBlob.url) setImageUrl(newBlob.url);
+              setUploading(false);
+            }
+          }}
+          className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none text-gray-900 dark:text-white" 
+        />
+        <input type="hidden" name="imageUrl" value={imageUrl} />
+        {imageUrl && <p className="text-sm mt-1 text-green-600 dark:text-green-400 truncate">Uploaded: {imageUrl}</p>}
+        {uploading && <p className="text-sm mt-1 text-blue-600 dark:text-blue-400 animate-pulse">Uploading Image...</p>}
+      </div>
+      <div className="pt-2">
+        <button type="submit" disabled={loading || uploading} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 transition-colors">
+          <Plus className="w-4 h-4" /> Add Certification
+        </button>
+      </div>
+    </form>
+  );
+}

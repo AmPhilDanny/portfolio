@@ -10,16 +10,24 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Amaechi Philip Ekaba | Data Analyst & Full-Stack Developer",
-  description: "Portfolio of Amaechi Philip Ekaba - Certified Data Analyst and Junior Full-Stack Developer showcasing projects, skills, and services.",
-};
+import { getSettings } from "@/app/actions/settings";
 
-export default function RootLayout({
+export async function generateMetadata(): Promise<Metadata> {
+  const settingsData = await getSettings();
+  return {
+    title: "Amaechi Philip Ekaba | Data Analyst & Full-Stack Developer",
+    description: "Portfolio of Amaechi Philip Ekaba - Certified Data Analyst and Junior Full-Stack Developer showcasing projects, skills, and services.",
+    icons: settingsData?.faviconUrl ? { icon: settingsData.faviconUrl } : undefined,
+  };
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settingsData = await getSettings();
+
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <body className={`${inter.variable} min-h-screen font-sans antialiased bg-background text-foreground flex flex-col`}>
@@ -29,11 +37,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <Navbar />
+          <Navbar logoUrl={settingsData?.logoUrl} />
           <main className="flex-1 pt-16">
             {children}
           </main>
-          <Footer />
+          <Footer data={settingsData} />
         </ThemeProvider>
       </body>
     </html>

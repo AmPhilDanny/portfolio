@@ -8,15 +8,18 @@ const GithubIcon = ({ className }: { className?: string }) => (
 const LinkedinIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
 );
-export function Footer() {
+export function Footer({ data }: { data?: any }) {
   const currentYear = new Date().getFullYear();
+  const githubUrl = data?.githubUrl || "https://github.com/AmPhilDanny";
+  const linkedinUrl = data?.linkedinUrl || "https://www.linkedin.com/in/amphildanny/";
+  const email = data?.email || "philipdaniel.philip@gmail.com";
 
   return (
     <footer className="bg-muted/40 border-t border-border mt-auto">
       <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex justify-center space-x-6 md:order-2">
           <a
-            href="https://github.com/AmPhilDanny"
+            href={githubUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-foreground transition-colors"
@@ -25,7 +28,7 @@ export function Footer() {
             <GithubIcon className="h-6 w-6" aria-hidden="true" />
           </a>
           <a
-            href="https://www.linkedin.com/in/amphildanny/"
+            href={linkedinUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-foreground transition-colors"
@@ -34,7 +37,7 @@ export function Footer() {
             <LinkedinIcon className="h-6 w-6" aria-hidden="true" />
           </a>
           <a
-            href="mailto:philipdaniel.philip@gmail.com"
+            href={`mailto:${email}`}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <span className="sr-only">Email</span>

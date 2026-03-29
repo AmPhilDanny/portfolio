@@ -22,6 +22,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { name: 'Projects', href: '/admin/projects', icon: FolderGit2 },
     { name: 'Certifications', href: '/admin/certifications', icon: Award },
     { name: 'Contact', href: '/admin/contact', icon: FileText },
+    { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
   return (
