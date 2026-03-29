@@ -21,16 +21,17 @@ export async function updateHero(formData: FormData) {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const cvUrl = formData.get("cvUrl") as string;
+    const imageUrl = formData.get("imageUrl") as string;
 
     const existing = await getHero();
 
     if (existing) {
       await db.update(heroes)
-        .set({ name, title, description, cvUrl })
+        .set({ name, title, description, cvUrl, imageUrl })
         .where(eq(heroes.id, existing.id));
     } else {
       await db.insert(heroes).values({
-        name, title, description, cvUrl
+        name, title, description, cvUrl, imageUrl
       });
     }
 

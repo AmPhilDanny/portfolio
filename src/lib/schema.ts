@@ -13,6 +13,7 @@ export const heroes = pgTable('heroes', {
   title: text('title').notNull(),
   description: text('description').notNull(),
   cvUrl: text('cv_url'),
+  imageUrl: text('image_url'),
 });
 
 export const abouts = pgTable('abouts', {

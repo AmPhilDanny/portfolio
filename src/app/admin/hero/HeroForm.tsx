@@ -70,6 +70,16 @@ export default function HeroForm({ initialData }: { initialData: any }) {
           className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white"
         />
       </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile Image URL</label>
+        <input 
+          type="text" 
+          name="imageUrl"
+          defaultValue={initialData?.imageUrl || "/profile.jpg"}
+          className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white"
+          placeholder="/profile.jpg or https://..."
+        />
+      </div>
       <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
         <button 
           type="submit"
