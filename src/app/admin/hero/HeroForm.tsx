@@ -3,12 +3,13 @@
 import { useState } from "react";
 import { updateHero } from "@/app/actions/hero";
 import { Save } from "lucide-react";
+import MediaPicker from "@/components/MediaPicker";
 
 export default function HeroForm({ initialData }: { initialData: any }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || "/profile.jpg");
+  const [cvUrl, setCvUrl] = useState(initialData?.cvUrl || "/resume.pdf");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,43 +64,27 @@ export default function HeroForm({ initialData }: { initialData: any }) {
           required
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">CV/Resume URL</label>
-        <input 
-          type="text" 
-          name="cvUrl"
-          defaultValue={initialData?.cvUrl || "/resume.pdf"}
-          className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white"
-        />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Profile Image</label>
-        <input 
-          type="file" 
-          accept="image/*"
-          onChange={async (e) => {
-            if (e.target.files && e.target.files.length > 0) {
-              setUploading(true);
-              const file = e.target.files[0];
-              const res = await fetch(`/api/upload?filename=${file.name}`, {
-                method: 'POST',
-                body: file,
-              });
-              const newBlob = await res.json();
-              if (newBlob.url) setImageUrl(newBlob.url);
-              setUploading(false);
-            }
-          }}
-          className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white"
-        />
-        <input type="hidden" name="imageUrl" value={imageUrl} />
-        {imageUrl && <p className="text-sm mt-2 text-green-600 dark:text-green-400 truncate">Current Image: {imageUrl}</p>}
-        {uploading && <p className="text-sm mt-2 text-blue-600 dark:text-blue-400 animate-pulse">Uploading file to storage...</p>}
-      </div>
+      
+      <MediaPicker 
+        label="CV/Resume Document"
+        type="document"
+        currentUrl={cvUrl}
+        onSelect={setCvUrl}
+      />
+      <input type="hidden" name="cvUrl" value={cvUrl} />
+
+      <MediaPicker 
+        label="Profile Image"
+        type="image"
+        currentUrl={imageUrl}
+        onSelect={setImageUrl}
+      />
+      <input type="hidden" name="imageUrl" value={imageUrl} />
+
       <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
         <button 
           type="submit"
-          disabled={loading || uploading}
+          disabled={loading}
           className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-50"
         >
           <Save className="w-5 h-5" />
