@@ -1,3 +1,7 @@
-export { default } from "next-auth/middleware"
+import middleware from "next-auth/middleware";
 
-export const config = { matcher: ["/admin/:path*"] }
+export default function proxy(req: any, event: any) {
+  return middleware(req, event);
+}
+
+export const config = { matcher: ["/admin/:path*"] };
