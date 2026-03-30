@@ -86,15 +86,15 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
                     >
                       {item.name}
                     </Link>
-                  ))}<Link
-                      href="/login"
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-muted"
-                    >
-                      <LogIn className="h-4 w-4" />
-                      Admin Login
-                    </Link>
-                  </div>
+                  ))}
+                  <Link
+                    href="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-muted"
+                  >
+                    <LogIn className="h-4 w-4" />
+                    Admin Login
+                  </Link>
                 </div>
               </div>
             </div>
