@@ -79,3 +79,12 @@ export const settings = pgTable('settings', {
   linkedinUrl: text('linkedin_url'),
   email: text('email'),
 });
+
+export const media = pgTable('media', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  name: text('name').notNull(),
+  url: text('url').notNull(),
+  type: text('type').notNull(), // 'image', 'video', 'document'
+  size: text('size'),
+  createdAt: timestamp('created_at').defaultNow(),
+});

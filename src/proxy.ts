@@ -2,7 +2,7 @@ import { withAuth } from "next-auth/middleware";
 
 export default withAuth(
   function proxy(req) {
-    // This function handles requests to protected routes
+    // Protected routes handler
   },
   {
     secret: process.env.NEXTAUTH_SECRET,

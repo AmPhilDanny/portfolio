@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, LogOut, Briefcase, FileText, UserCircle, Star, Settings, Award, Code, FolderGit2, Home } from "lucide-react";
+import { LayoutDashboard, LogOut, Briefcase, FileText, UserCircle, Star, Settings, Award, Code, FolderGit2, Home, Image as ImageIcon } from "lucide-react";
 import '../globals.css';
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -21,6 +21,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { name: 'Experience', href: '/admin/experience', icon: Briefcase },
     { name: 'Projects', href: '/admin/projects', icon: FolderGit2 },
     { name: 'Certifications', href: '/admin/certifications', icon: Award },
+    { name: 'Media', href: '/admin/media', icon: ImageIcon },
     { name: 'Contact', href: '/admin/contact', icon: FileText },
     { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
