@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
 const navigation = [
@@ -42,8 +42,15 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
               {item.name}
             </Link>
           ))}
-          <div className="flex items-center pl-4 border-l border-border">
+          <div className="flex items-center pl-4 border-l border-border gap-4">
             <ThemeToggle />
+            <Link 
+              href="/login" 
+              className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-primary"
+              title="Admin Login"
+            >
+              <LogIn className="h-4 w-4" />
+            </Link>
           </div>
         </div>
       </nav>
@@ -79,7 +86,15 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
                     >
                       {item.name}
                     </Link>
-                  ))}
+                  ))}<Link
+                      href="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-muted"
+                    >
+                      <LogIn className="h-4 w-4" />
+                      Admin Login
+                    </Link>
+                  </div>
                 </div>
               </div>
             </div>
