@@ -45,11 +45,11 @@ export default function About({ data }: { data?: any }) {
             </div>
             
             <div className="mt-10 grid grid-cols-2 gap-6">
-              <div className="border-l-4 border-blue-500 pl-4">
+              <div className="border-l-4 border-primary pl-4">
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">2+</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Years of Data Exp.</p>
               </div>
-              <div className="border-l-4 border-purple-500 pl-4">
+              <div className="border-l-4 border-secondary pl-4">
                 <p className="text-3xl font-bold text-gray-900 dark:text-white">20+</p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Projects Completed</p>
               </div>
@@ -66,12 +66,12 @@ export default function About({ data }: { data?: any }) {
             {features.map((feature, index) => (
               <div 
                 key={feature.name} 
-                className="p-6 rounded-2xl bg-gray-50 dark:bg-gray-900/50 border border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-900/50 transition-colors"
+                className="p-6 rounded-2xl tech-card transition-colors"
                 style={{
                   transform: `translateY(${index % 2 !== 0 ? '24px' : '0'})`
                 }}
               >
-                <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4">
+                <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
                   <feature.icon className="w-6 h-6" />
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{feature.name}</h3>

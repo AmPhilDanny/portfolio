@@ -14,6 +14,11 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error("BLOB_READ_WRITE_TOKEN is not defined");
+      return NextResponse.json({ error: 'Storage token is missing. Please configure Vercel Blob.' }, { status: 500 });
+    }
+
     const blob = await put(filename, request.body, {
       access: 'public',
     });

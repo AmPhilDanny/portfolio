@@ -78,6 +78,10 @@ export const settings = pgTable('settings', {
   githubUrl: text('github_url'),
   linkedinUrl: text('linkedin_url'),
   email: text('email'),
+  primaryColor: text('primary_color'),
+  secondaryColor: text('secondary_color'),
+  backgroundColor: text('background_color'),
+  accentColor: text('accent_color'),
 });
 
 export const media = pgTable('media', {

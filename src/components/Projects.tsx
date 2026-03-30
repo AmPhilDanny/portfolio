@@ -77,15 +77,15 @@ export default function Projects({ data }: { data?: any[] }) {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className="group bg-zinc-50 dark:bg-zinc-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+              className="group tech-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
             >
-              <div className="h-48 bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-6xl relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4">
+              <div className="h-48 bg-gray-200 dark:bg-gray-800/50 flex items-center justify-center text-6xl relative overflow-hidden group-hover:scale-105 transition-transform duration-500">
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-between p-4">
                   <div className="flex gap-4">
-                    <a href={project.githubUrl} className="p-2 bg-white/20 hover:bg-white/40 backdrop-blur text-white rounded-full transition-colors">
+                    <a href={project.githubUrl} className="p-2 bg-primary/20 hover:bg-primary/40 backdrop-blur text-white rounded-full transition-colors">
                       <GithubIcon className="w-5 h-5" />
                     </a>
-                    <a href={project.liveUrl} className="p-2 bg-white/20 hover:bg-white/40 backdrop-blur text-white rounded-full transition-colors">
+                    <a href={project.liveUrl} className="p-2 bg-primary/20 hover:bg-primary/40 backdrop-blur text-white rounded-full transition-colors">
                       <ExternalLink className="w-5 h-5" />
                     </a>
                   </div>
@@ -94,20 +94,17 @@ export default function Projects({ data }: { data?: any[] }) {
               </div>
               <div className="p-8">
                 <div className="flex items-center gap-3 mb-4">
-                  <FolderOpen className="w-5 h-5 text-blue-500" />
+                  <FolderOpen className="w-5 h-5 text-primary" />
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                     {project.title}
                   </h3>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-6 line-clamp-3">
+                <p className="text-gray-600 dark:text-gray-400 mb-6 line-clamp-2">
                   {project.description}
                 </p>
-                <div className="flex flex-wrap gap-2 mt-auto">
+                <div className="flex flex-wrap gap-2">
                   {project.tags.map((tag: string) => (
-                    <span 
-                      key={tag}
-                      className="px-3 py-1 bg-white dark:bg-black text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 text-xs font-semibold rounded-full"
-                    >
+                    <span key={tag} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium border border-primary/20">
                       {tag}
                     </span>
                   ))}

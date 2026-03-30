@@ -10,6 +10,7 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --color-border: var(--border);
+  --color-accent: var(--accent);
 
   --font-sans: var(--font-inter);
 }
@@ -17,7 +18,9 @@
 :root {
   --background: #ffffff;
   --foreground: #0f172a;
-  --primary: #3b82f6; /* Blue 500 */
+  --primary: #3b82f6;
+  --secondary: #10b981;
+  --accent: #f59e0b;
   --primary-foreground: #ffffff;
   --muted: #f1f5f9;
   --muted-foreground: #64748b;
@@ -25,9 +28,11 @@
 }
 
 [data-theme="dark"] {
-  --background: #020617; /* Slate 950 */
+  --background: #020617;
   --foreground: #f8fafc;
   --primary: #3b82f6;
+  --secondary: #10b981;
+  --accent: #f59e0b;
   --primary-foreground: #ffffff;
   --muted: #0f172a;
   --muted-foreground: #94a3b8;
@@ -38,4 +43,25 @@ body {
   background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), sans-serif;
+  background-image: radial-gradient(circle at 50% 50%, rgba(var(--primary), 0.05) 0%, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Tech theme enhancements */
+.tech-card {
+  background: rgba(var(--background), 0.5);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.tech-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 20px rgba(var(--primary), 0.1);
+}
+
+.tech-text-gradient {
+  background: linear-gradient(to right, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

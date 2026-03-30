@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Download, Mail } from "lucide-react";
+import { ArrowRight, Download, Mail, Code } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -28,9 +28,9 @@ export default function Hero({
     <section className="relative min-h-screen flex items-center justify-center pt-24 pb-12 overflow-hidden">
       {/* Background effect */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-white to-purple-50/50 dark:from-blue-950/20 dark:via-black dark:to-purple-950/20" />
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-400/20 dark:bg-blue-600/10 rounded-full blur-[128px] -z-10" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-[128px] -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[128px] -z-10 animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[128px] -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
       <div className="container px-4 mx-auto relative z-10 w-full">
@@ -43,10 +43,10 @@ export default function Hero({
             transition={{ duration: 0.5 }}
             className="mb-8"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100/50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800 backdrop-blur-sm text-sm font-medium">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 backdrop-blur-sm text-sm font-medium">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
               </span>
               Available for Work
             </div>
@@ -58,7 +58,7 @@ export default function Hero({
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 dark:text-white mb-6"
           >
-            Hi, I'm <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">{name}</span>
+            Hi, I'm <span className="tech-text-gradient">{name}</span>
           </motion.h1>
 
           <motion.h2
@@ -87,7 +87,7 @@ export default function Hero({
           >
             <Link
               href="#contact"
-              className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 text-sm font-medium text-white transition-all bg-blue-600 rounded-full hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 group"
+              className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 text-sm font-medium text-white transition-all bg-primary rounded-full hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-gray-900 group"
             >
               Get in Touch
               <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
@@ -97,30 +97,10 @@ export default function Hero({
               href={cvUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 text-sm font-medium text-gray-900 transition-all bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-900 dark:text-white dark:border-gray-800 dark:hover:bg-gray-800 dark:hover:text-blue-400"
+              className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-3.5 text-sm font-medium text-gray-900 transition-all bg-white border border-gray-200 rounded-full hover:bg-gray-50 hover:text-primary focus:outline-none focus:ring-2 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-900 dark:text-white dark:border-gray-800 dark:hover:bg-gray-800 dark:hover:text-primary"
             >
-              <Download className="w-4 h-4 mr-2" />
               Download CV
-            </a>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-16 flex items-center justify-center lg:justify-start gap-6"
-          >
-            <a href="https://github.com/AmPhilDanny" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors p-2 bg-white/50 dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500">
-              <span className="sr-only">GitHub</span>
-              <GithubIcon className="w-5 h-5" />
-            </a>
-            <a href="https://linkedin.com/in/amaechiphilipekaba" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors p-2 bg-white/50 dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500">
-              <span className="sr-only">LinkedIn</span>
-              <LinkedinIcon className="w-5 h-5" />
-            </a>
-            <a href="mailto:amaechiphilipekaba@gmail.com" className="text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors p-2 bg-white/50 dark:bg-gray-800/50 rounded-full border border-gray-200 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500">
-              <span className="sr-only">Email</span>
-              <Mail className="w-5 h-5" />
+              <Download className="w-4 h-4 ml-2" />
             </a>
           </motion.div>
           </div>
@@ -129,23 +109,35 @@ export default function Hero({
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex-1 w-full max-w-md lg:max-w-lg relative mt-12 lg:mt-0"
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="flex-1 relative"
           >
-            <div className="relative aspect-[3/4] md:aspect-square lg:aspect-[4/5] rounded-[2rem] overflow-hidden shadow-2xl border-8 border-white dark:border-zinc-800/50 backdrop-blur-sm z-10 bg-gray-100 dark:bg-zinc-900">
-              <Image 
-                src={imageUrl} 
-                alt={name} 
-                fill 
-                className="object-cover object-top hover:scale-105 transition-transform duration-700"
-                priority
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
+            <div className="relative w-72 h-72 md:w-96 md:h-96 mx-auto">
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary to-secondary rounded-3xl rotate-6 blur-2xl opacity-20 animate-pulse" />
+              <div className="relative w-full h-full rounded-3xl border-2 border-primary/20 overflow-hidden backdrop-blur-sm">
+                <img
+                  src={imageUrl}
+                  alt={name}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              
+              {/* Floating tech elements */}
+              <motion.div 
+                animate={{ y: [0, -10, 0] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className="absolute -top-4 -right-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800"
+              >
+                <Code className="w-6 h-6 text-primary" />
+              </motion.div>
+              <motion.div 
+                animate={{ y: [0, 10, 0] }}
+                transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+                className="absolute -bottom-4 -left-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800"
+              >
+                <div className="w-6 h-6 flex items-center justify-center font-bold text-secondary text-xl">{"{}"}</div>
+              </motion.div>
             </div>
-            
-            {/* Decorative background blocks behind image */}
-            <div className="absolute -inset-6 bg-gradient-to-tr from-blue-500 to-purple-500 rounded-[2.5rem] blur-2xl opacity-20 dark:opacity-30 -z-10" />
-            <div className="absolute -bottom-8 -right-8 w-64 h-64 bg-purple-400/30 rounded-full blur-3xl -z-10" />
           </motion.div>
         </div>
       </div>

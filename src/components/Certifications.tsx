@@ -59,15 +59,15 @@ export default function Certifications() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 hover:shadow-lg transition-shadow flex flex-col"
+              className="tech-card p-6 rounded-2xl flex flex-col hover:shadow-lg transition-all"
             >
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center mb-6">
+              <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center mb-6">
                 <Award className="w-6 h-6" />
               </div>
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 leading-tight">
                 {cert.name}
               </h3>
-              <p className="text-sm font-semibold text-blue-600 dark:text-blue-400 mb-4">
+              <p className="text-sm font-semibold text-primary mb-4">
                 {cert.issuer} • {cert.date}
               </p>
               <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 flex-grow">
@@ -75,7 +75,7 @@ export default function Certifications() {
               </p>
               <a 
                 href={cert.link} 
-                className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mt-auto"
+                className="inline-flex items-center text-sm font-medium text-primary hover:opacity-80 mt-auto"
               >
                 View Credential <ExternalLink className="w-4 h-4 ml-1" />
               </a>

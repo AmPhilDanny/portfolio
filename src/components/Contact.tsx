@@ -40,40 +40,16 @@ export default function Contact() {
               </h3>
               <div className="space-y-6">
                 <div className="flex items-start gap-4">
-                  <div className="p-3 bg-blue-50 dark:bg-zinc-900 text-blue-600 dark:text-blue-400 rounded-lg flex-shrink-0">
+                  <div className="p-3 bg-primary/10 text-primary rounded-lg flex-shrink-0">
                     <Mail className="w-6 h-6" />
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Email</p>
-                    <a href="mailto:amaechiphilipekaba@gmail.com" className="text-lg font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors break-all">
+                    <a href="mailto:amaechiphilipekaba@gmail.com" className="text-lg font-medium text-gray-900 dark:text-white hover:text-primary transition-colors break-all">
                       amaechiphilipekaba@gmail.com
                     </a>
                   </div>
                 </div>
-                {/* 
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-purple-50 dark:bg-zinc-900 text-purple-600 dark:text-purple-400 rounded-lg flex-shrink-0">
-                    <Phone className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Phone</p>
-                    <a href="tel:+1234567890" className="text-lg font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
-                      +1 (234) 567-890
-                    </a>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className="p-3 bg-green-50 dark:bg-zinc-900 text-green-600 dark:text-green-400 rounded-lg flex-shrink-0">
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Location</p>
-                    <p className="text-lg font-medium text-gray-900 dark:text-white">
-                      Remote / Worldwide
-                    </p>
-                  </div>
-                </div>
-                */}
               </div>
             </div>
           </motion.div>
@@ -84,14 +60,14 @@ export default function Contact() {
             viewport={{ once: true }}
             className="md:col-span-3"
           >
-            <form className="bg-zinc-50 dark:bg-zinc-900/50 p-8 rounded-2xl border border-gray-100 dark:border-gray-800">
+            <form className="tech-card p-8 rounded-2xl">
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Name</label>
                   <input 
                     type="text" 
                     id="name" 
-                    className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 text-gray-900 dark:text-white transition-colors"
+                    className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white transition-colors"
                     placeholder="John Doe"
                   />
                 </div>
@@ -100,7 +76,7 @@ export default function Contact() {
                   <input 
                     type="email" 
                     id="email" 
-                    className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 text-gray-900 dark:text-white transition-colors"
+                    className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white transition-colors"
                     placeholder="john@example.com"
                   />
                 </div>
@@ -110,25 +86,24 @@ export default function Contact() {
                 <input 
                   type="text" 
                   id="subject" 
-                  className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 text-gray-900 dark:text-white transition-colors"
-                  placeholder="How can I help you?"
+                  className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white transition-colors"
+                  placeholder="Project Inquiry"
                 />
               </div>
-              <div className="mb-8">
+              <div className="mb-6">
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Message</label>
                 <textarea 
                   id="message" 
-                  rows={5}
-                  className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-500 text-gray-900 dark:text-white transition-colors resize-none"
-                  placeholder="Tell me about your project..."
+                  rows={4} 
+                  className="w-full px-4 py-3 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-900 dark:text-white transition-colors resize-none"
+                  placeholder="Tell me more about your project..."
                 ></textarea>
               </div>
               <button 
-                type="button"
-                className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
+                type="submit" 
+                className="w-full flex items-center justify-center gap-2 px-8 py-4 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-lg shadow-primary/20"
               >
-                Send Message
-                <Send className="w-4 h-4" />
+                Send Message <Send className="w-5 h-5" />
               </button>
             </form>
           </motion.div>

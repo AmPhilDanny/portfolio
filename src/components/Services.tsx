@@ -8,25 +8,25 @@ const services = [
     title: "Data Analysis & Visualization",
     description: "Transforming raw data into meaningful insights using advanced analytical tools and creating interactive dashboards that drive business decisions.",
     icon: LineChart,
-    color: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-900",
+    color: "bg-primary/10 text-primary border-primary/20",
   },
   {
     title: "Frontend Web Development",
     description: "Building responsive, fast, and accessible web applications using modern JavaScript frameworks like React and Next.js.",
     icon: Layout,
-    color: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-900",
+    color: "bg-secondary/10 text-secondary border-secondary/20",
   },
   {
     title: "Backend Development",
     description: "Creating robust and scalable server-side applications, RESTful APIs, and microservices using Node.js and Express.",
     icon: Server,
-    color: "bg-green-500/10 text-green-600 dark:text-green-400 border-green-200 dark:border-green-900",
+    color: "bg-accent/10 text-accent border-accent/20",
   },
   {
     title: "Database Design & Management",
     description: "Designing efficient database schemas, writing optimized queries, and managing both relational (SQL) and non-relational (NoSQL) databases.",
     icon: Database,
-    color: "bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-900",
+    color: "bg-primary/10 text-primary border-primary/20",
   },
 ];
 
@@ -62,7 +62,7 @@ export default function Services() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className="p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-gray-100 dark:border-gray-800 hover:shadow-lg transition-shadow group"
+              className="p-8 rounded-2xl tech-card hover:shadow-lg transition-shadow group"
             >
               <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 border ${service.color} transition-transform group-hover:scale-110`}>
                 <service.icon className="w-7 h-7" />

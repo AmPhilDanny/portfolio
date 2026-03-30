@@ -18,12 +18,22 @@ export async function updateSettings(formData: FormData) {
     const githubUrl = formData.get("githubUrl") as string;
     const linkedinUrl = formData.get("linkedinUrl") as string;
     const email = formData.get("email") as string;
+    const primaryColor = formData.get("primaryColor") as string;
+    const secondaryColor = formData.get("secondaryColor") as string;
+    const backgroundColor = formData.get("backgroundColor") as string;
+    const accentColor = formData.get("accentColor") as string;
     
     const existing = await getSettings();
     if(existing) {
-      await db.update(settings).set({ logoUrl, faviconUrl, githubUrl, linkedinUrl, email }).where(eq(settings.id, existing.id));
+      await db.update(settings).set({ 
+        logoUrl, faviconUrl, githubUrl, linkedinUrl, email,
+        primaryColor, secondaryColor, backgroundColor, accentColor
+      }).where(eq(settings.id, existing.id));
     } else {
-      await db.insert(settings).values({ logoUrl, faviconUrl, githubUrl, linkedinUrl, email });
+      await db.insert(settings).values({ 
+        logoUrl, faviconUrl, githubUrl, linkedinUrl, email,
+        primaryColor, secondaryColor, backgroundColor, accentColor
+      });
     }
     revalidatePath("/");
     revalidatePath("/admin/settings");

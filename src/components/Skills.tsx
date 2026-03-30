@@ -53,7 +53,7 @@ export default function Skills() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.1 }}
-              className="bg-white dark:bg-zinc-900 p-8 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm"
+              className="tech-card p-8 rounded-2xl shadow-sm"
             >
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">
                 {category.category}
@@ -62,7 +62,7 @@ export default function Skills() {
                 {category.skills.map((skill) => (
                   <span 
                     key={skill}
-                    className="px-4 py-2 bg-gray-50 dark:bg-zinc-800 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-gray-100 dark:border-gray-700 hover:border-blue-500 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-default"
+                    className="px-4 py-2 bg-primary/5 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-primary/10 hover:border-primary hover:text-primary transition-colors cursor-default"
                   >
                     {skill}
                   </span>

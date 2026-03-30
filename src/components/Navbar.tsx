@@ -22,7 +22,9 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5 font-bold text-xl tracking-tighter flex items-center gap-2">
             {logoUrl && <img src={logoUrl} alt="Site Logo" className="h-8 w-auto rounded-md object-contain" />}
-            <span className="text-primary">Philip</span>Ekaba
+            <span className="text-primary font-mono">{"<"}</span>
+            <span className="text-foreground">Philip</span>
+            <span className="text-primary font-mono">{"/>"}</span>
           </Link>
         </div>
         <div className="flex lg:hidden items-center gap-4">

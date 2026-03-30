@@ -22,7 +22,7 @@ export function Footer({ data }: { data?: any }) {
             href={githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-primary transition-colors"
           >
             <span className="sr-only">GitHub</span>
             <GithubIcon className="h-6 w-6" aria-hidden="true" />
@@ -31,14 +31,14 @@ export function Footer({ data }: { data?: any }) {
             href={linkedinUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-primary transition-colors"
           >
             <span className="sr-only">LinkedIn</span>
             <LinkedinIcon className="h-6 w-6" aria-hidden="true" />
           </a>
           <a
             href={`mailto:${email}`}
-            className="text-muted-foreground hover:text-foreground transition-colors"
+            className="text-muted-foreground hover:text-primary transition-colors"
           >
             <span className="sr-only">Email</span>
             <Mail className="h-6 w-6" aria-hidden="true" />

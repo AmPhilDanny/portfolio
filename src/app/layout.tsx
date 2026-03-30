@@ -28,8 +28,23 @@ export default async function RootLayout({
 }>) {
   const settingsData = await getSettings();
 
+  const themeStyles = `
+    :root {
+      --primary: ${settingsData?.primaryColor || "#3b82f6"};
+      --secondary: ${settingsData?.secondaryColor || "#10b981"};
+      --background: ${settingsData?.backgroundColor || "#ffffff"};
+      --accent: ${settingsData?.accentColor || "#f59e0b"};
+    }
+    [data-theme="dark"] {
+      --background: ${settingsData?.backgroundColor || "#020617"};
+    }
+  `;
+
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
+      <head>
+        <style dangerouslySetInnerHTML={{ __html: themeStyles }} />
+      </head>
       <body className={`${inter.variable} min-h-screen font-sans antialiased bg-background text-foreground flex flex-col`}>
         <ThemeProvider
           attribute="data-theme"

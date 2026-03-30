@@ -65,25 +65,25 @@ export default function Experience() {
             >
               <div className="md:grid md:grid-cols-5 md:gap-8 items-start">
                 <div className="hidden md:block md:col-span-1 border-r-2 border-gray-200 dark:border-gray-800 h-full relative">
-                  <div className="absolute top-0 right-[-9px] w-4 h-4 rounded-full bg-blue-500 ring-4 ring-white dark:ring-black" />
+                  <div className="absolute top-0 right-[-9px] w-4 h-4 rounded-full bg-primary ring-4 ring-background" />
                   <div className="pt-1 pr-6 text-right">
-                    <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center justify-end gap-2">
+                    <span className="text-sm font-semibold text-primary flex items-center justify-end gap-2">
                       <Calendar className="w-4 h-4" />
                       {exp.period}
                     </span>
                   </div>
                 </div>
                 
-                <div className="md:col-span-4 bg-white dark:bg-zinc-900 p-8 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm relative">
+                <div className="md:col-span-4 tech-card p-8 rounded-2xl relative shadow-sm">
                   {/* Mobile timeline marker */}
-                  <div className="md:hidden absolute -left-[33px] top-6 w-4 h-4 rounded-full bg-blue-500 ring-4 ring-white dark:ring-black" />
-                  <div className="md:hidden mb-4 text-sm font-semibold text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                  <div className="md:hidden absolute -left-[33px] top-6 w-4 h-4 rounded-full bg-primary ring-4 ring-background" />
+                  <div className="md:hidden mb-4 text-sm font-semibold text-primary flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
                     {exp.period}
                   </div>
 
                   <div className="flex items-center gap-3 mb-2">
-                    <Briefcase className="w-5 h-5 text-gray-400" />
+                    <Briefcase className="w-5 h-5 text-primary" />
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">
                       {exp.role}
                     </h3>
@@ -97,8 +97,8 @@ export default function Experience() {
                   <ul className="space-y-3">
                     {exp.achievements.map((achievement, i) => (
                       <li key={i} className="flex items-start gap-3">
-                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-2 flex-shrink-0" />
-                        <span className="text-gray-600 dark:text-gray-400">{achievement}</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
+                        <span className="text-sm text-gray-600 dark:text-gray-400">{achievement}</span>
                       </li>
                     ))}
                   </ul>
