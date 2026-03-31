@@ -22,21 +22,24 @@ export async function updateSettings(formData: FormData) {
     const secondaryColor = formData.get("secondaryColor") as string;
     const backgroundColor = formData.get("backgroundColor") as string;
     const accentColor = formData.get("accentColor") as string;
+    const fontFamily = formData.get("fontFamily") as string;
+    const customCss = formData.get("customCss") as string;
     
     const existing = await getSettings();
+    const values = {
+      logoUrl, faviconUrl, githubUrl, linkedinUrl, email,
+      primaryColor, secondaryColor, backgroundColor, accentColor,
+      fontFamily, customCss
+    };
+
     if(existing) {
-      await db.update(settings).set({ 
-        logoUrl, faviconUrl, githubUrl, linkedinUrl, email,
-        primaryColor, secondaryColor, backgroundColor, accentColor
-      }).where(eq(settings.id, existing.id));
+      await db.update(settings).set(values).where(eq(settings.id, existing.id));
     } else {
-      await db.insert(settings).values({ 
-        logoUrl, faviconUrl, githubUrl, linkedinUrl, email,
-        primaryColor, secondaryColor, backgroundColor, accentColor
-      });
+      await db.insert(settings).values(values);
     }
     revalidatePath("/");
     revalidatePath("/admin/settings");
     return { success: true };
   } catch(e) { return { success: false, error: "Failed to update settings" }; }
 }
+

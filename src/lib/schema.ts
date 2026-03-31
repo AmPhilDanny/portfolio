@@ -82,7 +82,10 @@ export const settings = pgTable('settings', {
   secondaryColor: text('secondary_color'),
   backgroundColor: text('background_color'),
   accentColor: text('accent_color'),
+  fontFamily: text('font_family'),
+  customCss: text('custom_css'),
 });
+
 
 export const media = pgTable('media', {
   id: uuid('id').primaryKey().defaultRandom(),

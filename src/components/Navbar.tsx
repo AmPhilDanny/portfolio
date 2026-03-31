@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, X, LogIn } from "lucide-react";
+import { Menu, X, LogIn, Terminal } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
 const navigation = [
@@ -15,94 +15,182 @@ const navigation = [
 
 export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  React.useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:px-8" aria-label="Global">
-        <div className="flex lg:flex-1">
-          <Link href="/" className="-m-1.5 p-1.5 font-bold text-xl tracking-tighter flex items-center gap-2">
-            {logoUrl && <img src={logoUrl} alt="Site Logo" className="h-8 w-auto rounded-md object-contain" />}
-            <span className="text-primary font-mono">{"<"}</span>
-            <span className="text-foreground">Philip</span>
-            <span className="text-primary font-mono">{"/>"}</span>
-          </Link>
-        </div>
-        <div className="flex lg:hidden items-center gap-4">
-          <ThemeToggle />
-          <button
-            type="button"
-            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-muted-foreground"
-            onClick={() => setMobileMenuOpen(true)}
+    <>
+      <header
+        className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
+          scrolled
+            ? "bg-background/85 backdrop-blur-xl border-b border-border shadow-sm"
+            : "bg-background/60 backdrop-blur-md"
+        }`}
+      >
+        <nav
+          className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
+          aria-label="Global"
+        >
+          {/* Logo */}
+          <Link
+            href="/"
+            className="flex items-center gap-2 font-bold text-xl tracking-tighter shrink-0"
+            onClick={() => setMobileMenuOpen(false)}
           >
-            <span className="sr-only">Open main menu</span>
-            <Menu className="h-6 w-6" aria-hidden="true" />
-          </button>
-        </div>
-        <div className="hidden lg:flex lg:gap-x-8 items-center">
-          {navigation.map((item) => (
-            <Link key={item.name} href={item.href} className="text-sm font-medium leading-6 text-muted-foreground hover:text-foreground transition-colors">
-              {item.name}
-            </Link>
-          ))}
-          <div className="flex items-center pl-4 border-l border-border gap-4">
+            {logoUrl ? (
+              <img src={logoUrl} alt="Logo" className="h-8 w-auto rounded object-contain" />
+            ) : (
+              <Terminal className="h-5 w-5 text-primary" />
+            )}
+            <span className="font-mono">
+              <span className="text-primary">{"<"}</span>
+              <span className="text-foreground">Philip</span>
+              <span className="text-primary">{"/>"}</span>
+            </span>
+          </Link>
+
+          {/* Desktop nav links — hidden below lg */}
+          <div className="hidden lg:flex items-center gap-1">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Desktop right section */}
+          <div className="hidden lg:flex items-center gap-3 border-l border-border pl-4">
             <ThemeToggle />
-            <Link 
-              href="/login" 
-              className="p-2 rounded-full hover:bg-muted transition-colors text-muted-foreground hover:text-primary"
+            <Link
+              href="/login"
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted transition-all duration-200"
               title="Admin Login"
             >
               <LogIn className="h-4 w-4" />
+              <span>Login</span>
             </Link>
           </div>
-        </div>
-      </nav>
 
-      {/* Mobile menu */}
+          {/* Mobile/Tablet right section */}
+          <div className="flex lg:hidden items-center gap-2">
+            {/* Horizontal scrollable pill nav for sm+ screens */}
+            <div
+              className="hidden sm:flex items-center gap-1 overflow-x-auto"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none", maxWidth: "240px" }}
+            >
+              {navigation.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 whitespace-nowrap"
+                >
+                  {item.name}
+                </Link>
+              ))}
+            </div>
+
+            <ThemeToggle />
+
+            <button
+              type="button"
+              id="mobile-menu-toggle"
+              aria-label="Toggle menu"
+              aria-expanded={mobileMenuOpen}
+              className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              onClick={() => setMobileMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </div>
+        </nav>
+      </header>
+
+      {/* Mobile drawer overlay */}
       {mobileMenuOpen && (
-        <div className="lg:hidden">
-          <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm" />
-          <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-background px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-border">
-            <div className="flex items-center justify-between">
-              <Link href="/" className="-m-1.5 p-1.5 font-bold text-xl tracking-tighter flex items-center gap-2">
-                {logoUrl && <img src={logoUrl} alt="Site Logo" className="h-8 w-auto rounded-md object-contain" />}
-                <span className="text-primary">Philip</span>Ekaba
-              </Link>
+        <div className="fixed inset-0 z-[100] lg:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-background/80 backdrop-blur-md"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Drawer panel */}
+          <div
+            className="absolute right-0 top-0 h-full w-72 sm:w-80 bg-background border-l border-border shadow-2xl flex flex-col"
+          >
+            {/* Drawer header */}
+            <div className="flex items-center justify-between p-5 border-b border-border">
+              <div className="flex items-center gap-2 font-bold tracking-tighter">
+                <Terminal className="h-4 w-4 text-primary" />
+                <span className="font-mono text-sm">
+                  <span className="text-primary">{"<"}</span>
+                  <span>Navigate</span>
+                  <span className="text-primary">{"/>"}</span>
+                </span>
+              </div>
               <button
                 type="button"
-                className="-m-2.5 rounded-md p-2.5 text-muted-foreground"
+                aria-label="Close menu"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <span className="sr-only">Close menu</span>
-                <X className="h-6 w-6" aria-hidden="true" />
+                <X className="h-5 w-5" />
               </button>
             </div>
-            <div className="mt-6 flow-root">
-              <div className="-my-6 divide-y divide-border">
-                <div className="space-y-2 py-6">
-                  {navigation.map((item) => (
-                    <Link
-                      key={item.name}
-                      href={item.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-muted"
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
-                  <Link
-                    href="/login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="-mx-3 flex items-center gap-2 rounded-lg px-3 py-2 text-base font-semibold leading-7 text-foreground hover:bg-muted"
-                  >
-                    <LogIn className="h-4 w-4" />
-                    Admin Login
-                  </Link>
-                </div>
+
+            {/* Nav links list */}
+            <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+              {navigation.map((item, i) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-base font-semibold text-foreground hover:bg-muted hover:text-primary transition-all duration-200 group"
+                >
+                  <span className="font-mono text-xs text-primary/50 group-hover:text-primary w-5 transition-colors">
+                    {String(i + 1).padStart(2, "0")}.
+                  </span>
+                  {item.name}
+                </Link>
+              ))}
+
+              <div className="pt-2 mt-2 border-t border-border">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-base font-semibold text-foreground hover:bg-muted hover:text-primary transition-all duration-200"
+                >
+                  <LogIn className="h-4 w-4 text-primary" />
+                  Admin Login
+                </Link>
               </div>
+            </nav>
+
+            {/* Accent footer bar */}
+            <div className="p-4 border-t border-border">
+              <div className="h-1 rounded-full bg-gradient-to-r from-primary via-secondary to-accent" />
             </div>
           </div>
         </div>
       )}
-    </header>
+    </>
   );
 }
