@@ -54,23 +54,37 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
           className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8"
           aria-label="Global"
         >
-          {/* Logo */}
+          {/* Logo Brand Block */}
           <Link
             href="/"
-            className="flex items-center gap-2 font-bold text-xl tracking-tighter shrink-0"
+            className="flex items-center gap-3 group shrink-0 transition-transform duration-300 hover:scale-[1.02]"
             onClick={() => setMobileMenuOpen(false)}
           >
-            {logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="h-8 w-auto rounded object-contain" />
-            ) : (
-              <Terminal className="h-5 w-5 text-primary" />
-            )}
-            <span className="font-mono">
-              <span className="text-primary">{"<"}</span>
-              <span className="text-foreground">NovaxFolio</span>
-              <span className="text-primary">{"/>"}</span>
-            </span>
+            <div className="flex items-center gap-2.5">
+              {logoUrl ? (
+                <div className="relative">
+                  <img src={logoUrl} alt="NovaxFolio Logo" className="h-9 w-auto rounded-md object-contain transition-all duration-300 group-hover:brightness-110" />
+                  <div className="absolute inset-0 rounded-md bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
+                </div>
+              ) : (
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center border border-white/20 shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-all duration-300">
+                  <Terminal className="h-5 w-5 text-white" strokeWidth={2.5} />
+                </div>
+              )}
 
+              {logoUrl && (
+                <div className="w-px h-6 bg-border/60 self-center mx-0.5" />
+              )}
+            </div>
+
+            <span className="flex items-baseline tracking-tight">
+              <span className="text-xl font-extrabold text-foreground transition-colors group-hover:text-primary">
+                Novax
+              </span>
+              <span className="text-xl font-medium text-primary ml-0.5 group-hover:text-foreground transition-colors">
+                Folio
+              </span>
+            </span>
           </Link>
 
           {/* Desktop nav links — hidden below lg */}
@@ -148,12 +162,13 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
           >
             {/* Drawer header */}
             <div className="flex items-center justify-between p-5 border-b border-border">
-              <div className="flex items-center gap-2 font-bold tracking-tighter">
-                <Terminal className="h-4 w-4 text-primary" />
-                <span className="font-mono text-sm">
-                  <span className="text-primary">{"<"}</span>
-                  <span>Navigate</span>
-                  <span className="text-primary">{"/>"}</span>
+              <div className="flex items-center gap-2.5 group">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
+                  <Terminal className="h-4.5 w-4.5 text-white" strokeWidth={2.5} />
+                </div>
+                <span className="flex items-baseline tracking-tighter">
+                  <span className="text-lg font-bold text-foreground">Novax</span>
+                  <span className="text-lg font-medium text-primary ml-0.5">Folio</span>
                 </span>
               </div>
               <button
