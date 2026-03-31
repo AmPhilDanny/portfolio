@@ -123,10 +123,16 @@ export const contacts = pgTable('contacts', {
  */
 export const settings = pgTable('settings', {
   id: uuid('id').primaryKey().defaultRandom(),
+  siteName: text('site_name'),
+  showSiteName: text('show_site_name').default('true'), // Use text 'true'/'false' for simpler form handling
   logoUrl: text('logo_url'),
   faviconUrl: text('favicon_url'),
+  copyrightText: text('copyright_text'),
   githubUrl: text('github_url'),
   linkedinUrl: text('linkedin_url'),
+  twitterUrl: text('twitter_url'),
+  facebookUrl: text('facebook_url'),
+  instagramUrl: text('instagram_url'),
   email: text('email'),
   primaryColor: text('primary_color'),
   secondaryColor: text('secondary_color'),
@@ -135,6 +141,7 @@ export const settings = pgTable('settings', {
   fontFamily: text('font_family'),
   customCss: text('custom_css'),
 });
+
 
 /**
  * Media Table: The heart of the Octo-Storage system.

@@ -21,10 +21,16 @@ export async function getSettings() {
 
 export async function updateSettings(formData: FormData) {
   try {
+    const siteName = formData.get("siteName") as string;
+    const showSiteName = formData.get("showSiteName") === "on" ? "true" : "false";
     const logoUrl = formData.get("logoUrl") as string;
     const faviconUrl = formData.get("faviconUrl") as string;
+    const copyrightText = formData.get("copyrightText") as string;
     const githubUrl = formData.get("githubUrl") as string;
     const linkedinUrl = formData.get("linkedinUrl") as string;
+    const twitterUrl = formData.get("twitterUrl") as string;
+    const facebookUrl = formData.get("facebookUrl") as string;
+    const instagramUrl = formData.get("instagramUrl") as string;
     const email = formData.get("email") as string;
     const primaryColor = formData.get("primaryColor") as string;
     const secondaryColor = formData.get("secondaryColor") as string;
@@ -35,10 +41,12 @@ export async function updateSettings(formData: FormData) {
     
     const existing = await getSettings();
     const values = {
-      logoUrl, faviconUrl, githubUrl, linkedinUrl, email,
-      primaryColor, secondaryColor, backgroundColor, accentColor,
+      siteName, showSiteName, logoUrl, faviconUrl, copyrightText,
+      githubUrl, linkedinUrl, twitterUrl, facebookUrl, instagramUrl,
+      email, primaryColor, secondaryColor, backgroundColor, accentColor,
       fontFamily, customCss
     };
+
 
     if(existing) {
       await db.update(settings).set(values).where(eq(settings.id, existing.id));

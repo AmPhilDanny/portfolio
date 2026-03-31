@@ -21,7 +21,16 @@ const navigation = [
  * Features a dynamic blur effect on scroll and a mobile-responsive drawer.
  * Supports custom logo URLs from the admin settings.
  */
-export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
+export function Navbar({ 
+  logoUrl, 
+  siteName = "NovaxFolio", 
+  showSiteName = true 
+}: { 
+  logoUrl?: string | null;
+  siteName?: string | null;
+  showSiteName?: boolean;
+}) {
+
 
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
@@ -63,7 +72,7 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
             <div className="flex items-center gap-2.5">
               {logoUrl ? (
                 <div className="relative">
-                  <img src={logoUrl} alt="NovaxFolio Logo" className="h-9 w-auto rounded-md object-contain transition-all duration-300 group-hover:brightness-110" />
+                  <img src={logoUrl} alt={`${siteName || 'NovaxFolio'} Logo`} className="h-9 w-auto rounded-md object-contain transition-all duration-300 group-hover:brightness-110" />
                   <div className="absolute inset-0 rounded-md bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
                 </div>
               ) : (
@@ -72,20 +81,23 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
                 </div>
               )}
 
-              {logoUrl && (
+              {logoUrl && showSiteName && (
                 <div className="w-px h-6 bg-border/60 self-center mx-0.5" />
               )}
             </div>
 
-            <span className="flex items-baseline tracking-tight">
-              <span className="text-xl font-extrabold text-foreground transition-colors group-hover:text-primary">
-                Novax
+            {(!logoUrl || showSiteName) && (
+              <span className="flex items-baseline tracking-tight">
+                <span className="text-xl font-extrabold text-foreground transition-colors group-hover:text-primary">
+                  {(siteName || "NovaxFolio").slice(0, Math.ceil((siteName || "NovaxFolio").length / 2))}
+                </span>
+                <span className="text-xl font-medium text-primary ml-0.5 group-hover:text-foreground transition-colors">
+                  {(siteName || "NovaxFolio").slice(Math.ceil((siteName || "NovaxFolio").length / 2))}
+                </span>
               </span>
-              <span className="text-xl font-medium text-primary ml-0.5 group-hover:text-foreground transition-colors">
-                Folio
-              </span>
-            </span>
+            )}
           </Link>
+
 
           {/* Desktop nav links — hidden below lg */}
           <div className="hidden lg:flex items-center gap-1">
@@ -167,10 +179,15 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
                   <Terminal className="h-4.5 w-4.5 text-white" strokeWidth={2.5} />
                 </div>
                 <span className="flex items-baseline tracking-tighter">
-                  <span className="text-lg font-bold text-foreground">Novax</span>
-                  <span className="text-lg font-medium text-primary ml-0.5">Folio</span>
+                  <span className="text-lg font-bold text-foreground">
+                    {(siteName || "NovaxFolio").slice(0, Math.ceil((siteName || "NovaxFolio").length / 2))}
+                  </span>
+                  <span className="text-lg font-medium text-primary ml-0.5">
+                    {(siteName || "NovaxFolio").slice(Math.ceil((siteName || "NovaxFolio").length / 2))}
+                  </span>
                 </span>
               </div>
+
               <button
                 type="button"
                 aria-label="Close menu"

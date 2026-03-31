@@ -17,8 +17,8 @@ import { getSettings } from "@/app/actions/settings";
 export async function generateMetadata(): Promise<Metadata> {
   const settingsData = await getSettings();
   return {
-    title: "NovaxFolio | Amaechi Philip Ekaba - Data & Dev Portfolio",
-    description: "NovaxFolio - A professional, database-driven portfolio showcasing the technical expertise of Amaechi Philip Ekaba in Data Analysis and Full-Stack Engineering.",
+    title: settingsData?.siteName ? `${settingsData.siteName} | Data & Dev Portfolio` : "NovaxFolio | Amaechi Philip Ekaba - Data & Dev Portfolio",
+    description: "A professional, database-driven portfolio showcasing technical expertise in Data Analysis and Full-Stack Engineering.",
     icons: settingsData?.faviconUrl ? { icon: settingsData.faviconUrl } : undefined,
   };
 }
@@ -27,7 +27,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.Node;
 }>) {
   const settingsData = await getSettings();
 
@@ -72,7 +72,11 @@ export default async function RootLayout({
           <ScrollSystem />
 
 
-          <Navbar logoUrl={settingsData?.logoUrl} />
+          <Navbar 
+            logoUrl={settingsData?.logoUrl} 
+            siteName={settingsData?.siteName} 
+            showSiteName={settingsData?.showSiteName !== "false"} 
+          />
           <main className="flex-1 pt-16">
             {children}
           </main>
@@ -82,3 +86,4 @@ export default async function RootLayout({
     </html>
   );
 }
+
