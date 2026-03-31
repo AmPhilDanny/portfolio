@@ -4,6 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { ScrollSystem } from "@/components/ScrollSystem";
+
 
 const inter = Inter({
   variable: "--font-inter",
@@ -66,6 +68,8 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <ScrollSystem />
+
 
           <Navbar logoUrl={settingsData?.logoUrl} />
           <main className="flex-1 pt-16">
