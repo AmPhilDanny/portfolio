@@ -27,8 +27,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({
   children,
 }: Readonly<{
-  children: React.Node;
+  children: React.ReactNode;
 }>) {
+
   const settingsData = await getSettings();
 
   const themeStyles = `
