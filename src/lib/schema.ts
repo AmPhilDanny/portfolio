@@ -59,7 +59,9 @@ export const projects = pgTable('projects', {
   tags: jsonb('tags').notNull(), // Array of strings
   githubUrl: text('github_url'),
   liveUrl: text('live_url'),
+  projectFileUrl: text('project_file_url'),
 });
+
 
 export const certifications = pgTable('certifications', {
   id: uuid('id').primaryKey().defaultRandom(),

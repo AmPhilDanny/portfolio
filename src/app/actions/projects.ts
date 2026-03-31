@@ -22,12 +22,14 @@ export async function createProject(formData: FormData) {
     const tagsString = formData.get("tags") as string;
     const githubUrl = formData.get("githubUrl") as string;
     const liveUrl = formData.get("liveUrl") as string;
+    const projectFileUrl = formData.get("projectFileUrl") as string;
 
     const tags = tagsString ? tagsString.split(",").map(t => t.trim()) : [];
 
     await db.insert(projects).values({
-      title, description, image, tags, githubUrl, liveUrl
+      title, description, image, tags, githubUrl, liveUrl, projectFileUrl
     });
+
 
     revalidatePath("/");
     revalidatePath("/admin/projects");

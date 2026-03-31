@@ -14,7 +14,12 @@ import {
   FolderOpen,
   Loader2,
   AlertCircle,
+  FileArchive,
+  FileSpreadsheet,
+  FileCode,
+  FileBox,
 } from "lucide-react";
+
 
 interface MediaItem {
   id: string;
@@ -131,8 +136,9 @@ export default function MediaPicker({
       : type === "video"
       ? "video/*"
       : type === "document"
-      ? "application/pdf,.doc,.docx"
+      ? "application/pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv"
       : "*/*";
+
 
   const filteredMedia = mediaList.filter((item) => {
     const matchSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase());
@@ -165,11 +171,18 @@ export default function MediaPicker({
                 <img src={currentUrl} alt="Selected" className="w-full h-full object-cover" />
               ) : (
                 <div className="flex flex-col items-center gap-1 p-2">
-                  <FileText className="w-6 h-6" style={{ color: "var(--primary)" }} />
+                  {currentUrl.endsWith(".zip") || currentUrl.endsWith(".rar") || currentUrl.endsWith(".7z") ? (
+                    <FileArchive className="w-6 h-6" style={{ color: "var(--primary)" }} />
+                  ) : currentUrl.endsWith(".xls") || currentUrl.endsWith(".xlsx") || currentUrl.endsWith(".csv") ? (
+                    <FileSpreadsheet className="w-6 h-6" style={{ color: "var(--primary)" }} />
+                  ) : (
+                    <FileText className="w-6 h-6" style={{ color: "var(--primary)" }} />
+                  )}
                   <span className="text-[9px] truncate w-full text-center" style={{ color: "var(--muted-foreground)" }}>
                     {currentUrl.split("/").pop()}
                   </span>
                 </div>
+
               )}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <span className="text-white text-[10px] font-bold">Change</span>
@@ -351,9 +364,14 @@ export default function MediaPicker({
                             >
                               {item.type === "video" ? (
                                 <Video className="w-7 h-7" style={{ color: "var(--muted-foreground)" }} />
+                              ) : item.name.toLowerCase().endsWith(".zip") ? (
+                                <FileArchive className="w-7 h-7" style={{ color: "var(--muted-foreground)" }} />
+                              ) : item.name.toLowerCase().endsWith(".xlsx") || item.name.toLowerCase().endsWith(".csv") ? (
+                                <FileSpreadsheet className="w-7 h-7" style={{ color: "var(--muted-foreground)" }} />
                               ) : (
                                 <FileText className="w-7 h-7" style={{ color: "var(--muted-foreground)" }} />
                               )}
+
                               <span className="text-[9px] truncate w-full text-center px-1" style={{ color: "var(--muted-foreground)" }}>
                                 {item.name}
                               </span>
@@ -444,8 +462,9 @@ export default function MediaPicker({
                               : type === "video"
                               ? "MP4, MOV, WebM"
                               : type === "document"
-                              ? "PDF, DOC, DOCX"
-                              : "Any file type"}
+                              ? "PDF, DOCX, XLSX, PPTX, TXT"
+                              : "All files including ZIP, RAR, 7Z"}
+
                             {" · "}Max 10MB
                           </p>
                         </div>

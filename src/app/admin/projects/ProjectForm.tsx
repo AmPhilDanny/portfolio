@@ -9,6 +9,8 @@ export default function ProjectForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [fileUrl, setFileUrl] = useState("");
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,7 +25,9 @@ export default function ProjectForm() {
       setMessage("Project added successfully.");
       form.reset();
       setImageUrl("");
+      setFileUrl("");
     } else {
+
       setMessage("Failed to add project.");
     }
     setLoading(false);
@@ -59,13 +63,23 @@ export default function ProjectForm() {
         </div>
       </div>
       
-      <MediaPicker 
-        label="Project Image"
-        type="image"
-        currentUrl={imageUrl}
-        onSelect={setImageUrl}
-      />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <MediaPicker 
+          label="Main Preview Image"
+          type="image"
+          currentUrl={imageUrl}
+          onSelect={setImageUrl}
+        />
+        <MediaPicker 
+          label="Project Assets (ZIP, PDF, etc.)"
+          type="all"
+          currentUrl={fileUrl}
+          onSelect={setFileUrl}
+        />
+      </div>
       <input type="hidden" name="image" value={imageUrl} />
+      <input type="hidden" name="projectFileUrl" value={fileUrl} />
+
 
       <div className="pt-2">
         <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 transition-colors">

@@ -5,8 +5,9 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+
   try {
     const { id } = await params;
     const result = await db.select().from(media).where(eq(media.id, id)).limit(1);
