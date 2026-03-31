@@ -1,6 +1,4 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
 
 export async function POST(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
@@ -19,32 +17,48 @@ export async function POST(request: Request): Promise<NextResponse> {
   const timestamp = Date.now();
   const uniqueName = `${timestamp}_${safeName}`;
 
-  try {
-    // Try Vercel Blob first if token is available
-    if (process.env.BLOB_READ_WRITE_TOKEN) {
+  // ─── Strategy 1: Vercel Blob (production) ───────────────────────────────────
+  if (process.env.BLOB_READ_WRITE_TOKEN) {
+    try {
       const { put } = await import('@vercel/blob');
       const blob = await put(uniqueName, request.body, { access: 'public' });
-      return NextResponse.json({ url: blob.url, name: safeName, source: 'blob' });
+      return NextResponse.json({ url: blob.url, name: safeName });
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('Vercel Blob upload failed:', msg);
+      return NextResponse.json({ error: `Storage upload failed: ${msg}` }, { status: 500 });
     }
+  }
 
-    // Fallback: save to public/uploads directory
+  // ─── Strategy 2: Local filesystem (dev only) ────────────────────────────────
+  // Only attempt on local dev where process.cwd() is a writable project dir
+  const isVercel = !!process.env.VERCEL;
+  if (isVercel) {
+    return NextResponse.json(
+      {
+        error:
+          'File uploads require Vercel Blob storage in production. ' +
+          'Please add BLOB_READ_WRITE_TOKEN to your Vercel environment variables, ' +
+          'or use the "Paste URL" option instead.',
+      },
+      { status: 503 }
+    );
+  }
+
+  try {
+    const { writeFile, mkdir } = await import('fs/promises');
+    const path = await import('path');
     const uploadDir = path.join(process.cwd(), 'public', 'uploads');
     await mkdir(uploadDir, { recursive: true });
 
     const bytes = await request.arrayBuffer();
     const buffer = Buffer.from(bytes);
-    const filePath = path.join(uploadDir, uniqueName);
-    await writeFile(filePath, buffer);
+    await writeFile(path.join(uploadDir, uniqueName), buffer);
 
-    const publicUrl = `/uploads/${uniqueName}`;
-    return NextResponse.json({ url: publicUrl, name: safeName, source: 'local' });
-
+    return NextResponse.json({ url: `/uploads/${uniqueName}`, name: safeName });
   } catch (error: unknown) {
-    console.error('Upload error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    return NextResponse.json(
-      { error: `Failed to upload file: ${message}` },
-      { status: 500 }
-    );
+    const msg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Local upload failed:', msg);
+    return NextResponse.json({ error: `Failed to save file: ${msg}` }, { status: 500 });
   }
 }
