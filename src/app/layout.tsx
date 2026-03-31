@@ -30,18 +30,21 @@ export default async function RootLayout({
 
   const themeStyles = `
     :root {
-      --primary: ${settingsData?.primaryColor || "#3b82f6"};
-      --secondary: ${settingsData?.secondaryColor || "#10b981"};
-      --background: ${settingsData?.backgroundColor || "#020617"};
-      --accent: ${settingsData?.accentColor || "#f59e0b"};
+      --primary: ${settingsData?.primaryColor || "#2563eb"};
+      --secondary: ${settingsData?.secondaryColor || "#059669"};
+      --background: #f8fafc;
+      --foreground: #0f172a;
+      --accent: ${settingsData?.accentColor || "#d97706"};
       ${settingsData?.fontFamily ? `--font-site: '${settingsData.fontFamily}', sans-serif;` : ""}
     }
-    [data-theme="dark"] {
+    .dark {
       --background: ${settingsData?.backgroundColor || "#020617"};
+      --foreground: #e2e8f0;
     }
     ${settingsData?.fontFamily ? `body { font-family: '${settingsData.fontFamily}', sans-serif; }` : ""}
     ${settingsData?.customCss || ""}
   `;
+
 
 
   return (
@@ -58,11 +61,12 @@ export default async function RootLayout({
 
       <body className={`${inter.variable} min-h-screen font-sans antialiased bg-background text-foreground flex flex-col`}>
         <ThemeProvider
-          attribute="data-theme"
+          attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
+
           <Navbar logoUrl={settingsData?.logoUrl} />
           <main className="flex-1 pt-16">
             {children}

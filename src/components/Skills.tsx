@@ -55,9 +55,10 @@ export default function Skills() {
               transition={{ delay: idx * 0.1 }}
               className="tech-card p-8 rounded-2xl shadow-sm"
             >
-              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-6 border-b border-gray-100 dark:border-gray-800 pb-4">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100 mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
                 {category.category}
               </h3>
+
               <div className="flex flex-wrap gap-3">
                 {category.skills.map((skill) => (
                   <span 

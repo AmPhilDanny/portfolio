@@ -39,7 +39,7 @@
 }
 
 /* ========== DARK THEME ========== */
-[data-theme="dark"] {
+.dark {
   --background: #020617;
   --foreground: #e2e8f0;
   --primary: #3b82f6;
@@ -55,6 +55,7 @@
   --glow-secondary: rgba(16, 185, 129, 0.15);
   --grid-color: rgba(59, 130, 246, 0.04);
 }
+
 
 /* ========== GLOBAL BASE ========== */
 *, *::before, *::after {

@@ -110,35 +110,52 @@ export default function Hero({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex-1 relative"
+            className="flex-1 relative w-full"
           >
-            <div className="relative w-72 h-72 md:w-96 md:h-96 mx-auto">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary to-secondary rounded-3xl rotate-6 blur-2xl opacity-20 animate-pulse" />
-              <div className="relative w-full h-full rounded-3xl border-2 border-primary/20 overflow-hidden backdrop-blur-sm">
+            <div className="relative w-full max-w-[420px] aspect-[4/5] mx-auto group">
+              {/* Complex background glow layers */}
+              <div className="absolute -inset-4 bg-gradient-to-tr from-primary/20 via-secondary/20 to-primary/20 rounded-[2rem] blur-2xl opacity-50 group-hover:opacity-80 transition-opacity duration-700" />
+              <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent rounded-[2rem] -z-10" />
+              
+              {/* Main Image Frame */}
+              <div className="relative w-full h-full rounded-[2rem] border-2 border-white/10 dark:border-white/5 overflow-hidden shadow-2xl backdrop-blur-[2px]">
+                <div className="absolute inset-0 bg-gradient-to-t from-background/40 to-transparent z-10" />
                 <img
                   src={imageUrl}
                   alt={name}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all duration-700 hover:scale-105"
                 />
+                
+                {/* Tech scanline effect overlay */}
+                <div className="absolute inset-0 pointer-events-none opacity-[0.03] dark:opacity-[0.07] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] z-20" />
               </div>
               
-              {/* Floating tech elements */}
+              {/* Refined floating tech elements */}
               <motion.div 
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="absolute -top-4 -right-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800"
+                animate={{ y: [0, -12, 0], rotate: [0, 5, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+                className="absolute -top-6 -right-6 p-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-primary/20 z-30"
               >
                 <Code className="w-6 h-6 text-primary" />
               </motion.div>
+              
               <motion.div 
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 4, repeat: Infinity, delay: 1 }}
-                className="absolute -bottom-4 -left-4 p-4 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl border border-gray-100 dark:border-zinc-800"
+                animate={{ y: [0, 12, 0], rotate: [0, -5, 0] }}
+                transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                className="absolute -bottom-6 -left-6 p-4 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xl rounded-2xl shadow-2xl border border-secondary/20 z-30"
               >
-                <div className="w-6 h-6 flex items-center justify-center font-bold text-secondary text-xl">{"{}"}</div>
+                <div className="w-6 h-6 flex items-center justify-center font-bold text-secondary text-xl font-mono">{"{ }"}</div>
               </motion.div>
+
+              {/* Data visualization elements */}
+              <div className="absolute -right-8 bottom-1/4 flex flex-col gap-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 translate-x-4 group-hover:translate-x-0">
+                <div className="h-1.5 w-16 bg-primary/40 rounded-full" />
+                <div className="h-1.5 w-24 bg-secondary/40 rounded-full" />
+                <div className="h-1.5 w-12 bg-accent/40 rounded-full" />
+              </div>
             </div>
           </motion.div>
+
         </div>
       </div>
     </section>
