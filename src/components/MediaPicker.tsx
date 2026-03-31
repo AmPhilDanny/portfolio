@@ -93,15 +93,10 @@ export default function MediaPicker({
         ? "video"
         : "document";
 
-      await addMedia({
-        name: file.name,
-        url: result.url,
-        type: fileType,
-        size: `${(file.size / (1024 * 1024)).toFixed(2)} MB`,
-      });
-
       setUploadProgress(100);
-      onSelect(result.url);
+      onSelect(result.url || `/api/media/${result.id}`);
+
+
 
       // Switch to gallery and refresh
       setTimeout(() => {

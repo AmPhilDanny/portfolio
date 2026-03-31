@@ -1,4 +1,11 @@
-import { pgTable, text, timestamp, jsonb, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, jsonb, uuid, customType } from 'drizzle-orm/pg-core';
+
+export const bytea = customType<{ data: Buffer }>({
+  dataType() {
+    return 'bytea';
+  },
+});
+
 
 export const users = pgTable('users', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -93,5 +100,8 @@ export const media = pgTable('media', {
   url: text('url').notNull(),
   type: text('type').notNull(), // 'image', 'video', 'document'
   size: text('size'),
+  content: bytea('content'),
+  mimeType: text('mime_type'),
   createdAt: timestamp('created_at').defaultNow(),
 });
+

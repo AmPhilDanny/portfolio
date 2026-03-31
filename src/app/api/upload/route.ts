@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { db } from "@/lib/db";
+import { media } from "@/lib/schema";
+import { eq } from "drizzle-orm";
 
 export async function POST(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
@@ -12,53 +15,44 @@ export async function POST(request: Request): Promise<NextResponse> {
     return NextResponse.json({ error: 'Request body is required' }, { status: 400 });
   }
 
-  // Sanitize filename
-  const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const timestamp = Date.now();
-  const uniqueName = `${timestamp}_${safeName}`;
-
-  // ─── Strategy 1: Vercel Blob (production) ───────────────────────────────────
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
-    try {
-      const { put } = await import('@vercel/blob');
-      const blob = await put(uniqueName, request.body, { access: 'public' });
-      return NextResponse.json({ url: blob.url, name: safeName });
-    } catch (error: unknown) {
-      const msg = error instanceof Error ? error.message : 'Unknown error';
-      console.error('Vercel Blob upload failed:', msg);
-      return NextResponse.json({ error: `Storage upload failed: ${msg}` }, { status: 500 });
-    }
-  }
-
-  // ─── Strategy 2: Local filesystem (dev only) ────────────────────────────────
-  // Only attempt on local dev where process.cwd() is a writable project dir
-  const isVercel = !!process.env.VERCEL;
-  if (isVercel) {
-    return NextResponse.json(
-      {
-        error:
-          'File uploads require Vercel Blob storage in production. ' +
-          'Please add BLOB_READ_WRITE_TOKEN to your Vercel environment variables, ' +
-          'or use the "Paste URL" option instead.',
-      },
-      { status: 503 }
-    );
-  }
-
   try {
-    const { writeFile, mkdir } = await import('fs/promises');
-    const path = await import('path');
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-    await mkdir(uploadDir, { recursive: true });
+    const arrayBuffer = await request.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const mimeType = request.headers.get("content-type") || "application/octet-stream";
+    const size = `${(buffer.length / (1024 * 1024)).toFixed(2)} MB`;
 
-    const bytes = await request.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    await writeFile(path.join(uploadDir, uniqueName), buffer);
+    // ─── Direct Database Storage Strategy (Neon) ──────────────────────────────
+    // This allows images to be stored in the database, avoiding read-only fs issues
+    // on Vercel while also bypassing the need for a separate Vercel Blob token.
+    const [inserted] = await db.insert(media).values({
+      name: filename,
+      url: "TEMP",
+      type: mimeType.startsWith("image/") ? "image" : "document",
+      size: size,
+      content: buffer,
+      mimeType: mimeType,
+    }).returning({ id: media.id });
 
-    return NextResponse.json({ url: `/uploads/${uniqueName}`, name: safeName });
+    // Update with correct internal serving URL
+    const finalUrl = `/api/media/${inserted.id}`;
+    
+    // Patch the URL column for the inserted record
+    await db.update(media)
+      .set({ url: finalUrl })
+      .where(eq(media.id, inserted.id));
+
+    return NextResponse.json({ 
+      url: finalUrl, 
+      name: filename, 
+      id: inserted.id 
+    });
+
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Local upload failed:', msg);
-    return NextResponse.json({ error: `Failed to save file: ${msg}` }, { status: 500 });
+    console.error('Upload Error (Neon Storage):', error);
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json(
+      { error: `Database upload failed: ${message}` },
+      { status: 500 }
+    );
   }
 }
