@@ -8,11 +8,16 @@ const GithubIcon = ({ className }: { className?: string }) => (
 const LinkedinIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
 );
+/**
+ * Footer Component: Site-wide footer with social links and copyright.
+ * Pulls social media handles and email from the global settings data.
+ */
 export function Footer({ data }: { data?: any }) {
   const currentYear = new Date().getFullYear();
   const githubUrl = data?.githubUrl || "https://github.com/AmPhilDanny";
   const linkedinUrl = data?.linkedinUrl || "https://www.linkedin.com/in/amphildanny/";
   const email = data?.email || "philipdaniel.philip@gmail.com";
+
 
   return (
     <footer className="bg-muted/40 border-t border-border mt-auto">
@@ -46,9 +51,10 @@ export function Footer({ data }: { data?: any }) {
         </div>
         <div className="mt-8 md:order-1 md:mt-0">
           <p className="text-center text-xs leading-5 text-muted-foreground">
-            &copy; {currentYear} Amaechi Philip Ekaba. All rights reserved.
+            &copy; {currentYear} NovaxFolio | Amaechi Philip Ekaba. All rights reserved.
           </p>
         </div>
+
       </div>
     </footer>
   );

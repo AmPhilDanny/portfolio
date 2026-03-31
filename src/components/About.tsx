@@ -26,7 +26,12 @@ const features = [
   },
 ];
 
+/**
+ * About Section: Provides a detailed personal description and key metrics (stats).
+ * Uses Framer Motion for scroll-reveal animations and a grid layout for features.
+ */
 export default function About({ data }: { data?: any }) {
+
   return (
     <section id="about" className="py-24 bg-white dark:bg-black relative">
       <div className="container px-4 mx-auto max-w-6xl">

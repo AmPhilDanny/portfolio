@@ -5,6 +5,10 @@ import { abouts } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Fetches the 'About' section data from the database.
+ * Returns the first record or null if the table is empty.
+ */
 export async function getAbout() {
   try {
     const about = await db.select().from(abouts).limit(1);
@@ -14,6 +18,7 @@ export async function getAbout() {
     return null;
   }
 }
+
 
 export async function updateAbout(formData: FormData) {
   try {

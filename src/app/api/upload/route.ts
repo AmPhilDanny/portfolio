@@ -3,10 +3,20 @@ import { db } from "@/lib/db";
 import { media } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
+/**
+ * Binary Upload Route (Octo-Storage)
+ * 
+ * This handler accepts raw binary data from a POST request, 
+ * extracts the filename and MIME type, and stores the content 
+ * directly in the 'media' table as a PostgreSQL Buffer (bytea).
+ * 
+ * It then generates and returns a stable internal serving URL.
+ */
 export async function POST(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
   const filename = searchParams.get('filename');
 
+  // Input Validation
   if (!filename) {
     return NextResponse.json({ error: 'Filename is required' }, { status: 400 });
   }
@@ -16,31 +26,39 @@ export async function POST(request: Request): Promise<NextResponse> {
   }
 
   try {
+    /**
+     * Read the raw request stream into an ArrayBuffer and then a Node.js Buffer.
+     */
     const arrayBuffer = await request.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const mimeType = request.headers.get("content-type") || "application/octet-stream";
     const size = `${(buffer.length / (1024 * 1024)).toFixed(2)} MB`;
 
-    // ─── Direct Database Storage Strategy (Neon) ──────────────────────────────
-    // This allows images to be stored in the database, avoiding read-only fs issues
-    // on Vercel while also bypassing the need for a separate Vercel Blob token.
+    /**
+     * ─── DIRECT DATABASE STORAGE STRATEGY (Octo-Storage) ───
+     * We insert the raw binary data into the database. This choice makes the 
+     * application extremely portable because it doesn't rely on local filesystem 
+     * persistence (which is read-only on many serverless hosts) or expensive 
+     * external cloud blobs.
+     */
     const [inserted] = await db.insert(media).values({
       name: filename,
-      url: "TEMP",
+      url: "TEMP", // Temporary placeholder for the upcoming stable URL
       type: mimeType.startsWith("image/") ? "image" : "document",
       size: size,
       content: buffer,
       mimeType: mimeType,
     }).returning({ id: media.id });
 
-    // Update with correct internal serving URL
+    // Build the stable internal serving URL using the record ID
     const finalUrl = `/api/media/${inserted.id}`;
     
-    // Patch the URL column for the inserted record
+    // Update the record with its own stable URL for consistent referencing
     await db.update(media)
       .set({ url: finalUrl })
       .where(eq(media.id, inserted.id));
 
+    // Return the stable asset metadata to the client
     return NextResponse.json({ 
       url: finalUrl, 
       name: filename, 
@@ -48,11 +66,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
   } catch (error: unknown) {
-    console.error('Upload Error (Neon Storage):', error);
+    console.error('Critical Upload Error (Neon Octo-Storage):', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: `Database upload failed: ${message}` },
+      { error: `Database binary upload failed: ${message}` },
       { status: 500 }
     );
   }
 }
+

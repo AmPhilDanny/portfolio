@@ -4,12 +4,18 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+/**
+ * LoginPage: Secure entry point for the NovaxFolio CMS.
+ * Handles Next-Auth credentials sign-in with real-time error feedback
+ * and automatic redirection to the admin dashboard upon success.
+ */
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

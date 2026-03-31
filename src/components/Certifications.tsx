@@ -27,7 +27,12 @@ const certifications = [
   }
 ];
 
+/**
+ * Certifications Section: Displays official credentials with issuer and date.
+ * Features a grid of certification cards with external links for validation.
+ */
 export default function Certifications() {
+
   return (
     <section id="certifications" className="py-24 bg-zinc-50 dark:bg-zinc-900/50">
       <div className="container px-4 mx-auto max-w-5xl">

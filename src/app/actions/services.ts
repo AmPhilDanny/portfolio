@@ -4,11 +4,19 @@ import { services } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Fetches all service offerings from the database.
+ * Powers the services section on the public site and admin management.
+ */
 export async function getServices() {
   try {
     return await db.select().from(services);
-  } catch { return []; }
+  } catch (error) {
+    console.error("Failed to fetch services:", error);
+    return [];
+  }
 }
+
 
 export async function createService(formData: FormData) {
   try {

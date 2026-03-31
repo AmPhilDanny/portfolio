@@ -2,10 +2,17 @@ import { getProjects, deleteProject } from "@/app/actions/projects";
 import ProjectForm from "./ProjectForm";
 import { Trash2 } from "lucide-react";
 
+/**
+ * AdminProjectsPage: Central hub for portfolio work management.
+ * - Displays a real-time list of projects from the database.
+ * - Provides a 'ProjectForm' for creating new entries.
+ * - Includes inline delete functionality for project removal.
+ */
 export default async function AdminProjectsPage() {
   const projectsList = await getProjects();
 
   return (
+
     <div>
       <h1 className="text-2xl font-bold font-sans text-gray-900 dark:text-white mb-6">Manage Projects</h1>
       

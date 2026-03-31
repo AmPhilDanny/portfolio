@@ -36,12 +36,27 @@ interface MediaPickerProps {
   type?: "image" | "video" | "document" | "all";
 }
 
+/**
+ * MediaPicker Component: The central asset management UI for NovaxFolio.
+ * 
+ * Features:
+ * - Gallery Tab: View and search previously uploaded binary assets from the database.
+ * - Upload Tab: High-performance drag-and-drop upload to the Octo-Storage system.
+ * - URL Toggle: Option to paste direct external URLs for images/videos.
+ * - Format Support: Adaptive icons for ZIP, XLS, CSV, DOCX, and common media types.
+ * 
+ * @param onSelect Callback when an asset is chosen or uploaded.
+ * @param currentUrl The currently linked URL for the field.
+ * @param label Optional UI label for the picker.
+ * @param type Filter for 'image', 'video', 'document', or 'all'.
+ */
 export default function MediaPicker({
   onSelect,
   currentUrl,
   label,
   type = "image",
 }: MediaPickerProps) {
+
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"gallery" | "upload">("gallery");
   const [mediaList, setMediaList] = useState<MediaItem[]>([]);

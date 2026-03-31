@@ -21,7 +21,13 @@ const skillsData = [
   },
 ];
 
+/**
+ * Skills Section: Provides a categorized overview of technical proficiencies.
+ * Groups skills into domains like Data Analysis, Frontend, and Backend.
+ * Features animated cards and hover-responsive skill badges.
+ */
 export default function Skills() {
+
   return (
     <section id="skills" className="py-24 bg-zinc-50 dark:bg-zinc-900/50">
       <div className="container px-4 mx-auto max-w-6xl">

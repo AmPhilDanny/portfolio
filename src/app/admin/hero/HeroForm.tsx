@@ -5,11 +5,19 @@ import { updateHero } from "@/app/actions/hero";
 import { Save } from "lucide-react";
 import MediaPicker from "@/components/MediaPicker";
 
+/**
+ * HeroForm: The management interface for the NovaxFolio landing section.
+ * Features:
+ * - Real-time preview integration with MediaPicker for assets (CV and Profile Image).
+ * - Client-side form validation and success/error status management.
+ * - Integration with 'updateHero' server actions for database persistence.
+ */
 export default function HeroForm({ initialData }: { initialData: any }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || "/profile.jpg");
   const [cvUrl, setCvUrl] = useState(initialData?.cvUrl || "/resume.pdf");
+
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();

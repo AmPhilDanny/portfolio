@@ -4,12 +4,20 @@ import { settings } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Fetches the global application settings from the database.
+ * These settings control branding, colors, social links, and custom CSS.
+ */
 export async function getSettings() {
   try {
     const res = await db.select().from(settings).limit(1);
     return res.length > 0 ? res[0] : null;
-  } catch(e) { return null; }
+  } catch (error) {
+    console.error("Failed to fetch settings:", error);
+    return null; 
+  }
 }
+
 
 export async function updateSettings(formData: FormData) {
   try {

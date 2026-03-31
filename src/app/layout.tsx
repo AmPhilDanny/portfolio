@@ -17,11 +17,12 @@ import { getSettings } from "@/app/actions/settings";
 export async function generateMetadata(): Promise<Metadata> {
   const settingsData = await getSettings();
   return {
-    title: "Amaechi Philip Ekaba | Data Analyst & Full-Stack Developer",
-    description: "Portfolio of Amaechi Philip Ekaba - Certified Data Analyst and Junior Full-Stack Developer showcasing projects, skills, and services.",
+    title: "NovaxFolio | Amaechi Philip Ekaba - Data & Dev Portfolio",
+    description: "NovaxFolio - A professional, database-driven portfolio showcasing the technical expertise of Amaechi Philip Ekaba in Data Analysis and Full-Stack Engineering.",
     icons: settingsData?.faviconUrl ? { icon: settingsData.faviconUrl } : undefined,
   };
 }
+
 
 export default async function RootLayout({
   children,

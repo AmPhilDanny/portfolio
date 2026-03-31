@@ -4,8 +4,16 @@ import { useState, useEffect } from "react";
 import { motion, useScroll, useSpring, AnimatePresence } from "framer-motion";
 import { ChevronUp } from "lucide-react";
 
+/**
+ * ScrollSystem Component: Global navigation and feedback system.
+ * 
+ * Progress Bar: Real-time visual indicator of page scroll depth using Framer Motion.
+ * Back-to-Top: Smart floating button that appears after 400px of scroll for easy navigation.
+ */
 export function ScrollSystem() {
+
   const [isVisible, setIsVisible] = useState(false);
+
   const { scrollYProgress } = useScroll();
   
   // Smooth spring for the progress bar

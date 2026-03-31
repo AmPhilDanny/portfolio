@@ -5,6 +5,9 @@ import Link from "next/link";
 import { Menu, X, LogIn, Terminal } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
+/**
+ * Navigation Items configuration
+ */
 const navigation = [
   { name: "About", href: "#about" },
   { name: "Skills", href: "#skills" },
@@ -13,7 +16,13 @@ const navigation = [
   { name: "Contact", href: "#contact" },
 ];
 
+/**
+ * Navbar Component: The main navigation header.
+ * Features a dynamic blur effect on scroll and a mobile-responsive drawer.
+ * Supports custom logo URLs from the admin settings.
+ */
 export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
+
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [scrolled, setScrolled] = React.useState(false);
 
@@ -58,9 +67,10 @@ export function Navbar({ logoUrl }: { logoUrl?: string | null }) {
             )}
             <span className="font-mono">
               <span className="text-primary">{"<"}</span>
-              <span className="text-foreground">Philip</span>
+              <span className="text-foreground">NovaxFolio</span>
               <span className="text-primary">{"/>"}</span>
             </span>
+
           </Link>
 
           {/* Desktop nav links — hidden below lg */}

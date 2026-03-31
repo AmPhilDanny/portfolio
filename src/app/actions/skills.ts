@@ -4,13 +4,21 @@ import { skillCategories } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Fetches all technical skill categories and their associated skills.
+ * Powers the tiered skills section on the public site and admin management.
+ */
 export async function getSkillCategories() {
   try {
     return await db.select().from(skillCategories);
-  } catch { return []; }
+  } catch (error) {
+    console.error("Failed to fetch skills:", error);
+    return [];
+  }
 }
 
 export async function createSkillCategory(formData: FormData) {
+
   try {
     const category = formData.get("category") as string;
     const skillsRaw = formData.get("skills") as string;

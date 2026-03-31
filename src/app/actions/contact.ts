@@ -4,14 +4,22 @@ import { contacts } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Fetches the 'Contact' section data from the database.
+ * Used for displaying contact details on the footer and contact section.
+ */
 export async function getContact() {
   try {
     const res = await db.select().from(contacts).limit(1);
     return res.length > 0 ? res[0] : null;
-  } catch { return null; }
+  } catch (error) {
+    console.error("Failed to fetch contact details:", error);
+    return null; 
+  }
 }
 
 export async function updateContact(formData: FormData) {
+
   try {
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;

@@ -10,10 +10,19 @@ import { getHero } from "@/app/actions/hero";
 import { getAbout } from "@/app/actions/about";
 import { getProjects } from "@/app/actions/projects";
 
+/**
+ * NovaxFolio Main Entry Point (Home Page)
+ * 
+ * This is a React Server Component (RSC) that fetches all the 
+ * dynamic section data from the database and passes it down 
+ * to the individual sections for high-performance, SEO-friendly rendering.
+ */
 export default async function Home() {
+  // Fetch initial content from the database
   const heroData = await getHero();
   const aboutData = await getAbout();
   const projectsData = await getProjects();
+
 
   return (
     <div className="flex flex-col min-h-screen">

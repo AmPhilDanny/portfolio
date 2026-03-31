@@ -1,3 +1,11 @@
+/**
+ * NovaxFolio Authentication Configuration
+ * 
+ * Configures Next-Auth with a flexible security model.
+ * Supports environment-based fallback credentials for initial setup
+ * and full database-backed authentication using bcrypt.
+ */
+
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
@@ -5,7 +13,11 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 
+/**
+ * Main Next-Auth Options
+ */
 export const authOptions: NextAuthOptions = {
+
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -13,7 +25,11 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email", placeholder: "admin@example.com" },
         password: { label: "Password", type: "password" }
       },
+      /**
+       * Primary Authorization logic
+       */
       async authorize(credentials) {
+
         console.log("Authorize attempt for:", credentials?.email);
         if (!credentials?.email || !credentials?.password) {
           console.warn("Authorize missing credentials");
@@ -65,7 +81,12 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
   secret: process.env.NEXTAUTH_SECRET,
+  /**
+   * Session and Token Callbacks
+   * Used to persist user metadata (like ID) throughout the application session.
+   */
   callbacks: {
+
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;

@@ -4,13 +4,19 @@ import { certifications } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Fetches all certification records from the database.
+ * Used to populate the public certifications section and admin list.
+ */
 export async function getCertifications() {
   try {
     return await db.select().from(certifications);
   } catch (error) {
+    console.error("Failed to fetch certifications:", error);
     return [];
   }
 }
+
 
 export async function createCertification(formData: FormData) {
   try {

@@ -5,6 +5,10 @@ import { heroes } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Fetches the current hero section data from the database.
+ * Returns the first row or null if the table is empty.
+ */
 export async function getHero() {
   try {
     const hero = await db.select().from(heroes).limit(1);
@@ -15,7 +19,12 @@ export async function getHero() {
   }
 }
 
+/**
+ * Updates or creates the hero section data based on form submissions.
+ * Revalidates the home page and admin dashboard to reflect changes instantly.
+ */
 export async function updateHero(formData: FormData) {
+
   try {
     const name = formData.get("name") as string;
     const title = formData.get("title") as string;

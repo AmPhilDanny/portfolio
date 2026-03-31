@@ -5,13 +5,23 @@ import Link from "next/link";
 import { LayoutDashboard, LogOut, Briefcase, FileText, UserCircle, Star, Settings, Award, Code, FolderGit2, Home, Image as ImageIcon } from "lucide-react";
 import '../globals.css';
 
+/**
+ * Admin Layout: The shell for the NovaxFolio dashboard.
+ * - Protects all sub-pages with Next-Auth session checks.
+ * - Provides a persistent sidebar with navigation to all CMS sections.
+ * - Supports responsive layouts and theme-aware styling.
+ */
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions);
 
+  // Redirect to login if no active session is found
   if (!session) {
     redirect("/login");
   }
 
+  /**
+   * Navigation items for the CMS sidebar
+   */
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Hero', href: '/admin/hero', icon: Home },
@@ -28,12 +38,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="flex h-screen bg-gray-100 dark:bg-zinc-950 overflow-hidden font-sans">
-      {/* Sidebar */}
+      {/* Sidebar Navigation */}
       <aside className="w-64 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
         <div className="p-6 border-b border-gray-200 dark:border-gray-800">
-          <h2 className="text-xl font-bold font-sans text-gray-900 dark:text-white">Portfolio Admin</h2>
+          <h2 className="text-xl font-bold font-sans text-gray-900 dark:text-white">NovaxFolio Admin</h2>
           <p className="text-sm text-gray-500 mt-1">{session.user?.email}</p>
         </div>
+
         <nav className="flex-1 overflow-y-auto p-4 space-y-1">
           {navItems.map((item) => (
             <Link

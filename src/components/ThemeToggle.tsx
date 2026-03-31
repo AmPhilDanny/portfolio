@@ -4,8 +4,17 @@ import * as React from "react";
 import { Moon, Sun } from "lucide-react";
 import { useTheme } from "next-themes";
 
+/**
+ * ThemeToggle Component: A sleek button for switching between Light and Dark modes.
+ * Features:
+ * - Lucide icons for Sun and Moon.
+ * - Framer Motion animations for smooth transitions.
+ * - Glassmorphism-inspired design to match NovaxFolio's aesthetic.
+ */
 export function ThemeToggle() {
+
   const { theme, setTheme } = useTheme();
+
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => setMounted(true), []);

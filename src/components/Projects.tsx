@@ -43,8 +43,18 @@ const projects = [
   }
 ];
 
+/**
+ * Projects Component: Displays a curated list of work.
+ * 
+ * Features:
+ * - Dynamic data fetching from the database with hardcoded fallback items.
+ * - Interactive tech-cards with hover-reveal overlays for links.
+ * - Categorized technology tags for each project.
+ */
 export default function Projects({ data }: { data?: any[] }) {
+  // Use database data if available, otherwise use the beautiful hardcoded defaults below.
   const displayProjects = data && data.length > 0 ? data : projects;
+
 
   return (
     <section id="projects" className="py-24 bg-white dark:bg-black relative">

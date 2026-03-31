@@ -3,8 +3,14 @@
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, Send } from "lucide-react";
 
+/**
+ * Contact Section: Displays contact information and a lead-generation form.
+ * Includes email and social links alongside a professional contact form for inquiries.
+ */
 export default function Contact() {
+
   return (
+
     <section id="contact" className="py-24 bg-white dark:bg-black relative">
       <div className="container px-4 mx-auto max-w-6xl">
         <div className="text-center max-w-2xl mx-auto mb-16">

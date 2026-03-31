@@ -4,11 +4,19 @@ import { experiences } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+/**
+ * Fetches all professional experience records from the database.
+ * Used for the timeline display on the public site and admin list.
+ */
 export async function getExperiences() {
   try {
     return await db.select().from(experiences);
-  } catch { return []; }
+  } catch (error) {
+    console.error("Failed to fetch experiences:", error);
+    return [];
+  }
 }
+
 
 export async function createExperience(formData: FormData) {
   try {

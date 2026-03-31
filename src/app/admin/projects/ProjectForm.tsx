@@ -5,6 +5,13 @@ import { createProject } from "@/app/actions/projects";
 import { Plus } from "lucide-react";
 import MediaPicker from "@/components/MediaPicker";
 
+/**
+ * ProjectForm: A comprehensive interface for adding new portfolio items.
+ * Supports:
+ * - Direct image uploads and binary asset attachment via MediaPicker.
+ * - Dynamic tag management and multi-URL (GitHub, Live Site) support.
+ * - Auto-reset behavior upon successful project creation.
+ */
 export default function ProjectForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -13,6 +20,7 @@ export default function ProjectForm() {
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+
     e.preventDefault();
     setLoading(true);
     setMessage("");

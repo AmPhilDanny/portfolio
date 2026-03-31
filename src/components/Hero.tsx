@@ -13,6 +13,11 @@ const LinkedinIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg>
 );
 
+/**
+ * Hero Component: The primary landing section.
+ * Displays professional identity, bio, and portrait image with 
+ * glassmorphic effects and entrance animations.
+ */
 export default function Hero({ 
   data 
 }: { 
@@ -20,9 +25,10 @@ export default function Hero({
 }) {
   const name = data?.name || "Amaechi Philip Ekaba";
   const title = data?.title || "Certified Data Analyst & Junior Full-Stack Developer";
-  const description = data?.description || "Transforming complex data into actionable insights and building modern, responsive web applications. Passionate about solving problems at the intersection of data and development.";
+  const description = data?.description || "Transforming complex data into actionable insights and building modern, responsive web applications.";
   const cvUrl = data?.cvUrl || "/resume.pdf";
   const imageUrl = data?.imageUrl || "/profile.jpg";
+
 
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-24 pb-12 overflow-hidden">

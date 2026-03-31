@@ -16,6 +16,10 @@ export async function getProjects() {
 
 export async function createProject(formData: FormData) {
   try {
+    /**
+     * Primary creation action for new projects.
+     * Extracts text fields, tags, and binary asset URLs from the FormData.
+     */
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const image = formData.get("image") as string;
@@ -26,9 +30,13 @@ export async function createProject(formData: FormData) {
 
     const tags = tagsString ? tagsString.split(",").map(t => t.trim()) : [];
 
+    /**
+     * Persist project to Neon Database
+     */
     await db.insert(projects).values({
       title, description, image, tags, githubUrl, liveUrl, projectFileUrl
     });
+
 
 
     revalidatePath("/");

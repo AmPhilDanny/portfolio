@@ -30,7 +30,12 @@ const services = [
   },
 ];
 
+/**
+ * Services Section: Showcases professional offerings and expertise.
+ * Features a grid of service cards with hover-reveal details and technology icons.
+ */
 export default function Services() {
+
   return (
     <section id="services" className="py-24 bg-white dark:bg-black relative">
       <div className="container px-4 mx-auto max-w-6xl">

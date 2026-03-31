@@ -29,7 +29,15 @@ const experiences = [
   }
 ];
 
+/**
+ * Experience Section: Displays professional career history in a timeline format.
+ * Features:
+ * - Animated timeline markers for desktop and mobile.
+ * - Detailed achievement lists for each role.
+ * - Chronological layout with dynamic data support.
+ */
 export default function Experience() {
+
   return (
     <section id="experience" className="py-24 bg-zinc-50 dark:bg-zinc-900/50">
       <div className="container px-4 mx-auto max-w-4xl">
