@@ -77,6 +77,7 @@ export default async function RootLayout({
             logoUrl={settingsData?.logoUrl} 
             siteName={settingsData?.siteName} 
             showSiteName={settingsData?.showSiteName !== "false"} 
+            isAdmin={!!session}
           />
           <main className="flex-1 pt-16">
             {children}

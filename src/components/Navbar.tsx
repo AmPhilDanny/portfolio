@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, X, LogIn, Terminal } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Terminal } from "lucide-react";
 import { ThemeToggle } from "./ThemeToggle";
 
 /**
@@ -24,11 +24,13 @@ const navigation = [
 export function Navbar({ 
   logoUrl, 
   siteName = "NovaxFolio", 
-  showSiteName = true 
+  showSiteName = true,
+  isAdmin = false 
 }: { 
   logoUrl?: string | null;
   siteName?: string | null;
   showSiteName?: boolean;
+  isAdmin?: boolean;
 }) {
 
 
@@ -71,8 +73,8 @@ export function Navbar({
           >
             <div className="flex items-center gap-2.5">
               {logoUrl ? (
-                <div className="relative">
-                  <img src={logoUrl} alt={`${siteName || 'NovaxFolio'} Logo`} className="h-9 w-auto rounded-md object-contain transition-all duration-300 group-hover:brightness-110" />
+                <div className="relative flex shrink-0">
+                  <img src={logoUrl} alt={`${siteName || 'NovaxFolio'} Logo`} className="h-9 w-auto max-w-[140px] rounded-md object-contain transition-all duration-300 group-hover:brightness-110" />
                   <div className="absolute inset-0 rounded-md bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity blur-lg -z-10" />
                 </div>
               ) : (
@@ -116,12 +118,12 @@ export function Navbar({
           <div className="hidden lg:flex items-center gap-3 border-l border-border pl-4">
             <ThemeToggle />
             <Link
-              href="/login"
+              href={isAdmin ? "/api/auth/signout" : "/login"}
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted transition-all duration-200"
-              title="Admin Login"
+              title={isAdmin ? "Admin Logout" : "Admin Login"}
             >
-              <LogIn className="h-4 w-4" />
-              <span>Login</span>
+              {isAdmin ? <LogOut className="h-4 w-4" /> : <LogIn className="h-4 w-4" />}
+              <span>{isAdmin ? 'Logout' : 'Login'}</span>
             </Link>
           </div>
 
@@ -174,24 +176,31 @@ export function Navbar({
           >
             {/* Drawer header */}
             <div className="flex items-center justify-between p-5 border-b border-border">
-              <div className="flex items-center gap-2.5 group">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
-                  <Terminal className="h-4.5 w-4.5 text-white" strokeWidth={2.5} />
-                </div>
-                <span className="flex items-baseline tracking-tighter">
-                  <span className="text-lg font-bold text-foreground">
-                    {(siteName || "NovaxFolio").slice(0, Math.ceil((siteName || "NovaxFolio").length / 2))}
+              <Link href="/" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2.5 group shrink-0 min-w-0">
+                {logoUrl ? (
+                  <img src={logoUrl} alt={`${siteName || 'NovaxFolio'} Logo`} className="h-8 w-auto max-w-[120px] rounded-md object-contain" />
+                ) : (
+                  <div className="w-8 h-8 shrink-0 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
+                    <Terminal className="h-4.5 w-4.5 text-white" strokeWidth={2.5} />
+                  </div>
+                )}
+                
+                {(!logoUrl || showSiteName) && (
+                  <span className="flex items-baseline tracking-tighter truncate">
+                    <span className="text-lg font-bold text-foreground">
+                      {(siteName || "NovaxFolio").slice(0, Math.ceil((siteName || "NovaxFolio").length / 2))}
+                    </span>
+                    <span className="text-lg font-medium text-primary ml-0.5">
+                      {(siteName || "NovaxFolio").slice(Math.ceil((siteName || "NovaxFolio").length / 2))}
+                    </span>
                   </span>
-                  <span className="text-lg font-medium text-primary ml-0.5">
-                    {(siteName || "NovaxFolio").slice(Math.ceil((siteName || "NovaxFolio").length / 2))}
-                  </span>
-                </span>
-              </div>
+                )}
+              </Link>
 
               <button
                 type="button"
                 aria-label="Close menu"
-                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="p-2 shrink-0 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 <X className="h-5 w-5" />
@@ -216,12 +225,12 @@ export function Navbar({
 
               <div className="pt-2 mt-2 border-t border-border">
                 <Link
-                  href="/login"
+                  href={isAdmin ? "/api/auth/signout" : "/login"}
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-base font-semibold text-foreground hover:bg-muted hover:text-primary transition-all duration-200"
                 >
-                  <LogIn className="h-4 w-4 text-primary" />
-                  Admin Login
+                  {isAdmin ? <LogOut className="h-4 w-4 text-primary" /> : <LogIn className="h-4 w-4 text-primary" />}
+                  {isAdmin ? 'Admin Logout' : 'Admin Login'}
                 </Link>
               </div>
             </nav>
