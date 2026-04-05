@@ -13,6 +13,8 @@ const inter = Inter({
 });
 
 import { getSettings } from "@/app/actions/settings";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settingsData = await getSettings();
@@ -31,6 +33,7 @@ export default async function RootLayout({
 }>) {
 
   const settingsData = await getSettings();
+  const session = await getServerSession(authOptions);
 
   const themeStyles = `
     :root {
