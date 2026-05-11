@@ -4,9 +4,10 @@ import React, { useState, useEffect } from "react";
 import { 
   Sparkles, TrendingUp, Calendar, Settings as SettingsIcon, 
   Plus, BarChart3, MessageSquare, History, Globe, 
-  Upload, Loader2, CheckCircle2, AlertCircle
+  Upload, Loader2, CheckCircle2, AlertCircle, Search
 } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
+import MediaPicker from "@/components/MediaPicker";
 import { 
   generateSocialPost, analyzeScreenshot, 
   updateAiConfig, trackGrowthMetric 
@@ -20,6 +21,7 @@ export default function SocialAiPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [topic, setTopic] = useState("");
+  const [screenshotUrl, setScreenshotUrl] = useState("");
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   // Mock data for initial UI (In a real app, this would be fetched via server components/actions)
@@ -45,6 +47,26 @@ export default function SocialAiPage() {
       setMessage({ type: 'error', text: "An unexpected error occurred" });
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleAnalyze = async (url: string) => {
+    setScreenshotUrl(url);
+    if (!url) return;
+    
+    setIsAnalyzing(true);
+    setMessage(null);
+    try {
+      const res = await analyzeScreenshot(activePlatform, url);
+      if (res.success) {
+        setMessage({ type: 'success', text: `Analysis complete! Found ${res.data?.followers} followers.` });
+      } else {
+        setMessage({ type: 'error', text: res.error || "Analysis failed" });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: "An unexpected error occurred during analysis" });
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -120,12 +142,18 @@ export default function SocialAiPage() {
                     <p className="text-xs text-zinc-500">Upload profile screenshots for Gemini Vision analysis.</p>
                   </div>
                 </div>
-                <div className="border-2 border-dashed border-primary/20 rounded-xl p-8 flex flex-col items-center justify-center gap-3 hover:border-primary/40 transition-colors cursor-pointer group">
-                  <div className="w-12 h-12 rounded-full bg-primary/5 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Upload className="w-6 h-6 text-primary" />
-                  </div>
-                  <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Click to upload or drag screenshot</p>
-                  <p className="text-[10px] text-zinc-500">Supports PNG, JPG (Max 5MB)</p>
+                <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-primary/10">
+                  <MediaPicker 
+                    onSelect={handleAnalyze}
+                    currentUrl={screenshotUrl}
+                    label="Profile Screenshot"
+                  />
+                  {isAnalyzing && (
+                    <div className="mt-4 flex items-center gap-2 text-sm text-primary font-medium animate-pulse">
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      AI is reading your metrics...
+                    </div>
+                  )}
                 </div>
               </div>
 
