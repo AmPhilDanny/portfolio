@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
-  LayoutDashboard, LogOut, Briefcase, FileText, UserCircle, Star, Settings, Award, Code, FolderGit2, Home, Image as ImageIcon, Menu, X 
+  LayoutDashboard, LogOut, Briefcase, FileText, UserCircle, Star, Settings, Award, Code, FolderGit2, Home, Image as ImageIcon, Menu, X, Layers
 } from "lucide-react";
 
 export function AdminSidebar({ email }: { email?: string | null }) {
@@ -13,7 +13,7 @@ export function AdminSidebar({ email }: { email?: string | null }) {
 
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
-    { name: 'Sections', href: '/admin/sections', icon: LayoutDashboard },
+    { name: 'Sections', href: '/admin/sections', icon: Layers },
     { name: 'Hero', href: '/admin/hero', icon: Home },
     { name: 'About', href: '/admin/about', icon: UserCircle },
     { name: 'Skills', href: '/admin/skills', icon: Code },

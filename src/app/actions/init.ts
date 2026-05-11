@@ -2,8 +2,8 @@
 
 import { db } from "@/lib/db";
 import { 
-  settings, heroes, about, skills, services, 
-  experience, projects, certifications, contact, 
+  settings, heroes, abouts, skillCategories, services, 
+  experiences, projects, certifications, contacts, 
   sectionConfigs, socialLinks 
 } from "@/lib/schema";
 import { revalidatePath } from "next/cache";
@@ -39,28 +39,28 @@ export async function initializeDatabase() {
     }
 
     // 3. About
-    const existingAbout = await db.select().from(about).limit(1);
+    const existingAbout = await db.select().from(abouts).limit(1);
     if (existingAbout.length === 0) {
-      await db.insert(about).values({
+      await db.insert(abouts).values({
         description: "I am a passionate **Data Analyst** and **Full-Stack Developer** dedicated to bridging the gap between data-driven insights and impactful digital solutions. With a background in analyzing complex datasets and a drive for creating seamless user experiences, I bring a unique perspective to every project.",
-        stats: JSON.stringify([
+        stats: [
           { label: "Years Exp.", value: "2+" },
           { label: "Projects", value: "20+" },
           { label: "Certificates", value: "10+" }
-        ]),
-        features: JSON.stringify([
+        ],
+        features: [
           { title: "Data Visualization", description: "Creating compelling visual stories from raw data.", icon: "BarChart3" },
           { title: "Full-Stack Dev", description: "Building robust web apps from scratch.", icon: "Code2" },
           { title: "Machine Learning", description: "Predictive modeling and statistical analysis.", icon: "Cpu" },
           { title: "Global Delivery", description: "Working with clients across the globe.", icon: "Globe" }
-        ])
+        ]
       });
     }
 
     // 4. Skills
-    const existingSkills = await db.select().from(skills);
+    const existingSkills = await db.select().from(skillCategories);
     if (existingSkills.length === 0) {
-      await db.insert(skills).values([
+      await db.insert(skillCategories).values([
         { category: "Data Analysis", skills: ["SQL", "Python", "Power BI", "Excel", "Tableau", "Pandas", "NumPy", "Data Visualization"] },
         { category: "Frontend Dev", skills: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Shadcn/UI"] },
         { category: "Backend Dev", skills: ["Node.js", "Express", "PostgreSQL", "MongoDB", "REST APIs", "Prisma", "Drizzle"] },
@@ -80,11 +80,11 @@ export async function initializeDatabase() {
     }
 
     // 6. Experience
-    const existingExperience = await db.select().from(experience);
+    const existingExperience = await db.select().from(experiences);
     if (existingExperience.length === 0) {
-      await db.insert(experience).values([
-        { company: "Data Insight Corp", role: "Junior Data Analyst", period: "2023 - Present", description: "Analyzing large datasets to identify market trends and presenting findings to stakeholders." },
-        { company: "TechNova Solutions", role: "Frontend Developer Intern", period: "2022 - 2023", description: "Assisted in building responsive UI components and improving website performance." }
+      await db.insert(experiences).values([
+        { role: "Junior Data Analyst", company: "Data Insight Corp", period: "2023 - Present", description: "Analyzing large datasets to identify market trends and presenting findings to stakeholders.", achievements: ["Increased reporting efficiency by 30%", "Developed automated cleanup scripts"] },
+        { role: "Frontend Developer Intern", company: "TechNova Solutions", period: "2022 - 2023", description: "Assisted in building responsive UI components and improving website performance.", achievements: ["Optimized page load times by 20%", "Implemented 10+ reusable components"] }
       ]);
     }
 
@@ -102,15 +102,15 @@ export async function initializeDatabase() {
     const existingCerts = await db.select().from(certifications);
     if (existingCerts.length === 0) {
       await db.insert(certifications).values([
-        { title: "Google Data Analytics Professional Certificate", issuer: "Coursera / Google", date: "2023", credentialId: "GOOGLE-123456", credentialUrl: "#" },
-        { title: "Full-Stack Web Development Bootcamp", issuer: "Udemy", date: "2022", credentialId: "UDEMY-987654", credentialUrl: "#" }
+        { name: "Google Data Analytics Professional Certificate", issuer: "Coursera / Google", date: "2023", description: "Comprehensive data analytics training.", link: "#" },
+        { name: "Full-Stack Web Development Bootcamp", issuer: "Udemy", date: "2022", description: "Modern web development from scratch.", link: "#" }
       ]);
     }
 
     // 9. Contact
-    const existingContact = await db.select().from(contact).limit(1);
+    const existingContact = await db.select().from(contacts).limit(1);
     if (existingContact.length === 0) {
-      await db.insert(contact).values({
+      await db.insert(contacts).values({
         email: "amaechiphilipekaba@gmail.com",
         phone: "+234 XXX XXX XXXX",
         location: "Lagos, Nigeria"
