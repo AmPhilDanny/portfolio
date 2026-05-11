@@ -13,6 +13,7 @@ export function AdminSidebar({ email }: { email?: string | null }) {
 
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
+    { name: 'Sections', href: '/admin/sections', icon: LayoutDashboard },
     { name: 'Hero', href: '/admin/hero', icon: Home },
     { name: 'About', href: '/admin/about', icon: UserCircle },
     { name: 'Skills', href: '/admin/skills', icon: Code },

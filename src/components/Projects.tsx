@@ -51,7 +51,7 @@ const projects = [
  * - Interactive tech-cards with hover-reveal overlays for links.
  * - Categorized technology tags for each project.
  */
-export default function Projects({ data }: { data?: any[] }) {
+export default function Projects({ data, config }: { data?: any[], config?: any }) {
   // Use database data if available, otherwise use the beautiful hardcoded defaults below.
   const displayProjects = data && data.length > 0 ? data : projects;
 
@@ -66,7 +66,7 @@ export default function Projects({ data }: { data?: any[] }) {
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-4"
           >
-            Featured Projects
+            {config?.title || "Featured Projects"}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -75,7 +75,7 @@ export default function Projects({ data }: { data?: any[] }) {
             transition={{ delay: 0.1 }}
             className="text-lg text-gray-600 dark:text-gray-400"
           >
-            Showcasing some of my best work in data analysis and web development.
+            {config?.description || "Showcasing some of my best work in data analysis and web development."}
           </motion.p>
         </div>
 

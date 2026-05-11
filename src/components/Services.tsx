@@ -14,7 +14,7 @@ const iconMap: Record<string, any> = {
  * Services Section: Showcases professional offerings and expertise.
  * Features a grid of service cards with hover-reveal details and technology icons.
  */
-export default function Services({ data }: { data?: any[] }) {
+export default function Services({ data, config }: { data?: any[], config?: any }) {
   const displayData = data && data.length > 0 ? data : [
     {
       title: "Data Analysis & Visualization",
@@ -52,7 +52,7 @@ export default function Services({ data }: { data?: any[] }) {
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-4"
           >
-            My Services
+            {config?.title || "My Services"}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -61,7 +61,7 @@ export default function Services({ data }: { data?: any[] }) {
             transition={{ delay: 0.1 }}
             className="text-lg text-gray-600 dark:text-gray-400"
           >
-            Bridging the gap between data insights and technical implementation.
+            {config?.description || "Bridging the gap between data insights and technical implementation."}
           </motion.p>
         </div>
 

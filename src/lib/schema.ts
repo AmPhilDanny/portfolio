@@ -37,6 +37,7 @@ export const heroes = pgTable('heroes', {
   name: text('name').notNull(),
   title: text('title').notNull(),
   description: text('description').notNull(),
+  badgeText: text('badge_text'), // e.g. "Available for Work"
   cvUrl: text('cv_url'),
   imageUrl: text('image_url'),
 });
@@ -48,6 +49,7 @@ export const abouts = pgTable('abouts', {
   id: uuid('id').primaryKey().defaultRandom(),
   description: text('description').notNull(),
   stats: jsonb('stats'), // Array of { label, value }
+  features: jsonb('features'), // Array of { name, description, icon }
 });
 
 /**
@@ -144,8 +146,18 @@ export const settings = pgTable('settings', {
 
 
 /**
+ * Section Configs Table: Customizable titles and subtitles for each section
+ */
+export const sectionConfigs = pgTable('section_configs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  sectionId: text('section_id').notNull().unique(), // e.g. "skills", "services", "experience"
+  title: text('title').notNull(),
+  description: text('description'),
+});
+
+
+/**
  * Media Table: The heart of the Octo-Storage system.
- * Stores binary file content (content) and metadata (mimeType).
  */
 export const media = pgTable('media', {
   id: uuid('id').primaryKey().defaultRandom(),

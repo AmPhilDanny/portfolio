@@ -1,36 +1,49 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Code, Database, LineChart, Server } from "lucide-react";
+import { Code, Database, LineChart, Server, Cpu, Globe } from "lucide-react";
 
-const features = [
-  {
-    name: "Data Analysis",
-    description: "Extracting insights from complex datasets using SQL, Python, Excel, and Power BI. Making data-driven business decisions.",
-    icon: LineChart,
-  },
-  {
-    name: "Frontend Development",
-    description: "Building responsive, accessible, and performant user interfaces with React, Next.js, and modern CSS frameworks.",
-    icon: Code,
-  },
-  {
-    name: "Backend Systems",
-    description: "Developing robust APIs and server-side logic using Node.js, Express, and appropriate architectural patterns.",
-    icon: Server,
-  },
-  {
-    name: "Database Management",
-    description: "Designing and optimizing database schemas, writing complex queries, and managing both SQL and NoSQL databases.",
-    icon: Database,
-  },
-];
+const iconMap: Record<string, any> = {
+  LineChart,
+  Code,
+  Server,
+  Database,
+  Cpu,
+  Globe,
+};
 
 /**
  * About Section: Provides a detailed personal description and key metrics (stats).
  * Uses Framer Motion for scroll-reveal animations and a grid layout for features.
  */
-export default function About({ data }: { data?: any }) {
+export default function About({ data, config }: { data?: any, config?: any }) {
+  const displayStats = data?.stats && data.stats.length > 0 ? data.stats : [
+    { label: "Years of Data Exp.", value: "2+" },
+    { label: "Projects Completed", value: "20+" }
+  ];
+
+  const displayFeatures = data?.features && data.features.length > 0 ? data.features : [
+    {
+      name: "Data Analysis",
+      description: "Extracting insights from complex datasets using SQL, Python, Excel, and Power BI. Making data-driven business decisions.",
+      icon: "LineChart",
+    },
+    {
+      name: "Frontend Development",
+      description: "Building responsive, accessible, and performant user interfaces with React, Next.js, and modern CSS frameworks.",
+      icon: "Code",
+    },
+    {
+      name: "Backend Systems",
+      description: "Developing robust APIs and server-side logic using Node.js, Express, and appropriate architectural patterns.",
+      icon: "Server",
+    },
+    {
+      name: "Database Management",
+      description: "Designing and optimizing database schemas, writing complex queries, and managing both SQL and NoSQL databases.",
+      icon: "Database",
+    },
+  ];
 
   return (
     <section id="about" className="py-24 bg-white dark:bg-black relative">
@@ -43,7 +56,7 @@ export default function About({ data }: { data?: any }) {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
-              About Me
+              {config?.title || "About Me"}
             </h2>
             <div 
               className="space-y-6 text-lg text-gray-600 dark:text-gray-400 prose prose-lg dark:prose-invert max-w-none"
@@ -51,14 +64,12 @@ export default function About({ data }: { data?: any }) {
             />
             
             <div className="mt-10 grid grid-cols-2 gap-6">
-              <div className="border-l-4 border-primary pl-4">
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">2+</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Years of Data Exp.</p>
-              </div>
-              <div className="border-l-4 border-secondary pl-4">
-                <p className="text-3xl font-bold text-gray-900 dark:text-white">20+</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Projects Completed</p>
-              </div>
+              {displayStats.map((stat: any, idx: number) => (
+                <div key={idx} className={`border-l-4 ${idx % 2 === 0 ? 'border-primary' : 'border-secondary'} pl-4`}>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{stat.label}</p>
+                </div>
+              ))}
             </div>
           </motion.div>
 
@@ -69,23 +80,26 @@ export default function About({ data }: { data?: any }) {
             transition={{ duration: 0.5, delay: 0.2 }}
             className="grid sm:grid-cols-2 gap-6"
           >
-            {features.map((feature, index) => (
-              <div 
-                key={feature.name} 
-                className="p-6 rounded-2xl tech-card transition-colors"
-                style={{
-                  transform: `translateY(${index % 2 !== 0 ? '24px' : '0'})`
-                }}
-              >
-                <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
-                  <feature.icon className="w-6 h-6" />
+            {displayFeatures.map((feature: any, index: number) => {
+              const Icon = iconMap[feature.icon] || LineChart;
+              return (
+                <div 
+                  key={feature.name} 
+                  className="p-6 rounded-2xl tech-card transition-colors"
+                  style={{
+                    transform: `translateY(${index % 2 !== 0 ? '24px' : '0'})`
+                  }}
+                >
+                  <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{feature.name}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{feature.name}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </motion.div>
         </div>
       </div>

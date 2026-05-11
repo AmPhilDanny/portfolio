@@ -10,7 +10,7 @@ import { Briefcase, Calendar } from "lucide-react";
  * - Detailed achievement lists for each role.
  * - Chronological layout with dynamic data support.
  */
-export default function Experience({ data }: { data?: any[] }) {
+export default function Experience({ data, config }: { data?: any[], config?: any }) {
   const displayData = data && data.length > 0 ? data : [
     {
       role: "Data Analyst & Junior Full-Stack Developer",
@@ -47,7 +47,7 @@ export default function Experience({ data }: { data?: any[] }) {
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-4"
           >
-            Professional Experience
+            {config?.title || "Professional Experience"}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -56,7 +56,7 @@ export default function Experience({ data }: { data?: any[] }) {
             transition={{ delay: 0.1 }}
             className="text-lg text-gray-600 dark:text-gray-400"
           >
-            My career journey and professional achievements.
+            {config?.description || "My career journey and professional achievements."}
           </motion.p>
         </div>
 

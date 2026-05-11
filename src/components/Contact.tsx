@@ -11,7 +11,7 @@ import { Mail, Phone, MapPin, Send } from "lucide-react";
  * Contact Section: Displays contact information and a lead-generation form.
  * Includes email and social links alongside a professional contact form for inquiries.
  */
-export default function Contact({ data }: { data?: any }) {
+export default function Contact({ data, config }: { data?: any, config?: any }) {
   const contactInfo = data || {
     email: "amaechiphilipekaba@gmail.com",
     phone: null,
@@ -29,7 +29,7 @@ export default function Contact({ data }: { data?: any }) {
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-4"
           >
-            Get In Touch
+            {config?.title || "Get In Touch"}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -38,7 +38,7 @@ export default function Contact({ data }: { data?: any }) {
             transition={{ delay: 0.1 }}
             className="text-lg text-gray-600 dark:text-gray-400"
           >
-            Have a project in mind or want to discuss opportunities? I'd love to hear from you.
+            {config?.description || "Have a project in mind or want to discuss opportunities? I'd love to hear from you."}
           </motion.p>
         </div>
 

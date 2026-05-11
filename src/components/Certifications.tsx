@@ -7,7 +7,7 @@ import { Award, ExternalLink } from "lucide-react";
  * Certifications Section: Displays official credentials with issuer and date.
  * Features a grid of certification cards with external links for validation.
  */
-export default function Certifications({ data }: { data?: any[] }) {
+export default function Certifications({ data, config }: { data?: any[], config?: any }) {
   const displayData = data && data.length > 0 ? data : [
     {
       name: "Certified Data Analyst",
@@ -42,7 +42,7 @@ export default function Certifications({ data }: { data?: any[] }) {
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-4"
           >
-            Certifications
+            {config?.title || "Certifications"}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -51,7 +51,7 @@ export default function Certifications({ data }: { data?: any[] }) {
             transition={{ delay: 0.1 }}
             className="text-lg text-gray-600 dark:text-gray-400"
           >
-            Continuous learning and professional validations.
+            {config?.description || "Continuous learning and professional validations."}
           </motion.p>
         </div>
 

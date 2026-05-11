@@ -15,12 +15,10 @@ import { getExperiences } from "@/app/actions/experience";
 import { getCertifications } from "@/app/actions/certifications";
 import { getContact } from "@/app/actions/contact";
 
+import { getSectionConfigs } from "@/app/actions/sections";
+
 /**
  * NovaxFolio Main Entry Point (Home Page)
- * 
- * This is a React Server Component (RSC) that fetches all the 
- * dynamic section data from the database and passes it down 
- * to the individual sections for high-performance, SEO-friendly rendering.
  */
 export default async function Home() {
   // Fetch initial content from the database
@@ -32,19 +30,22 @@ export default async function Home() {
   const experiencesData = await getExperiences();
   const certificationsData = await getCertifications();
   const contactData = await getContact();
+  const sectionConfigs = await getSectionConfigs();
+
+  const getSectionConfig = (id: string) => sectionConfigs.find(c => c.sectionId === id);
 
 
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-grow">
         <Hero data={heroData} />
-        <About data={aboutData} />
-        <Skills data={skillsData} />
-        <Services data={servicesData} />
-        <Experience data={experiencesData} />
-        <Projects data={projectsData} />
-        <Certifications data={certificationsData} />
-        <Contact data={contactData} />
+        <About data={aboutData} config={getSectionConfig('about')} />
+        <Skills data={skillsData} config={getSectionConfig('skills')} />
+        <Services data={servicesData} config={getSectionConfig('services')} />
+        <Experience data={experiencesData} config={getSectionConfig('experience')} />
+        <Projects data={projectsData} config={getSectionConfig('projects')} />
+        <Certifications data={certificationsData} config={getSectionConfig('certifications')} />
+        <Contact data={contactData} config={getSectionConfig('contact')} />
       </main>
     </div>
   );

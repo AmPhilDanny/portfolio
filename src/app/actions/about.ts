@@ -23,16 +23,21 @@ export async function getAbout() {
 export async function updateAbout(formData: FormData) {
   try {
     const description = formData.get("description") as string;
+    const statsStr = formData.get("stats") as string;
+    const featuresStr = formData.get("features") as string;
+
+    const stats = statsStr ? JSON.parse(statsStr) : null;
+    const features = featuresStr ? JSON.parse(featuresStr) : null;
     
     const existing = await getAbout();
 
     if (existing) {
       await db.update(abouts)
-        .set({ description })
+        .set({ description, stats, features })
         .where(eq(abouts.id, existing.id));
     } else {
       await db.insert(abouts).values({
-        description
+        description, stats, features
       });
     }
 

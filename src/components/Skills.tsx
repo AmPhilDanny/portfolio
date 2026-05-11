@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
  * Groups skills into domains like Data Analysis, Frontend, and Backend.
  * Features animated cards and hover-responsive skill badges.
  */
-export default function Skills({ data }: { data?: any[] }) {
+export default function Skills({ data, config }: { data?: any[], config?: any }) {
   const displayData = data && data.length > 0 ? data : [
     {
       category: "Data Analysis",
@@ -37,7 +37,7 @@ export default function Skills({ data }: { data?: any[] }) {
             viewport={{ once: true }}
             className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-4"
           >
-            Technical Skills
+            {config?.title || "Technical Skills"}
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}
@@ -46,7 +46,7 @@ export default function Skills({ data }: { data?: any[] }) {
             transition={{ delay: 0.1 }}
             className="text-lg text-gray-600 dark:text-gray-400"
           >
-            A comprehensive overview of my technical expertise in data analysis and software development.
+            {config?.description || "A comprehensive overview of my technical expertise in data analysis and software development."}
           </motion.p>
         </div>
 

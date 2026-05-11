@@ -64,6 +64,15 @@ export default function HeroForm({ initialData }: { initialData: any }) {
           required
         />
       </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Badge Text</label>
+        <input 
+          type="text" 
+          name="badgeText"
+          defaultValue={initialData?.badgeText || "Available for Work"}
+          className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white"
+        />
+      </div>
       <RichTextEditor 
         label="Description"
         content={description}
