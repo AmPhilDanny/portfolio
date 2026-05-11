@@ -28,6 +28,45 @@ export async function initializeDatabase() {
       await db.execute(sql`CREATE TABLE IF NOT EXISTS section_configs (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), section_id text NOT NULL UNIQUE, title text NOT NULL, description text)`);
       await db.execute(sql`CREATE TABLE IF NOT EXISTS social_links (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), platform text NOT NULL, url text NOT NULL, icon text)`);
       
+      // AI Social Media Strategist Tables
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS social_media_insights (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(), 
+        platform text NOT NULL, 
+        handle text, 
+        follower_count text, 
+        following_count text, 
+        engagement_rate text, 
+        analysis_summary text, 
+        screenshot_url text, 
+        raw_ai_response text, 
+        last_analyzed timestamp DEFAULT now()
+      )`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS social_platform_metrics (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(), 
+        platform text NOT NULL, 
+        metric_type text NOT NULL, 
+        value text NOT NULL, 
+        recorded_at timestamp DEFAULT now()
+      )`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS content_calendar (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(), 
+        platform text NOT NULL, 
+        content text NOT NULL, 
+        media_url text, 
+        hashtags text, 
+        status text DEFAULT 'draft', 
+        suggested_post_date timestamp, 
+        created_at timestamp DEFAULT now()
+      )`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS ai_config (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(), 
+        platform text NOT NULL UNIQUE, 
+        brand_voice text, 
+        target_audience text, 
+        preferred_model text DEFAULT 'mistral', 
+        growth_goals text
+      )`);
+      
       console.log("Schema synced successfully.");
     } catch (e: any) {
       console.warn("Schema sync warning:", e.message);

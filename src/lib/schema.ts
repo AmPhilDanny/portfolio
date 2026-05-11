@@ -180,4 +180,55 @@ export const media = pgTable('media', {
   createdAt: timestamp('created_at').defaultNow(),
 });
 
+/**
+ * AI Social Media Intelligence: Insight extraction from profile screenshots.
+ */
+export const socialMediaInsights = pgTable('social_media_insights', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  platform: text('platform').notNull(), // e.g. "GitHub", "X"
+  handle: text('handle'),
+  followerCount: text('follower_count'),
+  followingCount: text('following_count'),
+  engagementRate: text('engagement_rate'),
+  analysisSummary: text('analysis_summary'),
+  screenshotUrl: text('screenshot_url'),
+  rawAiResponse: text('raw_ai_response'),
+  lastAnalyzed: timestamp('last_analyzed').defaultNow(),
+});
 
+/**
+ * AI Social Media Learning: Historical growth metrics.
+ */
+export const socialPlatformMetrics = pgTable('social_platform_metrics', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  platform: text('platform').notNull(),
+  metricType: text('metric_type').notNull(), // 'followers', 'likes', 'views'
+  value: text('value').notNull(),
+  recordedAt: timestamp('recorded_at').defaultNow(),
+});
+
+/**
+ * Content Calendar: AI-generated social media posts.
+ */
+export const contentCalendar = pgTable('content_calendar', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  platform: text('platform').notNull(),
+  content: text('content').notNull(),
+  mediaUrl: text('media_url'),
+  hashtags: text('hashtags'),
+  status: text('status').default('draft'), // 'draft', 'scheduled', 'posted'
+  suggestedPostDate: timestamp('suggested_post_date'),
+  createdAt: timestamp('created_at').defaultNow(),
+});
+
+/**
+ * AI Configuration: Per-platform "Brand Voice" and model settings.
+ */
+export const aiConfig = pgTable('ai_config', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  platform: text('platform').notNull().unique(),
+  brandVoice: text('brand_voice'), // e.g. "Sarcastic & Technical", "Formal & Professional"
+  targetAudience: text('target_audience'),
+  preferredModel: text('preferred_model').default('mistral'),
+  growthGoals: text('growth_goals'),
+});
