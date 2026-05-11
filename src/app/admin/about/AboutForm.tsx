@@ -130,19 +130,17 @@ export default function AboutForm({ initialData }: { initialData: any }) {
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium mb-1">Icon (Lucide name)</label>
-                    <select 
+                    <label className="block text-xs font-medium mb-1 flex items-center justify-between">
+                      Icon (Lucide name)
+                      <a href="https://lucide.dev/icons" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline">Browse Icons</a>
+                    </label>
+                    <input 
+                      type="text" 
                       value={feature.icon} 
+                      placeholder="e.g. bar-chart-3"
                       onChange={(e) => updateFeature(idx, 'icon', e.target.value)}
                       className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg text-sm"
-                    >
-                      <option value="LineChart">LineChart</option>
-                      <option value="Code">Code</option>
-                      <option value="Server">Server</option>
-                      <option value="Database">Database</option>
-                      <option value="Cpu">Cpu</option>
-                      <option value="Globe">Globe</option>
-                    </select>
+                    />
                   </div>
                 </div>
                 <button type="button" onClick={() => removeFeature(idx)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">

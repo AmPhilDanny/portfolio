@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createSocialLink, deleteSocialLink } from "@/app/actions/social";
 import { Trash2, Plus, Globe, Mail } from "lucide-react";
 import { GithubIcon, LinkedinIcon, TwitterIcon, InstagramIcon, FacebookIcon, KaggleIcon } from "@/components/Icons";
+import DynamicIcon from "@/components/DynamicIcon";
 
 const PLATFORM_ICONS: Record<string, any> = {
   Github: GithubIcon,
@@ -45,7 +46,7 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
 
       <div className="grid gap-3">
         {initialLinks.map((link) => {
-          const Icon = PLATFORM_ICONS[link.icon || link.platform] || Globe;
+          const BrandIcon = PLATFORM_ICONS[link.icon || link.platform];
           return (
             <div 
               key={link.id} 
@@ -53,7 +54,11 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
             >
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-primary/10 text-primary rounded-lg">
-                  <Icon className="w-4 h-4" />
+                  {BrandIcon ? (
+                    <BrandIcon className="w-4 h-4" />
+                  ) : (
+                    <DynamicIcon name={(link.icon?.toLowerCase() || "globe") as any} className="w-4 h-4" />
+                  )}
                 </div>
                 <div>
                   <p className="text-sm font-bold">{link.platform}</p>
@@ -76,33 +81,24 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
       <form onSubmit={handleAdd} className="p-4 rounded-xl border border-dashed border-border bg-muted/5 space-y-4">
         <p className="text-xs font-bold uppercase text-muted-foreground">Add New Social Link</p>
         <div className="grid grid-cols-2 gap-3">
-          <select 
+          <input 
             name="platform" 
+            placeholder="Platform Name (e.g. GitHub)"
             className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-border rounded-lg text-sm"
             required
-          >
-            <option value="">Platform...</option>
-            <option value="GitHub">GitHub</option>
-            <option value="LinkedIn">LinkedIn</option>
-            <option value="X">X (Twitter)</option>
-            <option value="Instagram">Instagram</option>
-            <option value="Facebook">Facebook</option>
-            <option value="Kaggle">Kaggle</option>
-            <option value="Website">Personal Website</option>
-          </select>
-          <select 
-            name="icon" 
-            className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-border rounded-lg text-sm"
-            required
-          >
-            <option value="Globe">Default Icon</option>
-            <option value="Github">Github Icon</option>
-            <option value="Linkedin">Linkedin Icon</option>
-            <option value="Twitter">Twitter Icon</option>
-            <option value="Instagram">Instagram Icon</option>
-            <option value="Facebook">Facebook Icon</option>
-            <option value="Kaggle">Kaggle Icon</option>
-          </select>
+          />
+          <div className="space-y-1">
+            <input 
+              name="icon" 
+              placeholder="Icon name (e.g. Github)"
+              className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-border rounded-lg text-sm"
+              required
+            />
+            <div className="flex justify-between px-1">
+              <span className="text-[10px] text-muted-foreground">Lucide or Brand name</span>
+              <a href="https://lucide.dev/icons" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline">Lucide Icons</a>
+            </div>
+          </div>
         </div>
         <div className="flex gap-2">
           <input 

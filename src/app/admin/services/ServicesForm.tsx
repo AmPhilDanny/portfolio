@@ -4,11 +4,6 @@ import { createService } from "@/app/actions/services";
 import { Plus } from "lucide-react";
 import RichTextEditor from "@/components/RichTextEditor";
 
-const ICON_OPTIONS = [
-  "Code", "Database", "BarChart2", "Globe", "Server", "Cpu",
-  "Terminal", "LineChart", "PieChart", "Layers", "Zap", "Shield",
-];
-
 export default function ServicesForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -55,21 +50,21 @@ export default function ServicesForm() {
       <input type="hidden" name="description" value={description} />
 
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Icon</label>
-        <div className="flex flex-wrap gap-2">
-          {ICON_OPTIONS.map((icon) => (
-            <button key={icon} type="button" onClick={() => setSelectedIcon(icon)}
-              className="px-3 py-1.5 rounded-lg text-xs font-mono border transition-all"
-              style={{
-                background: selectedIcon === icon ? "var(--primary)" : "var(--muted)",
-                borderColor: selectedIcon === icon ? "var(--primary)" : "var(--border)",
-                color: selectedIcon === icon ? "var(--primary-foreground)" : "var(--muted-foreground)",
-              }}>
-              {icon}
-            </button>
-          ))}
-        </div>
-        <input type="hidden" name="icon" value={selectedIcon} />
+        <label className="block text-sm font-medium mb-1.5 flex items-center justify-between" style={{ color: "var(--muted-foreground)" }}>
+          Icon (Lucide name)
+          <a href="https://lucide.dev/icons" target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline">Browse Icons</a>
+        </label>
+        <input 
+          type="text" 
+          name="icon" 
+          value={selectedIcon}
+          onChange={(e) => setSelectedIcon(e.target.value)}
+          placeholder="e.g. bar-chart-3"
+          className={inputCls} 
+          style={inputStyle} 
+          required 
+        />
+        <p className="mt-1.5 text-[10px] text-muted-foreground italic">Tip: Use kebab-case names from the Lucide library.</p>
       </div>
       <button type="submit" disabled={loading}
         className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50 transition-all"
