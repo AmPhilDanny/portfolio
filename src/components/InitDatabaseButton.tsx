@@ -19,7 +19,7 @@ export default function InitDatabaseButton() {
       setDone(true);
       setTimeout(() => setDone(false), 3000);
     } else {
-      alert("Initialization failed. Check logs.");
+      alert(`Initialization failed: ${result.error || "Unknown error"}. Check server logs for details.`);
     }
   };
 
