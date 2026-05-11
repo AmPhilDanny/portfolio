@@ -109,9 +109,10 @@ export default function Projects({ data }: { data?: any[] }) {
                     {project.title}
                   </h3>
                 </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-6 line-clamp-2">
-                  {project.description}
-                </p>
+                <div 
+                  className="text-gray-600 dark:text-gray-400 mb-6 prose prose-sm dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: project.description }}
+                />
                 <div className="flex flex-wrap gap-2">
                   {project.tags.map((tag: string) => (
                     <span key={tag} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium border border-primary/20">

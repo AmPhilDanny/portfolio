@@ -3,11 +3,13 @@ import { useState } from "react";
 import { createCertification } from "@/app/actions/certifications";
 import { Plus } from "lucide-react";
 import MediaPicker from "@/components/MediaPicker";
+import RichTextEditor from "@/components/RichTextEditor";
 
 export default function CertificationsForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [imageUrl, setImageUrl] = useState("");
+  const [description, setDescription] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,6 +23,7 @@ export default function CertificationsForm() {
       setMessage("Certification added successfully.");
       form.reset();
       setImageUrl("");
+      setDescription("");
     } else {
       setMessage("Failed to add certification.");
     }
@@ -48,10 +51,14 @@ export default function CertificationsForm() {
           <input type="text" name="date" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none text-gray-900 dark:text-white" required />
         </div>
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-        <textarea name="description" rows={2} className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none text-gray-900 dark:text-white resize-none" required />
-      </div>
+      
+      <RichTextEditor 
+        label="Description"
+        content={description}
+        onChange={setDescription}
+      />
+      <input type="hidden" name="description" value={description} />
+
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Badge Link</label>
         <input type="url" name="link" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none text-gray-900 dark:text-white" />

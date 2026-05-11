@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createProject } from "@/app/actions/projects";
 import { Plus } from "lucide-react";
 import MediaPicker from "@/components/MediaPicker";
+import RichTextEditor from "@/components/RichTextEditor";
 
 /**
  * ProjectForm: A comprehensive interface for adding new portfolio items.
@@ -17,6 +18,7 @@ export default function ProjectForm() {
   const [message, setMessage] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [fileUrl, setFileUrl] = useState("");
+  const [description, setDescription] = useState("");
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -34,6 +36,7 @@ export default function ProjectForm() {
       form.reset();
       setImageUrl("");
       setFileUrl("");
+      setDescription("");
     } else {
 
       setMessage("Failed to add project.");
@@ -52,10 +55,14 @@ export default function ProjectForm() {
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
         <input type="text" name="title" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" required />
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
-        <textarea name="description" rows={2} className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none resize-none" required />
-      </div>
+      
+      <RichTextEditor 
+        label="Description"
+        content={description}
+        onChange={setDescription}
+      />
+      <input type="hidden" name="description" value={description} />
+
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags (Comma separated)</label>
         <input type="text" name="tags" placeholder="React, Tailwind, Node.js" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" required />

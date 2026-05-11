@@ -76,14 +76,13 @@ export default function Hero({
             {title}
           </motion.h2>
 
-          <motion.p
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
-            className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl"
-          >
-            {description}
-          </motion.p>
+            className="text-lg md:text-xl text-gray-600 dark:text-gray-400 mb-10 max-w-2xl prose dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: description }}
+          />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}

@@ -129,21 +129,7 @@ export function Navbar({
 
           {/* Mobile/Tablet right section */}
           <div className="flex lg:hidden items-center gap-2">
-            {/* Horizontal scrollable pill nav for sm+ screens */}
-            <div
-              className="hidden sm:flex items-center gap-1 overflow-x-auto"
-              style={{ scrollbarWidth: "none", msOverflowStyle: "none", maxWidth: "240px" }}
-            >
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-all duration-200 whitespace-nowrap"
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
+            {/* Removed redundant pill nav that caused double menu on tablets */}
 
             <ThemeToggle />
 

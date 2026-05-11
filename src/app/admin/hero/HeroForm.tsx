@@ -4,6 +4,7 @@ import { useState } from "react";
 import { updateHero } from "@/app/actions/hero";
 import { Save } from "lucide-react";
 import MediaPicker from "@/components/MediaPicker";
+import RichTextEditor from "@/components/RichTextEditor";
 
 /**
  * HeroForm: The management interface for the NovaxFolio landing section.
@@ -17,6 +18,7 @@ export default function HeroForm({ initialData }: { initialData: any }) {
   const [message, setMessage] = useState("");
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || "/profile.jpg");
   const [cvUrl, setCvUrl] = useState(initialData?.cvUrl || "/resume.pdf");
+  const [description, setDescription] = useState(initialData?.description || "Transforming complex data into actionable insights and building modern, responsive web applications. Passionate about solving problems at the intersection of data and development.");
 
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -62,16 +64,12 @@ export default function HeroForm({ initialData }: { initialData: any }) {
           required
         />
       </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
-        <textarea 
-          name="description"
-          rows={4}
-          defaultValue={initialData?.description || "Transforming complex data into actionable insights and building modern, responsive web applications. Passionate about solving problems at the intersection of data and development."}
-          className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white resize-none"
-          required
-        />
-      </div>
+      <RichTextEditor 
+        label="Description"
+        content={description}
+        onChange={setDescription}
+      />
+      <input type="hidden" name="description" value={description} />
       
       <MediaPicker 
         label="CV/Resume Document"

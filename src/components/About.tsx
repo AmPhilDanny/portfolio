@@ -45,9 +45,10 @@ export default function About({ data }: { data?: any }) {
             <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-gray-900 dark:text-white mb-6">
               About Me
             </h2>
-            <div className="space-y-6 text-lg text-gray-600 dark:text-gray-400 whitespace-pre-wrap">
-              {data?.description || "I am a passionate and detail-oriented Certified Data Analyst and Junior Full-Stack Developer. With a strong foundation in both interpreting complex datasets and building robust web applications, I bring a unique perspective to technology solutions.\n\nMy journey in tech has equipped me with the ability to not just write clean, efficient code, but to understand the 'why' behind the data. I thrive in environments where I can leverage my analytical skills to drive business decisions while simultaneously executing technical implementations.\n\nWhen I'm not coding or analyzing data, you can find me continuously learning new technologies and keeping up with the latest industry trends."}
-            </div>
+            <div 
+              className="space-y-6 text-lg text-gray-600 dark:text-gray-400 prose prose-lg dark:prose-invert max-w-none"
+              dangerouslySetInnerHTML={{ __html: data?.description || "I am a passionate and detail-oriented Certified Data Analyst and Junior Full-Stack Developer. With a strong foundation in both interpreting complex datasets and building robust web applications, I bring a unique perspective to technology solutions.\n\nMy journey in tech has equipped me with the ability to not just write clean, efficient code, but to understand the 'why' behind the data. I thrive in environments where I can leverage my analytical skills to drive business decisions while simultaneously executing technical implementations.\n\nWhen I'm not coding or analyzing data, you can find me continuously learning new technologies and keeping up with the latest industry trends." }}
+            />
             
             <div className="mt-10 grid grid-cols-2 gap-6">
               <div className="border-l-4 border-primary pl-4">

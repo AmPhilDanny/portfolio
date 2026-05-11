@@ -2,31 +2,30 @@
 
 import { motion } from "framer-motion";
 
-const skillsData = [
-  {
-    category: "Data Analysis",
-    skills: ["SQL", "Python", "Power BI", "Excel", "Tableau", "Pandas", "NumPy", "Data Visualization"],
-  },
-  {
-    category: "Frontend Development",
-    skills: ["React", "Next.js", "TypeScript", "Tailwind CSS", "HTML5", "CSS3", "Framer Motion", "Redux"],
-  },
-  {
-    category: "Backend Development",
-    skills: ["Node.js", "Express.js", "RESTful APIs", "MongoDB", "PostgreSQL", "Prisma", "Authentication"],
-  },
-  {
-    category: "Tools & Others",
-    skills: ["Git", "GitHub", "VS Code", "Postman", "Agile", "Problem Solving", "Communication", "Vercel"],
-  },
-];
-
 /**
  * Skills Section: Provides a categorized overview of technical proficiencies.
  * Groups skills into domains like Data Analysis, Frontend, and Backend.
  * Features animated cards and hover-responsive skill badges.
  */
-export default function Skills() {
+export default function Skills({ data }: { data?: any[] }) {
+  const displayData = data && data.length > 0 ? data : [
+    {
+      category: "Data Analysis",
+      skills: ["SQL", "Python", "Power BI", "Excel", "Tableau", "Pandas", "NumPy", "Data Visualization"],
+    },
+    {
+      category: "Frontend Development",
+      skills: ["React", "Next.js", "TypeScript", "Tailwind CSS", "HTML5", "CSS3", "Framer Motion", "Redux"],
+    },
+    {
+      category: "Backend Development",
+      skills: ["Node.js", "Express.js", "RESTful APIs", "MongoDB", "PostgreSQL", "Prisma", "Authentication"],
+    },
+    {
+      category: "Tools & Others",
+      skills: ["Git", "GitHub", "VS Code", "Postman", "Agile", "Problem Solving", "Communication", "Vercel"],
+    },
+  ];
 
   return (
     <section id="skills" className="py-24 bg-zinc-50 dark:bg-zinc-900/50">
@@ -52,7 +51,7 @@ export default function Skills() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {skillsData.map((category, idx) => (
+          {displayData.map((category, idx) => (
             <motion.div
               key={category.category}
               initial={{ opacity: 0, y: 20 }}
@@ -66,7 +65,7 @@ export default function Skills() {
               </h3>
 
               <div className="flex flex-wrap gap-3">
-                {category.skills.map((skill) => (
+                {category.skills.map((skill: string) => (
                   <span 
                     key={skill}
                     className="px-4 py-2 bg-primary/5 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium border border-primary/10 hover:border-primary hover:text-primary transition-colors cursor-default"

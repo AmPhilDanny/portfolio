@@ -9,6 +9,11 @@ import Contact from "@/components/Contact";
 import { getHero } from "@/app/actions/hero";
 import { getAbout } from "@/app/actions/about";
 import { getProjects } from "@/app/actions/projects";
+import { getSkillCategories } from "@/app/actions/skills";
+import { getServices } from "@/app/actions/services";
+import { getExperiences } from "@/app/actions/experience";
+import { getCertifications } from "@/app/actions/certifications";
+import { getContact } from "@/app/actions/contact";
 
 /**
  * NovaxFolio Main Entry Point (Home Page)
@@ -22,6 +27,11 @@ export default async function Home() {
   const heroData = await getHero();
   const aboutData = await getAbout();
   const projectsData = await getProjects();
+  const skillsData = await getSkillCategories();
+  const servicesData = await getServices();
+  const experiencesData = await getExperiences();
+  const certificationsData = await getCertifications();
+  const contactData = await getContact();
 
 
   return (
@@ -29,12 +39,12 @@ export default async function Home() {
       <main className="flex-grow">
         <Hero data={heroData} />
         <About data={aboutData} />
-        <Skills />
-        <Services />
-        <Experience />
+        <Skills data={skillsData} />
+        <Services data={servicesData} />
+        <Experience data={experiencesData} />
         <Projects data={projectsData} />
-        <Certifications />
-        <Contact />
+        <Certifications data={certificationsData} />
+        <Contact data={contactData} />
       </main>
     </div>
   );

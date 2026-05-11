@@ -3,10 +3,12 @@
 import { useState } from "react";
 import { updateAbout } from "@/app/actions/about";
 import { Save } from "lucide-react";
+import RichTextEditor from "@/components/RichTextEditor";
 
 export default function AboutForm({ initialData }: { initialData: any }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [description, setDescription] = useState(initialData?.description || "I am a passionate and detail-oriented Certified Data Analyst and Junior Full-Stack Developer. With a strong foundation in both interpreting complex datasets and building robust web applications, I bring a unique perspective to technology solutions.\n\nMy journey in tech has equipped me with the ability to not just write clean, efficient code, but to understand the \"why\" behind the data. I thrive in environments where I can leverage my analytical skills to drive business decisions while simultaneously executing technical implementations.\n\nWhen I'm not coding or analyzing data, you can find me continuously learning new technologies and keeping up with the latest industry trends.");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -31,16 +33,14 @@ export default function AboutForm({ initialData }: { initialData: any }) {
           {message}
         </div>
       )}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description</label>
-        <textarea 
-          name="description"
-          rows={10}
-          defaultValue={initialData?.description || "I am a passionate and detail-oriented Certified Data Analyst and Junior Full-Stack Developer. With a strong foundation in both interpreting complex datasets and building robust web applications, I bring a unique perspective to technology solutions.\n\nMy journey in tech has equipped me with the ability to not just write clean, efficient code, but to understand the \"why\" behind the data. I thrive in environments where I can leverage my analytical skills to drive business decisions while simultaneously executing technical implementations.\n\nWhen I'm not coding or analyzing data, you can find me continuously learning new technologies and keeping up with the latest industry trends."}
-          className="w-full px-4 py-3 bg-white dark:bg-zinc-800 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white resize-none"
-          required
-        />
-      </div>
+      
+      <RichTextEditor 
+        label="Description"
+        content={description}
+        onChange={setDescription}
+      />
+      <input type="hidden" name="description" value={description} />
+
       <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
         <button 
           type="submit"

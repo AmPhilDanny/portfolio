@@ -3,32 +3,6 @@
 import { motion } from "framer-motion";
 import { Briefcase, Calendar } from "lucide-react";
 
-const experiences = [
-  {
-    role: "Data Analyst & Junior Full-Stack Developer",
-    company: "Freelance / Independent",
-    period: "2022 - Present",
-    description: "Developed end-to-end web applications and performed complex data analysis to drive business decisions.",
-    achievements: [
-      "Built responsive, dynamic web interfaces using React and Next.js.",
-      "Designed and optimized relational databases with SQL and PostgreSQL.",
-      "Extracted key business insights using Python and Power BI, creating interactive dashboards.",
-      "Implemented RESTful APIs and backend services using Node.js."
-    ]
-  },
-  {
-    role: "Data Analyst Intern",
-    company: "Tech Solutions Inc.",
-    period: "2021 - 2022",
-    description: "Assisted the data team in cleaning, processing, and analyzing large datasets to identify market trends.",
-    achievements: [
-      "Automated data cleaning processes using Python and pandas, saving 10 hours weekly.",
-      "Created visualizations in Tableau that helped increase sales conversions by 15%.",
-      "Collaborated with cross-functional teams to define KPIs and deliver weekly reports."
-    ]
-  }
-];
-
 /**
  * Experience Section: Displays professional career history in a timeline format.
  * Features:
@@ -36,7 +10,32 @@ const experiences = [
  * - Detailed achievement lists for each role.
  * - Chronological layout with dynamic data support.
  */
-export default function Experience() {
+export default function Experience({ data }: { data?: any[] }) {
+  const displayData = data && data.length > 0 ? data : [
+    {
+      role: "Data Analyst & Junior Full-Stack Developer",
+      company: "Freelance / Independent",
+      period: "2022 - Present",
+      description: "Developed end-to-end web applications and performed complex data analysis to drive business decisions.",
+      achievements: [
+        "Built responsive, dynamic web interfaces using React and Next.js.",
+        "Designed and optimized relational databases with SQL and PostgreSQL.",
+        "Extracted key business insights using Python and Power BI, creating interactive dashboards.",
+        "Implemented RESTful APIs and backend services using Node.js."
+      ]
+    },
+    {
+      role: "Data Analyst Intern",
+      company: "Tech Solutions Inc.",
+      period: "2021 - 2022",
+      description: "Assisted the data team in cleaning, processing, and analyzing large datasets to identify market trends.",
+      achievements: [
+        "Automated data cleaning processes using Python and pandas, saving 10 hours weekly.",
+        "Created visualizations in Tableau that helped increase sales conversions by 15%.",
+        "Collaborated with cross-functional teams to define KPIs and deliver weekly reports."
+      ]
+    }
+  ];
 
   return (
     <section id="experience" className="py-24 bg-zinc-50 dark:bg-zinc-900/50">
@@ -62,7 +61,7 @@ export default function Experience() {
         </div>
 
         <div className="space-y-12">
-          {experiences.map((exp, index) => (
+          {displayData.map((exp, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -99,11 +98,12 @@ export default function Experience() {
                   <h4 className="border-b border-gray-100 dark:border-gray-800 pb-4 text-lg font-medium text-gray-600 dark:text-gray-400 mb-4">
                     {exp.company}
                   </h4>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6">
-                    {exp.description}
-                  </p>
+                  <div 
+                    className="text-gray-600 dark:text-gray-400 mb-6 prose prose-sm dark:prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{ __html: exp.description }}
+                  />
                   <ul className="space-y-3">
-                    {exp.achievements.map((achievement, i) => (
+                    {(exp.achievements as string[]).map((achievement, i) => (
                       <li key={i} className="flex items-start gap-3">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 flex-shrink-0" />
                         <span className="text-sm text-gray-600 dark:text-gray-400">{achievement}</span>

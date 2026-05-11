@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { createService } from "@/app/actions/services";
 import { Plus } from "lucide-react";
+import RichTextEditor from "@/components/RichTextEditor";
 
 const ICON_OPTIONS = [
   "Code", "Database", "BarChart2", "Globe", "Server", "Cpu",
@@ -12,6 +13,7 @@ export default function ServicesForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [selectedIcon, setSelectedIcon] = useState("Code");
+  const [description, setDescription] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -19,7 +21,12 @@ export default function ServicesForm() {
     setMessage("");
     const form = e.currentTarget;
     const result = await createService(new FormData(form));
-    if (result.success) { setMessage("Service added."); form.reset(); setSelectedIcon("Code"); }
+    if (result.success) { 
+      setMessage("Service added."); 
+      form.reset(); 
+      setSelectedIcon("Code"); 
+      setDescription("");
+    }
     else setMessage("Failed to add service.");
     setLoading(false);
   };
@@ -39,10 +46,14 @@ export default function ServicesForm() {
         <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Service Title</label>
         <input type="text" name="title" placeholder="e.g. Data Analysis & Visualization" className={inputCls} style={inputStyle} required />
       </div>
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Description</label>
-        <textarea name="description" rows={3} placeholder="Describe what this service entails..." className={inputCls} style={inputStyle} required />
-      </div>
+      
+      <RichTextEditor 
+        label="Description"
+        content={description}
+        onChange={setDescription}
+      />
+      <input type="hidden" name="description" value={description} />
+
       <div>
         <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Icon</label>
         <div className="flex flex-wrap gap-2">

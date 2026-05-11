@@ -7,7 +7,16 @@ import { Mail, Phone, MapPin, Send } from "lucide-react";
  * Contact Section: Displays contact information and a lead-generation form.
  * Includes email and social links alongside a professional contact form for inquiries.
  */
-export default function Contact() {
+/**
+ * Contact Section: Displays contact information and a lead-generation form.
+ * Includes email and social links alongside a professional contact form for inquiries.
+ */
+export default function Contact({ data }: { data?: any }) {
+  const contactInfo = data || {
+    email: "amaechiphilipekaba@gmail.com",
+    phone: null,
+    location: null
+  };
 
   return (
 
@@ -51,11 +60,39 @@ export default function Contact() {
                   </div>
                   <div>
                     <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Email</p>
-                    <a href="mailto:amaechiphilipekaba@gmail.com" className="text-lg font-medium text-gray-900 dark:text-white hover:text-primary transition-colors break-all">
-                      amaechiphilipekaba@gmail.com
+                    <a href={`mailto:${contactInfo.email}`} className="text-lg font-medium text-gray-900 dark:text-white hover:text-primary transition-colors break-all">
+                      {contactInfo.email}
                     </a>
                   </div>
                 </div>
+
+                {contactInfo.phone && (
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-primary/10 text-primary rounded-lg flex-shrink-0">
+                      <Phone className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Phone</p>
+                      <a href={`tel:${contactInfo.phone}`} className="text-lg font-medium text-gray-900 dark:text-white hover:text-primary transition-colors break-all">
+                        {contactInfo.phone}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {contactInfo.location && (
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 bg-primary/10 text-primary rounded-lg flex-shrink-0">
+                      <MapPin className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Location</p>
+                      <p className="text-lg font-medium text-gray-900 dark:text-white">
+                        {contactInfo.location}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

@@ -3,38 +3,44 @@
 import { motion } from "framer-motion";
 import { LineChart, Layout, Server, Database } from "lucide-react";
 
-const services = [
-  {
-    title: "Data Analysis & Visualization",
-    description: "Transforming raw data into meaningful insights using advanced analytical tools and creating interactive dashboards that drive business decisions.",
-    icon: LineChart,
-    color: "bg-primary/10 text-primary border-primary/20",
-  },
-  {
-    title: "Frontend Web Development",
-    description: "Building responsive, fast, and accessible web applications using modern JavaScript frameworks like React and Next.js.",
-    icon: Layout,
-    color: "bg-secondary/10 text-secondary border-secondary/20",
-  },
-  {
-    title: "Backend Development",
-    description: "Creating robust and scalable server-side applications, RESTful APIs, and microservices using Node.js and Express.",
-    icon: Server,
-    color: "bg-accent/10 text-accent border-accent/20",
-  },
-  {
-    title: "Database Design & Management",
-    description: "Designing efficient database schemas, writing optimized queries, and managing both relational (SQL) and non-relational (NoSQL) databases.",
-    icon: Database,
-    color: "bg-primary/10 text-primary border-primary/20",
-  },
-];
+const iconMap: Record<string, any> = {
+  LineChart,
+  Layout,
+  Server,
+  Database,
+};
 
 /**
  * Services Section: Showcases professional offerings and expertise.
  * Features a grid of service cards with hover-reveal details and technology icons.
  */
-export default function Services() {
+export default function Services({ data }: { data?: any[] }) {
+  const displayData = data && data.length > 0 ? data : [
+    {
+      title: "Data Analysis & Visualization",
+      description: "Transforming raw data into meaningful insights using advanced analytical tools and creating interactive dashboards that drive business decisions.",
+      icon: "LineChart",
+      color: "bg-primary/10 text-primary border-primary/20",
+    },
+    {
+      title: "Frontend Web Development",
+      description: "Building responsive, fast, and accessible web applications using modern JavaScript frameworks like React and Next.js.",
+      icon: "Layout",
+      color: "bg-secondary/10 text-secondary border-secondary/20",
+    },
+    {
+      title: "Backend Development",
+      description: "Creating robust and scalable server-side applications, RESTful APIs, and microservices using Node.js and Express.",
+      icon: "Server",
+      color: "bg-accent/10 text-accent border-accent/20",
+    },
+    {
+      title: "Database Design & Management",
+      description: "Designing efficient database schemas, writing optimized queries, and managing both relational (SQL) and non-relational (NoSQL) databases.",
+      icon: "Database",
+      color: "bg-primary/10 text-primary border-primary/20",
+    },
+  ];
 
   return (
     <section id="services" className="py-24 bg-white dark:bg-black relative">
@@ -60,26 +66,30 @@ export default function Services() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">
-          {services.map((service, idx) => (
-            <motion.div
-              key={service.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1 }}
-              className="p-8 rounded-2xl tech-card hover:shadow-lg transition-shadow group"
-            >
-              <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 border ${service.color} transition-transform group-hover:scale-110`}>
-                <service.icon className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                {service.title}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                {service.description}
-              </p>
-            </motion.div>
-          ))}
+          {displayData.map((service, idx) => {
+            const Icon = iconMap[service.icon] || LineChart;
+            return (
+              <motion.div
+                key={service.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: idx * 0.1 }}
+                className="p-8 rounded-2xl tech-card hover:shadow-lg transition-shadow group"
+              >
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 border ${service.color || 'bg-primary/10 text-primary border-primary/20'} transition-transform group-hover:scale-110`}>
+                  <Icon className="w-7 h-7" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
+                  {service.title}
+                </h3>
+                <div 
+                  className="text-gray-600 dark:text-gray-400 leading-relaxed prose prose-sm dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: service.description }}
+                />
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>

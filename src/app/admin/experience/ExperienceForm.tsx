@@ -2,10 +2,12 @@
 import { useState } from "react";
 import { createExperience } from "@/app/actions/experience";
 import { Plus } from "lucide-react";
+import RichTextEditor from "@/components/RichTextEditor";
 
 export default function ExperienceForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [description, setDescription] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -16,6 +18,7 @@ export default function ExperienceForm() {
     if (result.success) {
       setMessage("Experience added successfully.");
       form.reset();
+      setDescription("");
     } else {
       setMessage("Failed to add experience.");
     }
@@ -47,10 +50,14 @@ export default function ExperienceForm() {
         <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Period</label>
         <input type="text" name="period" placeholder="e.g. Jan 2022 - Present" className={inputCls} style={inputStyle} required />
       </div>
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Description</label>
-        <textarea name="description" rows={3} placeholder="Brief summary of your role..." className={inputCls} style={inputStyle} required />
-      </div>
+      
+      <RichTextEditor 
+        label="Description"
+        content={description}
+        onChange={setDescription}
+      />
+      <input type="hidden" name="description" value={description} />
+
       <div>
         <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Achievements (one per line)</label>
         <textarea name="achievements" rows={4} placeholder="Increased data processing efficiency by 30%&#10;Led a team of 5 analysts..." className={inputCls} style={inputStyle} required />

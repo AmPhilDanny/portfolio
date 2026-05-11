@@ -3,35 +3,34 @@
 import { motion } from "framer-motion";
 import { Award, ExternalLink } from "lucide-react";
 
-const certifications = [
-  {
-    name: "Certified Data Analyst",
-    issuer: "Google Professional Certificate",
-    date: "2023",
-    description: "Rigorous training on data cleaning, analysis, visualization, and tools like R, SQL, and Tableau.",
-    link: "#"
-  },
-  {
-    name: "Full-Stack Web Development Certificate",
-    issuer: "freeCodeCamp",
-    date: "2022",
-    description: "Comprehensive coursework covering HTML, CSS, JavaScript, React, Node.js, and databases.",
-    link: "#"
-  },
-  {
-    name: "Microsoft Certified: Power BI Data Analyst Associate",
-    issuer: "Microsoft",
-    date: "2023",
-    description: "Validated expertise in data modeling, visualization, and extracting insights using Power BI.",
-    link: "#"
-  }
-];
-
 /**
  * Certifications Section: Displays official credentials with issuer and date.
  * Features a grid of certification cards with external links for validation.
  */
-export default function Certifications() {
+export default function Certifications({ data }: { data?: any[] }) {
+  const displayData = data && data.length > 0 ? data : [
+    {
+      name: "Certified Data Analyst",
+      issuer: "Google Professional Certificate",
+      date: "2023",
+      description: "Rigorous training on data cleaning, analysis, visualization, and tools like R, SQL, and Tableau.",
+      link: "#"
+    },
+    {
+      name: "Full-Stack Web Development Certificate",
+      issuer: "freeCodeCamp",
+      date: "2022",
+      description: "Comprehensive coursework covering HTML, CSS, JavaScript, React, Node.js, and databases.",
+      link: "#"
+    },
+    {
+      name: "Microsoft Certified: Power BI Data Analyst Associate",
+      issuer: "Microsoft",
+      date: "2023",
+      description: "Validated expertise in data modeling, visualization, and extracting insights using Power BI.",
+      link: "#"
+    }
+  ];
 
   return (
     <section id="certifications" className="py-24 bg-zinc-50 dark:bg-zinc-900/50">
@@ -57,7 +56,7 @@ export default function Certifications() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6">
-          {certifications.map((cert, index) => (
+          {displayData.map((cert, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 20 }}
@@ -75,9 +74,10 @@ export default function Certifications() {
               <p className="text-sm font-semibold text-primary mb-4">
                 {cert.issuer} • {cert.date}
               </p>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mb-6 flex-grow">
-                {cert.description}
-              </p>
+              <div 
+                className="text-gray-600 dark:text-gray-400 text-sm mb-6 flex-grow prose prose-sm dark:prose-invert"
+                dangerouslySetInnerHTML={{ __html: cert.description }}
+              />
               <a 
                 href={cert.link} 
                 className="inline-flex items-center text-sm font-medium text-primary hover:opacity-80 mt-auto"
