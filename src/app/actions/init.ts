@@ -9,10 +9,13 @@ import {
 import { revalidatePath } from "next/cache";
 
 export async function initializeDatabase() {
+  console.log("Starting database initialization...");
   try {
     // 1. Settings
+    console.log("Checking Settings...");
     const existingSettings = await db.select().from(settings).limit(1);
     if (existingSettings.length === 0) {
+      console.log("Seeding Settings...");
       await db.insert(settings).values({
         siteName: "NovaxFolio",
         email: "philipdaniel.philip@gmail.com",
@@ -26,8 +29,10 @@ export async function initializeDatabase() {
     }
 
     // 2. Hero
+    console.log("Checking Hero...");
     const existingHero = await db.select().from(heroes).limit(1);
     if (existingHero.length === 0) {
+      console.log("Seeding Hero...");
       await db.insert(heroes).values({
         name: "Amaechi Philip Ekaba",
         title: "Certified Data Analyst & Junior Full-Stack Developer",
@@ -39,8 +44,10 @@ export async function initializeDatabase() {
     }
 
     // 3. About
+    console.log("Checking About...");
     const existingAbout = await db.select().from(abouts).limit(1);
     if (existingAbout.length === 0) {
+      console.log("Seeding About...");
       await db.insert(abouts).values({
         description: "I am a passionate **Data Analyst** and **Full-Stack Developer** dedicated to bridging the gap between data-driven insights and impactful digital solutions. With a background in analyzing complex datasets and a drive for creating seamless user experiences, I bring a unique perspective to every project.",
         stats: [
@@ -58,8 +65,10 @@ export async function initializeDatabase() {
     }
 
     // 4. Skills
+    console.log("Checking Skills...");
     const existingSkills = await db.select().from(skillCategories);
     if (existingSkills.length === 0) {
+      console.log("Seeding Skills...");
       await db.insert(skillCategories).values([
         { category: "Data Analysis", skills: ["SQL", "Python", "Power BI", "Excel", "Tableau", "Pandas", "NumPy", "Data Visualization"] },
         { category: "Frontend Dev", skills: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Framer Motion", "Shadcn/UI"] },
@@ -69,8 +78,10 @@ export async function initializeDatabase() {
     }
 
     // 5. Services
+    console.log("Checking Services...");
     const existingServices = await db.select().from(services);
     if (existingServices.length === 0) {
+      console.log("Seeding Services...");
       await db.insert(services).values([
         { title: "Data Analysis & Visualization", description: "Transforming raw data into meaningful insights using tools like Power BI, Tableau, and Python. Providing clear, actionable reports for business growth.", icon: "BarChart3" },
         { title: "Full-Stack Web Development", description: "Building modern, responsive, and high-performance web applications using the latest technologies like Next.js, React, and Node.js.", icon: "Code2" },
@@ -80,8 +91,10 @@ export async function initializeDatabase() {
     }
 
     // 6. Experience
+    console.log("Checking Experience...");
     const existingExperience = await db.select().from(experiences);
     if (existingExperience.length === 0) {
+      console.log("Seeding Experience...");
       await db.insert(experiences).values([
         { role: "Junior Data Analyst", company: "Data Insight Corp", period: "2023 - Present", description: "Analyzing large datasets to identify market trends and presenting findings to stakeholders.", achievements: ["Increased reporting efficiency by 30%", "Developed automated cleanup scripts"] },
         { role: "Frontend Developer Intern", company: "TechNova Solutions", period: "2022 - 2023", description: "Assisted in building responsive UI components and improving website performance.", achievements: ["Optimized page load times by 20%", "Implemented 10+ reusable components"] }
@@ -89,8 +102,10 @@ export async function initializeDatabase() {
     }
 
     // 7. Projects
+    console.log("Checking Projects...");
     const existingProjects = await db.select().from(projects);
     if (existingProjects.length === 0) {
+      console.log("Seeding Projects...");
       await db.insert(projects).values([
         { title: "E-Commerce Analytics Dashboard", description: "A comprehensive dashboard for visualizing sales data and customer demographics.", image: "📊", tags: ["Power BI", "SQL", "Python"], githubUrl: "#", liveUrl: "#" },
         { title: "Campus Queue Manager", description: "A full-stack application addressing long queue times on campus.", image: "🎓", tags: ["Next.js", "TypeScript", "Tailwind CSS"], githubUrl: "#", liveUrl: "#" },
@@ -99,8 +114,10 @@ export async function initializeDatabase() {
     }
 
     // 8. Certifications
+    console.log("Checking Certifications...");
     const existingCerts = await db.select().from(certifications);
     if (existingCerts.length === 0) {
+      console.log("Seeding Certifications...");
       await db.insert(certifications).values([
         { name: "Google Data Analytics Professional Certificate", issuer: "Coursera / Google", date: "2023", description: "Comprehensive data analytics training.", link: "#" },
         { name: "Full-Stack Web Development Bootcamp", issuer: "Udemy", date: "2022", description: "Modern web development from scratch.", link: "#" }
@@ -108,8 +125,10 @@ export async function initializeDatabase() {
     }
 
     // 9. Contact
+    console.log("Checking Contact...");
     const existingContact = await db.select().from(contacts).limit(1);
     if (existingContact.length === 0) {
+      console.log("Seeding Contact...");
       await db.insert(contacts).values({
         email: "amaechiphilipekaba@gmail.com",
         phone: "+234 XXX XXX XXXX",
@@ -118,8 +137,10 @@ export async function initializeDatabase() {
     }
 
     // 10. Section Configs
+    console.log("Checking Section Configs...");
     const existingConfigs = await db.select().from(sectionConfigs);
     if (existingConfigs.length === 0) {
+      console.log("Seeding Section Configs...");
       await db.insert(sectionConfigs).values([
         { sectionId: "skills", title: "Technical Skills", description: "A specialized toolkit for data analysis and web development." },
         { sectionId: "services", title: "My Expertise", description: "Bridging the gap between data and digital solutions." },
@@ -131,8 +152,10 @@ export async function initializeDatabase() {
     }
 
     // 11. Social Links
+    console.log("Checking Social Links...");
     const existingSocials = await db.select().from(socialLinks);
     if (existingSocials.length === 0) {
+      console.log("Seeding Social Links...");
       await db.insert(socialLinks).values([
         { platform: "GitHub", url: "https://github.com/AmPhilDanny", icon: "Github" },
         { platform: "LinkedIn", url: "https://linkedin.com/in/amaechiphilipekaba", icon: "Linkedin" },
@@ -141,10 +164,12 @@ export async function initializeDatabase() {
       ]);
     }
 
+    console.log("Revalidating path...");
     revalidatePath("/");
+    console.log("Initialization complete!");
     return { success: true };
-  } catch (error) {
-    console.error("Initialization failed:", error);
-    return { success: false };
+  } catch (error: any) {
+    console.error("Initialization failed at stage:", error.message);
+    return { success: false, error: error.message };
   }
 }
