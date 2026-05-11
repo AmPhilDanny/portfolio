@@ -13,12 +13,24 @@ import { sql } from "drizzle-orm";
 export async function initializeDatabase() {
   console.log("Starting database initialization...");
   try {
-    // 0. Pre-check: Ensure schema is up to date (for missing columns added recently)
+    // 0. Pre-check: Ensure schema is up to date (Self-healing migration)
     console.log("Syncing schema...");
     try {
+      // Ensure columns exist
       await db.execute(sql`ALTER TABLE heroes ADD COLUMN IF NOT EXISTS badge_text text`);
-    } catch (e) {
-      console.warn("Schema sync warning (might already exist):", e);
+      
+      // Ensure tables exist (Basic definitions to avoid select failures)
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS abouts (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), description text NOT NULL, stats jsonb, features jsonb)`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS skill_categories (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), category text NOT NULL, skills jsonb NOT NULL)`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS experiences (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), role text NOT NULL, company text NOT NULL, period text NOT NULL, description text NOT NULL, achievements jsonb NOT NULL)`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS certifications (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), name text NOT NULL, issuer text NOT NULL, date text NOT NULL, description text NOT NULL, link text, image_url text)`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS contacts (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), email text NOT NULL, phone text, location text)`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS section_configs (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), section_id text NOT NULL UNIQUE, title text NOT NULL, description text)`);
+      await db.execute(sql`CREATE TABLE IF NOT EXISTS social_links (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), platform text NOT NULL, url text NOT NULL, icon text)`);
+      
+      console.log("Schema synced successfully.");
+    } catch (e: any) {
+      console.warn("Schema sync warning:", e.message);
     }
 
     // 1. Settings
