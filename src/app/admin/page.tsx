@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import InitDatabaseButton from "@/components/InitDatabaseButton";
 
 /**
  * Admin Dashboard Page: The entry point for the NovaxFolio CMS.
@@ -49,6 +50,10 @@ export default async function AdminDashboard() {
                <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full">NextAuth Secure</span>
              </li>
           </ul>
+          
+          <div className="mt-8">
+            <InitDatabaseButton />
+          </div>
         </div>
       </div>
     </div>
