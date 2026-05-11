@@ -1,14 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { LineChart, Layout, Server, Database } from "lucide-react";
-
-const iconMap: Record<string, any> = {
-  LineChart,
-  Layout,
-  Server,
-  Database,
-};
+import DynamicIcon from "@/components/DynamicIcon";
 
 /**
  * Services Section: Showcases professional offerings and expertise.
@@ -67,7 +60,6 @@ export default function Services({ data, config }: { data?: any[], config?: any 
 
         <div className="grid md:grid-cols-2 gap-8">
           {displayData.map((service, idx) => {
-            const Icon = iconMap[service.icon] || LineChart;
             return (
               <motion.div
                 key={service.title}
@@ -78,7 +70,7 @@ export default function Services({ data, config }: { data?: any[], config?: any 
                 className="p-8 rounded-2xl tech-card hover:shadow-lg transition-shadow group"
               >
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 border ${service.color || 'bg-primary/10 text-primary border-primary/20'} transition-transform group-hover:scale-110`}>
-                  <Icon className="w-7 h-7" />
+                  <DynamicIcon name={(service.icon?.toLowerCase() || "chart-line") as any} className="w-7 h-7" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
                   {service.title}

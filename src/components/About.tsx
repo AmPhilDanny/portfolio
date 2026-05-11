@@ -1,16 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Code, Database, LineChart, Server, Cpu, Globe } from "lucide-react";
-
-const iconMap: Record<string, any> = {
-  LineChart,
-  Code,
-  Server,
-  Database,
-  Cpu,
-  Globe,
-};
+import DynamicIcon from "@/components/DynamicIcon";
 
 /**
  * About Section: Provides a detailed personal description and key metrics (stats).
@@ -81,7 +72,6 @@ export default function About({ data, config }: { data?: any, config?: any }) {
             className="grid sm:grid-cols-2 gap-6"
           >
             {displayFeatures.map((feature: any, index: number) => {
-              const Icon = iconMap[feature.icon] || LineChart;
               return (
                 <div 
                   key={feature.name} 
@@ -91,7 +81,7 @@ export default function About({ data, config }: { data?: any, config?: any }) {
                   }}
                 >
                   <div className="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4">
-                    <Icon className="w-6 h-6" />
+                    <DynamicIcon name={(feature.icon?.toLowerCase() || "chart-line") as any} className="w-6 h-6" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{feature.name}</h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">

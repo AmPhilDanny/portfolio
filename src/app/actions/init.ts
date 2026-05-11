@@ -78,10 +78,10 @@ export async function initializeDatabase() {
           { label: "Certificates", value: "10+" }
         ],
         features: [
-          { title: "Data Visualization", description: "Creating compelling visual stories from raw data.", icon: "BarChart3" },
-          { title: "Full-Stack Dev", description: "Building robust web apps from scratch.", icon: "Code2" },
-          { title: "Machine Learning", description: "Predictive modeling and statistical analysis.", icon: "Cpu" },
-          { title: "Global Delivery", description: "Working with clients across the globe.", icon: "Globe" }
+          { title: "Data Visualization", description: "Creating compelling visual stories from raw data.", icon: "bar-chart-3" },
+          { title: "Full-Stack Dev", description: "Building robust web apps from scratch.", icon: "code-2" },
+          { title: "Machine Learning", description: "Predictive modeling and statistical analysis.", icon: "cpu" },
+          { title: "Global Delivery", description: "Working with clients across the globe.", icon: "globe" }
         ]
       });
     }
@@ -105,10 +105,10 @@ export async function initializeDatabase() {
     if (existingServices.length === 0) {
       console.log("Seeding Services...");
       await db.insert(services).values([
-        { title: "Data Analysis & Visualization", description: "Transforming raw data into meaningful insights using tools like Power BI, Tableau, and Python. Providing clear, actionable reports for business growth.", icon: "BarChart3" },
-        { title: "Full-Stack Web Development", description: "Building modern, responsive, and high-performance web applications using the latest technologies like Next.js, React, and Node.js.", icon: "Code2" },
-        { title: "Database Management", description: "Designing and optimizing database schemas (SQL & NoSQL) to ensure data integrity and fast performance for your applications.", icon: "Database" },
-        { title: "Machine Learning Solutions", description: "Implementing predictive models and automated data processing pipelines to help businesses stay ahead of the competition.", icon: "BrainCircuit" }
+        { title: "Data Analysis & Visualization", description: "Transforming raw data into meaningful insights using tools like Power BI, Tableau, and Python. Providing clear, actionable reports for business growth.", icon: "bar-chart-3" },
+        { title: "Full-Stack Web Development", description: "Building modern, responsive, and high-performance web applications using the latest technologies like Next.js, React, and Node.js.", icon: "code-2" },
+        { title: "Database Management", description: "Designing and optimizing database schemas (SQL & NoSQL) to ensure data integrity and fast performance for your applications.", icon: "database" },
+        { title: "Machine Learning Solutions", description: "Implementing predictive models and automated data processing pipelines to help businesses stay ahead of the competition.", icon: "brain-circuit" }
       ]);
     }
 
