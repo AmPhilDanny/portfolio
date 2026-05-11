@@ -2,18 +2,19 @@
 
 import { useState } from "react";
 import { createSocialLink, deleteSocialLink } from "@/app/actions/social";
-import { Trash2, Plus, Github, Linkedin, Twitter, Instagram, Facebook, Globe, Mail } from "lucide-react";
+import { Trash2, Plus, Globe, Mail } from "lucide-react";
+import { GithubIcon, LinkedinIcon, TwitterIcon, InstagramIcon, FacebookIcon, KaggleIcon } from "@/components/Icons";
 
 const PLATFORM_ICONS: Record<string, any> = {
-  Github: Github,
-  GitHub: Github,
-  LinkedIn: Linkedin,
-  Linkedin: Linkedin,
-  Twitter: Twitter,
-  X: Twitter,
-  Instagram: Instagram,
-  Facebook: Facebook,
-  Kaggle: Globe,
+  Github: GithubIcon,
+  GitHub: GithubIcon,
+  LinkedIn: LinkedinIcon,
+  Linkedin: LinkedinIcon,
+  Twitter: TwitterIcon,
+  X: TwitterIcon,
+  Instagram: InstagramIcon,
+  Facebook: FacebookIcon,
+  Kaggle: KaggleIcon,
 };
 
 export default function SocialLinksManager({ initialLinks }: { initialLinks: any[] }) {
