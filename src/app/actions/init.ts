@@ -8,9 +8,19 @@ import {
 } from "@/lib/schema";
 import { revalidatePath } from "next/cache";
 
+import { sql } from "drizzle-orm";
+
 export async function initializeDatabase() {
   console.log("Starting database initialization...");
   try {
+    // 0. Pre-check: Ensure schema is up to date (for missing columns added recently)
+    console.log("Syncing schema...");
+    try {
+      await db.execute(sql`ALTER TABLE heroes ADD COLUMN IF NOT EXISTS badge_text text`);
+    } catch (e) {
+      console.warn("Schema sync warning (might already exist):", e);
+    }
+
     // 1. Settings
     console.log("Checking Settings...");
     const existingSettings = await db.select().from(settings).limit(1);
