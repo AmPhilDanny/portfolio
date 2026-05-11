@@ -21,7 +21,14 @@ const LinkedinIcon = ({ className }: { className?: string }) => (
 export default function Hero({ 
   data 
 }: { 
-  data?: { name?: string, title?: string, description?: string, cvUrl?: string | null, imageUrl?: string | null } | null 
+  data?: { 
+    name?: string, 
+    title?: string, 
+    description?: string, 
+    cvUrl?: string | null, 
+    imageUrl?: string | null,
+    badgeText?: string | null 
+  } | null 
 }) {
   const name = data?.name || "Amaechi Philip Ekaba";
   const title = data?.title || "Certified Data Analyst & Junior Full-Stack Developer";
