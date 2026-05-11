@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import { 
-  Copy, Check, Share2, Twitter, Linkedin, Github, 
-  Instagram, MoreVertical, Trash2 
+  Copy, Check, Share2, MoreVertical, Trash2 
 } from "lucide-react";
+import { GithubIcon, TwitterIcon, LinkedinIcon, InstagramIcon } from "@/components/Icons";
 
 interface PostCardProps {
   id: string;
@@ -24,13 +24,14 @@ export function PostCard({ id, platform, content, status, date }: PostCardProps)
   };
 
   const getPlatformIcon = () => {
+    const iconClass = "w-4 h-4";
     switch (platform.toLowerCase()) {
       case 'x':
-      case 'twitter': return <Twitter className="w-4 h-4" />;
-      case 'linkedin': return <Linkedin className="w-4 h-4" />;
-      case 'github': return <Github className="w-4 h-4" />;
-      case 'instagram': return <Instagram className="w-4 h-4" />;
-      default: return <Share2 className="w-4 h-4" />;
+      case 'twitter': return <TwitterIcon className={iconClass} />;
+      case 'linkedin': return <LinkedinIcon className={iconClass} />;
+      case 'github': return <GithubIcon className={iconClass} />;
+      case 'instagram': return <InstagramIcon className={iconClass} />;
+      default: return <Share2 className={iconClass} />;
     }
   };
 
