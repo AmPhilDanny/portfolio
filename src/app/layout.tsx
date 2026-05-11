@@ -26,6 +26,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 
+import { getSocialLinks } from "@/app/actions/social";
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -33,6 +35,7 @@ export default async function RootLayout({
 }>) {
 
   const settingsData = await getSettings();
+  const socials = await getSocialLinks();
   const session = await getServerSession(authOptions);
 
   const themeStyles = `
@@ -85,7 +88,7 @@ export default async function RootLayout({
           <main className="flex-1 pt-16">
             {children}
           </main>
-          <Footer data={settingsData} />
+          <Footer data={settingsData} socials={socials} />
         </ThemeProvider>
       </body>
     </html>

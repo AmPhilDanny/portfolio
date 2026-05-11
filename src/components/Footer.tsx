@@ -26,21 +26,35 @@ const FacebookIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
 );
 
+const iconMap: Record<string, any> = {
+  Github: GithubIcon,
+  GitHub: GithubIcon,
+  LinkedIn: LinkedinIcon,
+  Linkedin: LinkedinIcon,
+  Twitter: TwitterIcon,
+  X: TwitterIcon,
+  Instagram: InstagramIcon,
+  Facebook: FacebookIcon,
+  Kaggle: (props: any) => (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M18.825 23.859c-.022.028-.118.141-.308.141h-3.156c-.189 0-.338-.097-.403-.187L7.333 14.41l-2.311 2.351v6.942c0 .19-.145.297-.312.297H1.355c-.167 0-.312-.107-.312-.297V.297C1.043.107 1.188 0 1.355 0h3.355c.167 0 .312.107.312.297v10.026L14.738.22c.083-.118.23-.22.428-.22h3.326c.216 0 .311.144.208.31l-7.531 11.232 7.657 12.317z"/>
+    </svg>
+  )
+};
+
 /**
- * Footer Component: Site-wide footer with social links and copyright.
- * Dynamically renders social handles and copyright text from global settings.
+ * Footer Component: Site-wide footer with dynamic social links.
  */
-export function Footer({ data }: { data?: any }) {
+export function Footer({ data, socials }: { data?: any, socials?: any[] }) {
   const currentYear = new Date().getFullYear();
   
-  // Dynamic Social Links from Settings
-  const socialLinks = [
-    { name: "GitHub", href: data?.githubUrl, icon: GithubIcon },
-    { name: "LinkedIn", href: data?.linkedinUrl, icon: LinkedinIcon },
-    { name: "Twitter", href: data?.twitterUrl, icon: TwitterIcon },
-    { name: "Instagram", href: data?.instagramUrl, icon: InstagramIcon },
-    { name: "Facebook", href: data?.facebookUrl, icon: FacebookIcon },
-  ].filter(link => link.href); // Only show links that have a URL set
+  const displaySocials = socials && socials.length > 0 ? socials : [
+    { platform: "GitHub", url: data?.githubUrl, icon: "Github" },
+    { platform: "LinkedIn", url: data?.linkedinUrl, icon: "LinkedIn" },
+    { platform: "Twitter", url: data?.twitterUrl, icon: "Twitter" },
+    { platform: "Instagram", url: data?.instagramUrl, icon: "Instagram" },
+    { platform: "Facebook", url: data?.facebookUrl, icon: "Facebook" },
+  ].filter(link => link.url); 
 
   const email = data?.email || "philipdaniel.philip@gmail.com";
   const copyright = data?.copyrightText || `NovaxFolio | Amaechi Philip Ekaba. All rights reserved.`;
@@ -49,18 +63,21 @@ export function Footer({ data }: { data?: any }) {
     <footer className="bg-muted/40 border-t border-border mt-auto">
       <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex justify-center space-x-6 md:order-2">
-          {socialLinks.map((link) => (
-            <a
-              key={link.name}
-              href={link.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-muted-foreground hover:text-primary transition-colors"
-            >
-              <span className="sr-only">{link.name}</span>
-              <link.icon className="h-5 w-5" aria-hidden="true" />
-            </a>
-          ))}
+          {displaySocials.map((link, idx) => {
+            const Icon = iconMap[link.icon || link.platform] || Mail;
+            return (
+              <a
+                key={idx}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-muted-foreground hover:text-primary transition-colors"
+              >
+                <span className="sr-only">{link.platform}</span>
+                <Icon className="h-5 w-5" aria-hidden="true" />
+              </a>
+            );
+          })}
           
           <a
             href={`mailto:${email}`}

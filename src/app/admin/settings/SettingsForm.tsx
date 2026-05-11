@@ -3,6 +3,7 @@ import { useState } from "react";
 import { updateSettings } from "@/app/actions/settings";
 import { Save, Palette, Type, Globe, Image as ImageIcon } from "lucide-react";
 import MediaPicker from "@/components/MediaPicker";
+import SocialLinksManager from "./SocialLinksManager";
 
 const FONT_OPTIONS = [
   { label: "Inter (Default)", value: "Inter" },
@@ -24,7 +25,7 @@ const COLOR_PRESETS = [
 
 type Section = "branding" | "colors" | "typography" | "links";
 
-export default function SettingsForm({ initialData }: { initialData: any }) {
+export default function SettingsForm({ initialData, socials }: { initialData: any, socials: any[] }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [activeSection, setActiveSection] = useState<Section>("branding");
@@ -162,35 +163,103 @@ export default function SettingsForm({ initialData }: { initialData: any }) {
       )}
 
       {/* ─── COLORS ─── */}
-      {/* ... (Colors section remains unchanged) */}
+      {activeSection === "colors" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+            {COLOR_PRESETS.map((p) => (
+              <button
+                key={p.name}
+                type="button"
+                onClick={() => applyPreset(p)}
+                className="p-3 rounded-xl border text-xs font-bold transition-all hover:scale-105"
+                style={{ background: p.bg, borderColor: p.primary, color: "white" }}
+              >
+                {p.name}
+                <div className="flex gap-1 mt-2 justify-center">
+                  <div className="w-3 h-3 rounded-full" style={{ background: p.primary }} />
+                  <div className="w-3 h-3 rounded-full" style={{ background: p.secondary }} />
+                  <div className="w-3 h-3 rounded-full" style={{ background: p.accent }} />
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 p-6 rounded-2xl border" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold">Primary Color</label>
+              <div className="flex gap-2">
+                <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
+                <input type="text" name="primaryColor" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className={inputCls} style={inputStyle} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold">Secondary Color</label>
+              <div className="flex gap-2">
+                <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
+                <input type="text" name="secondaryColor" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className={inputCls} style={inputStyle} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold">Accent Color</label>
+              <div className="flex gap-2">
+                <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
+                <input type="text" name="accentColor" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className={inputCls} style={inputStyle} />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold">Background (Dark)</label>
+              <div className="flex gap-2">
+                <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
+                <input type="text" name="backgroundColor" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className={inputCls} style={inputStyle} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── TYPOGRAPHY ─── */}
-      {/* ... (Typography section remains unchanged) */}
+      {activeSection === "typography" && (
+        <div className="p-6 rounded-2xl border space-y-6" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold">Font Family</label>
+            <select name="fontFamily" value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className={inputCls} style={inputStyle}>
+              {FONT_OPTIONS.map((f) => (
+                <option key={f.value} value={f.value}>{f.label}</option>
+              ))}
+            </select>
+          </div>
+          <div className="p-4 rounded-xl bg-muted/20 border border-border">
+            <p className="text-xs uppercase tracking-widest font-bold opacity-40 mb-2">Preview</p>
+            <p style={{ fontFamily }} className="text-xl">The quick brown fox jumps over the lazy dog.</p>
+          </div>
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold">Custom CSS</label>
+            <textarea name="customCss" defaultValue={initialData?.customCss || ""} rows={5} className={inputCls} style={{ ...inputStyle, fontFamily: "monospace" }} placeholder="/* Add your custom CSS here */" />
+          </div>
+        </div>
+      )}
 
       {/* ─── LINKS ─── */}
       {activeSection === "links" && (
-        <div className="grid md:grid-cols-2 gap-4">
-          {[
-            { label: "GitHub URL", name: "githubUrl", type: "url", default: initialData?.githubUrl || "https://github.com/AmPhilDanny" },
-            { label: "LinkedIn URL", name: "linkedinUrl", type: "url", default: initialData?.linkedinUrl || "https://linkedin.com/in/amaechiphilipekaba" },
-            { label: "Twitter URL", name: "twitterUrl", type: "url", default: initialData?.twitterUrl || "" },
-            { label: "Instagram URL", name: "instagramUrl", type: "url", default: initialData?.instagramUrl || "" },
-            { label: "Facebook URL", name: "facebookUrl", type: "url", default: initialData?.facebookUrl || "" },
-            { label: "Contact Email", name: "email", type: "email", default: initialData?.email || "amaechiphilipekaba@gmail.com" },
-          ].map((field) => (
-            <div key={field.name} className="space-y-1.5">
+        <div className="space-y-12">
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-1.5">
               <label className="block text-sm font-medium" style={{ color: "var(--muted-foreground)" }}>
-                {field.label}
+                Contact Email
               </label>
               <input
-                type={field.type}
-                name={field.name}
-                defaultValue={field.default}
+                type="email"
+                name="email"
+                defaultValue={initialData?.email || "amaechiphilipekaba@gmail.com"}
                 className={inputCls}
                 style={inputStyle}
               />
             </div>
-          ))}
+          </div>
+
+          <div className="border-t pt-8" style={{ borderColor: "var(--border)" }}>
+            <SocialLinksManager initialLinks={socials} />
+          </div>
         </div>
       )}
 

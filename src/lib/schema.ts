@@ -146,13 +146,23 @@ export const settings = pgTable('settings', {
 
 
 /**
- * Section Configs Table: Customizable titles and subtitles for each section
+ * Social Links Table: Dynamic list of social media profiles
  */
 export const sectionConfigs = pgTable('section_configs', {
   id: uuid('id').primaryKey().defaultRandom(),
   sectionId: text('section_id').notNull().unique(), // e.g. "skills", "services", "experience"
   title: text('title').notNull(),
   description: text('description'),
+});
+
+/**
+ * Social Links Table: Dynamic list of social media profiles
+ */
+export const socialLinks = pgTable('social_links', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  platform: text('platform').notNull(), // e.g. "GitHub", "Kaggle"
+  url: text('url').notNull(),
+  icon: text('icon'), // Lucide icon name or platform name
 });
 
 

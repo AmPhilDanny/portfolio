@@ -1,15 +1,19 @@
 import { getSettings } from "@/app/actions/settings";
+import { getSocialLinks } from "@/app/actions/social";
 import SettingsForm from "./SettingsForm";
 
 export default async function AdminSettingsPage() {
   const settingsData = await getSettings();
+  const socials = await getSocialLinks();
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold font-sans text-gray-900 dark:text-white mb-6">Site Settings</h1>
-      <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl border border-gray-200 dark:border-gray-800 shadow-sm">
-        <SettingsForm initialData={settingsData} />
+    <div className="max-w-4xl mx-auto pb-20">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Global Settings</h1>
+        <p className="text-muted-foreground mt-2">Manage your site branding, theme colors, and social connections.</p>
       </div>
+      
+      <SettingsForm initialData={settingsData} socials={socials} />
     </div>
   );
 }
