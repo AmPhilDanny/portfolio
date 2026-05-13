@@ -1,191 +1,352 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { 
-  Sparkles, TrendingUp, Calendar, Settings as SettingsIcon, 
-  Plus, BarChart3, MessageSquare, History, Globe, 
-  Upload, Loader2, CheckCircle2, AlertCircle, Key, X
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Sparkles, Plus, BarChart3, MessageSquare, Settings as SettingsIcon,
+  Upload, Loader2, CheckCircle2, AlertCircle, Globe, History, X, Trash2
 } from "lucide-react";
-import { PostCard } from "@/components/PostCard";
 import MediaPicker from "@/components/MediaPicker";
-import { 
-  generateSocialPost, analyzeScreenshot, 
-  updateAiConfig, getAiConfig,
+import {
+  generateSocialPost, analyzeScreenshot, updateAiConfig, getAiConfig,
   getSocialInsights, getContentDrafts
 } from "@/app/actions/ai-learning";
 import { getSettings, updateAiApiKeys } from "@/app/actions/settings";
 import { getAiPlatforms, addAiPlatform, deleteAiPlatform } from "@/app/actions/platforms";
 
-export default function SocialAiPage() {
-  const [activeTab, setActiveTab] = useState("overview");
-  const [platforms, setPlatforms] = useState<any[]>([]);
-  const [activePlatform, setActivePlatform] = useState<string>("");
+type AiModel = 'gemini-vision' | 'gemini-pro' | 'mistral-large' | 'gpt-4o';
+
+const VISION_MODELS = [
+  { value: 'gemini-vision', label: 'Gemini 1.5 Flash (Vision)' },
+  { value: 'gpt-4o', label: 'GPT-4o (OpenRouter)' },
+];
+
+const TEXT_MODELS = [
+  { value: 'mistral-large', label: 'Mistral Large' },
+  { value: 'gemini-pro', label: 'Gemini 1.5 Pro' },
+  { value: 'gpt-4o', label: 'GPT-4o (OpenRouter)' },
+];
+
+const BRAND_VOICES = [
+  "Sarcastic & Technical", "Formal & Professional",
+  "Enthusiastic & Friendly", "Minimalist"
+];
+
+function StatusBanner({ message, onDismiss }: { message: { type: 'success' | 'error'; text: string } | null; onDismiss: () => void }) {
+  if (!message) return null;
+  return (
+    <div className={`p-4 rounded-xl text-sm flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 ${
+      message.type === 'success'
+        ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-800'
+        : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-800'
+    }`}>
+      {message.type === 'success' ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
+      <span className="flex-1">{message.text}</span>
+      <button onClick={onDismiss} className="opacity-60 hover:opacity-100"><X className="w-4 h-4" /></button>
+    </div>
+  );
+}
+
+function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => void }) {
+  const [subTab, setSubTab] = useState<'metrics' | 'analysis' | 'forge' | 'config'>('metrics');
+  const [insights, setInsights] = useState<any[]>([]);
+  const [drafts, setDrafts] = useState<any[]>([]);
+  const [config, setConfig] = useState({ brandVoice: "Formal & Professional", preferredModel: "mistral-large", growthGoals: "" });
+  const [topic, setTopic] = useState("");
+  const [screenshotUrl, setScreenshotUrl] = useState("");
+  const [visionModel, setVisionModel] = useState<AiModel>('gemini-vision');
+  const [genModel, setGenModel] = useState<AiModel>('mistral-large');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [isAddingPlatform, setIsAddingPlatform] = useState(false);
-  const [newPlatformName, setNewPlatformName] = useState("");
-  const [topic, setTopic] = useState("");
-  const [screenshotUrl, setScreenshotUrl] = useState("");
-  const [screenshotModel, setScreenshotModel] = useState("gemini-vision");
-  const [insights, setInsights] = useState<any[]>([]);
-  const [drafts, setDrafts] = useState<any[]>([]);
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // API Keys state
-  const [keys, setKeys] = useState({
-    geminiApiKey: "",
-    mistralApiKey: "",
-    openrouterApiKey: ""
-  });
-
-  // Platform config state
-  const [config, setConfig] = useState({
-    brandVoice: "Formal & Professional",
-    preferredModel: "mistral",
-    growthGoals: ""
-  });
-
-  useEffect(() => {
-    // Load API keys and platforms
-    async function init() {
-      const [settings, platformList] = await Promise.all([
-        getSettings(),
-        getAiPlatforms()
-      ]);
-      
-      if (settings) {
-        setKeys({
-          geminiApiKey: settings.geminiApiKey || "",
-          mistralApiKey: settings.mistralApiKey || "",
-          openrouterApiKey: settings.openrouterApiKey || ""
-        });
-      }
-      
-      setPlatforms(platformList);
-      if (platformList.length > 0 && !activePlatform) {
-        setActivePlatform(platformList[0].platform);
-      }
+  const load = useCallback(async () => {
+    const [ins, drs, cfg] = await Promise.all([
+      getSocialInsights(platform.platform),
+      getContentDrafts(platform.platform),
+      getAiConfig(platform.platform),
+    ]);
+    setInsights(ins);
+    setDrafts(drs);
+    if (cfg) {
+      setConfig({ brandVoice: cfg.brandVoice || "Formal & Professional", preferredModel: cfg.preferredModel || "mistral-large", growthGoals: cfg.growthGoals || "" });
+      setGenModel((cfg.preferredModel as AiModel) || 'mistral-large');
     }
-    init();
-  }, []);
+  }, [platform.platform]);
 
-  useEffect(() => {
-    if (!activePlatform) return;
-    
-    // Load platform specific config
-    async function loadConfig() {
-      const res = await getAiConfig(activePlatform);
-      if (res) {
-        setConfig({
-          brandVoice: res.brandVoice || "Formal & Professional",
-          preferredModel: res.preferredModel || "mistral",
-          growthGoals: res.growthGoals || ""
-        });
-      } else {
-        setConfig({
-          brandVoice: "Formal & Professional",
-          preferredModel: "mistral",
-          growthGoals: ""
-        });
-      }
-    }
-    loadConfig();
-
-    // Load insights and drafts
-    async function loadData() {
-      const [insightsRes, draftsRes] = await Promise.all([
-        getSocialInsights(activePlatform),
-        getContentDrafts(activePlatform)
-      ]);
-      setInsights(insightsRes);
-      setDrafts(draftsRes);
-    }
-    loadData();
-  }, [activePlatform]);
-
-  const handleAddPlatform = async () => {
-    if (!newPlatformName) return;
-    setIsSaving(true);
-    const res = await addAiPlatform(newPlatformName);
-    if (res.success) {
-      const newList = await getAiPlatforms();
-      setPlatforms(newList);
-      setActivePlatform(newPlatformName);
-      setNewPlatformName("");
-      setIsAddingPlatform(false);
-      setMessage({ type: 'success', text: "Platform added!" });
-    } else {
-      setMessage({ type: 'error', text: res.error || "Failed to add platform" });
-    }
-    setIsSaving(false);
-  };
+  useEffect(() => { load(); }, [load]);
 
   const handleGenerate = async () => {
-    setIsGenerating(true);
-    setMessage(null);
-    try {
-      const res = await generateSocialPost(activePlatform, topic);
-      if (res.success) {
-        setMessage({ type: 'success', text: "Post generated and added to calendar!" });
-        setTopic("");
-        const newDrafts = await getContentDrafts(activePlatform);
-        setDrafts(newDrafts);
-      } else {
-        setMessage({ type: 'error', text: res.error || "Generation failed" });
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: "An unexpected error occurred" });
-    } finally {
-      setIsGenerating(false);
+    setIsGenerating(true); setMessage(null);
+    const res = await generateSocialPost(platform.platform, topic, genModel);
+    if (res.success) {
+      setMessage({ type: 'success', text: "Post generated!" });
+      setTopic("");
+      const newDrafts = await getContentDrafts(platform.platform);
+      setDrafts(newDrafts);
+    } else {
+      setMessage({ type: 'error', text: res.error || "Generation failed" });
     }
+    setIsGenerating(false);
   };
 
   const handleAnalyze = async (url: string) => {
     setScreenshotUrl(url);
     if (!url) return;
-    
-    setIsAnalyzing(true);
-    setMessage(null);
-    try {
-      const res = await analyzeScreenshot(activePlatform, url, screenshotModel);
-      if (res.success) {
-        setMessage({ type: 'success', text: `Analysis complete! Found ${res.data?.followerCount || res.data?.followers || 'some'} followers.` });
-        const newInsights = await getSocialInsights(activePlatform);
-        setInsights(newInsights);
-      } else {
-        setMessage({ type: 'error', text: res.error || "Analysis failed" });
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: "An unexpected error occurred during analysis" });
-    } finally {
-      setIsAnalyzing(false);
+    setIsAnalyzing(true); setMessage(null);
+    const res = await analyzeScreenshot(platform.platform, url, visionModel);
+    if (res.success) {
+      setMessage({ type: 'success', text: `Analysis complete! Found ${res.data?.followers || 'some'} followers.` });
+      const newIns = await getSocialInsights(platform.platform);
+      setInsights(newIns);
+    } else {
+      setMessage({ type: 'error', text: res.error || "Analysis failed" });
     }
+    setIsAnalyzing(false);
   };
 
   const handleSaveConfig = async () => {
-    setIsSaving(true);
-    setMessage(null);
-    try {
-      const configRes = await updateAiConfig({
-        platform: activePlatform,
-        targetAudience: "Technical Professionals",
-        ...config
-      });
-
-      const keysRes = await updateAiApiKeys(keys);
-
-      if (configRes.success && keysRes.success) {
-        setMessage({ type: 'success', text: "AI Configuration saved successfully!" });
-      } else {
-        setMessage({ type: 'error', text: "Failed to save some settings. Check server logs." });
-      }
-    } catch (err) {
-      setMessage({ type: 'error', text: "An error occurred while saving." });
-    } finally {
-      setIsSaving(false);
-    }
+    setIsSaving(true); setMessage(null);
+    const res = await updateAiConfig({ platform: platform.platform, targetAudience: "Technical Professionals", ...config });
+    setMessage(res.success ? { type: 'success', text: "Config saved!" } : { type: 'error', text: "Save failed." });
+    setIsSaving(false);
   };
+
+  const subTabs = [
+    { id: 'metrics', label: 'Metrics', icon: BarChart3 },
+    { id: 'analysis', label: 'Growth Learning', icon: Upload },
+    { id: 'forge', label: 'Content Forge', icon: MessageSquare },
+    { id: 'config', label: 'Settings', icon: SettingsIcon },
+  ] as const;
+
+  return (
+    <div className="space-y-6">
+      <StatusBanner message={message} onDismiss={() => setMessage(null)} />
+
+      {/* Sub-tabs */}
+      <div className="flex gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl">
+        {subTabs.map((t) => (
+          <button key={t.id} onClick={() => setSubTab(t.id)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all flex-1 justify-center ${
+              subTab === t.id ? 'bg-white dark:bg-zinc-900 text-primary shadow-sm' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+            }`}>
+            <t.icon className="w-3.5 h-3.5" />{t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* METRICS */}
+      {subTab === 'metrics' && (
+        <div className="space-y-4">
+          {insights.length === 0 ? (
+            <div className="p-12 text-center rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/30">
+              <BarChart3 className="w-10 h-10 text-zinc-300 mx-auto mb-3" />
+              <p className="text-sm text-zinc-500">No data yet. Upload a screenshot in Growth Learning to start tracking.</p>
+            </div>
+          ) : insights.map((ins) => (
+            <div key={ins.id} className="p-5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
+                  {ins.screenshotUrl ? <img src={ins.screenshotUrl} className="w-full h-full object-cover" alt="Profile" /> : <Globe className="w-6 h-6 text-primary" />}
+                </div>
+                <div>
+                  <p className="font-semibold text-zinc-900 dark:text-white">{ins.handle || "Profile"}</p>
+                  <p className="text-xs text-zinc-500">{new Date(ins.lastAnalyzed).toLocaleDateString()} • {ins.followerCount || '0'} followers</p>
+                  {ins.analysisSummary && <p className="text-xs text-zinc-400 mt-1 line-clamp-1">{ins.analysisSummary}</p>}
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-lg font-bold text-primary">{ins.engagementRate || '—'}</p>
+                <p className="text-xs text-zinc-400">Engagement</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* GROWTH LEARNING */}
+      {subTab === 'analysis' && (
+        <div className="space-y-5">
+          <div className="p-6 bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 rounded-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-zinc-900 dark:text-white">Profile Screenshot Analysis</h3>
+                <p className="text-xs text-zinc-500 mt-0.5">AI reads your profile screenshot and extracts growth metrics.</p>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Vision Model</label>
+                <select value={visionModel} onChange={(e) => setVisionModel(e.target.value as AiModel)}
+                  className="text-xs px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg outline-none">
+                  {VISION_MODELS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-primary/10">
+              <MediaPicker onSelect={handleAnalyze} currentUrl={screenshotUrl} label="Profile Screenshot" />
+              {isAnalyzing && (
+                <div className="mt-4 flex items-center gap-2 text-sm text-primary font-medium animate-pulse">
+                  <Loader2 className="w-4 h-4 animate-spin" /> AI is reading your metrics...
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
+            <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center gap-2">
+              <History className="w-4 h-4 text-zinc-400" />
+              <span className="text-sm font-semibold">Analysis History</span>
+            </div>
+            <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+              {insights.length === 0 ? (
+                <div className="p-8 text-center text-sm text-zinc-500">No analyses yet.</div>
+              ) : insights.map((ins) => (
+                <div key={ins.id} className="p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                  <div>
+                    <p className="text-sm font-medium">{ins.handle || "Analysis"}</p>
+                    <p className="text-xs text-zinc-400">{new Date(ins.lastAnalyzed).toLocaleString()} • {ins.followerCount} followers</p>
+                  </div>
+                  <span className="text-xs font-bold text-primary">{ins.engagementRate}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* CONTENT FORGE */}
+      {subTab === 'forge' && (
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="p-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-4">
+            <h3 className="font-semibold flex items-center gap-2"><Sparkles className="w-4 h-4 text-primary" /> Generate Content</h3>
+            <div>
+              <label className="text-xs font-medium text-zinc-500 block mb-1.5">Topic / Theme (optional)</label>
+              <textarea value={topic} onChange={(e) => setTopic(e.target.value)}
+                placeholder={`e.g. New project using Next.js and AI...`}
+                className="w-full p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm outline-none h-28 resize-none" />
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <label className="text-[10px] font-bold uppercase text-zinc-400 block mb-1">AI Model</label>
+                <select value={genModel} onChange={(e) => setGenModel(e.target.value as AiModel)}
+                  className="w-full text-xs px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg outline-none">
+                  {TEXT_MODELS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                </select>
+              </div>
+            </div>
+            <button onClick={handleGenerate} disabled={isGenerating}
+              className="w-full py-3 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 shadow-lg">
+              {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              Generate for {platform.platform}
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500">Drafts ({drafts.length})</h3>
+            {drafts.length === 0 ? (
+              <div className="p-10 text-center bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
+                <p className="text-sm text-zinc-500">Generated posts will appear here.</p>
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+                {drafts.map((d) => (
+                  <div key={d.id} className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl group hover:border-primary/20 transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary px-2 py-0.5 bg-primary/10 rounded-full">{d.status}</span>
+                      <span className="text-[10px] text-zinc-400">{new Date(d.createdAt).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap line-clamp-4">{d.content}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* CONFIG */}
+      {subTab === 'config' && (
+        <div className="space-y-5">
+          <div className="p-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl space-y-5">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold flex items-center gap-2"><SettingsIcon className="w-4 h-4 text-zinc-400" /> Platform Config: {platform.platform}</h3>
+              <button onClick={() => { if (confirm(`Delete ${platform.platform} platform?`)) onDelete(); }}
+                className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-colors">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid gap-4">
+              <div>
+                <label className="text-xs font-medium text-zinc-500 block mb-1.5">Brand Voice</label>
+                <select value={config.brandVoice} onChange={(e) => setConfig({ ...config, brandVoice: e.target.value })}
+                  className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none">
+                  {BRAND_VOICES.map((v) => <option key={v}>{v}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-zinc-500 block mb-1.5">Default AI Model (for this platform)</label>
+                <select value={config.preferredModel} onChange={(e) => setConfig({ ...config, preferredModel: e.target.value })}
+                  className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none">
+                  {TEXT_MODELS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-zinc-500 block mb-1.5">Growth Goals</label>
+                <textarea value={config.growthGoals} onChange={(e) => setConfig({ ...config, growthGoals: e.target.value })}
+                  placeholder="e.g. Gain 100 followers this month by posting daily technical tips."
+                  className="w-full p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm outline-none h-24 resize-none" />
+              </div>
+            </div>
+            <button onClick={handleSaveConfig} disabled={isSaving}
+              className="flex items-center gap-2 px-6 py-2.5 bg-primary text-white rounded-xl font-semibold hover:opacity-90 disabled:opacity-50 transition-all text-sm">
+              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+              {isSaving ? "Saving..." : "Save Config"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function SocialAiPage() {
+  const [platforms, setPlatforms] = useState<any[]>([]);
+  const [activePlatform, setActivePlatform] = useState<string>("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newPlatformName, setNewPlatformName] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const [addError, setAddError] = useState("");
+
+  const loadPlatforms = useCallback(async () => {
+    const list = await getAiPlatforms();
+    setPlatforms(list);
+    if (list.length > 0 && !activePlatform) setActivePlatform(list[0].platform);
+  }, [activePlatform]);
+
+  useEffect(() => { loadPlatforms(); }, []);
+
+  const handleAddPlatform = async () => {
+    if (!newPlatformName.trim()) return;
+    setIsAdding(true); setAddError("");
+    const res = await addAiPlatform(newPlatformName.trim());
+    if (res.success) {
+      await loadPlatforms();
+      setActivePlatform(newPlatformName.trim());
+      setNewPlatformName("");
+      setShowAddModal(false);
+    } else {
+      setAddError(res.error || "Failed to add platform.");
+    }
+    setIsAdding(false);
+  };
+
+  const handleDeletePlatform = async (id: string, platformName: string) => {
+    await deleteAiPlatform(id);
+    const list = await getAiPlatforms();
+    setPlatforms(list);
+    if (activePlatform === platformName) setActivePlatform(list[0]?.platform || "");
+  };
+
+  const activePlatformData = platforms.find((p) => p.platform === activePlatform);
 
   return (
     <div className="p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
@@ -197,400 +358,78 @@ export default function SocialAiPage() {
           </h1>
           <p className="text-zinc-500 mt-1">Multi-model AI intelligence for automated social growth.</p>
         </div>
-        <div className="flex items-center gap-3">
-          {isAddingPlatform ? (
-            <div className="flex items-center gap-2 bg-white dark:bg-zinc-800 p-1 rounded-lg border border-zinc-200 dark:border-zinc-700">
-              <input 
-                autoFocus
-                value={newPlatformName}
-                onChange={(e) => setNewPlatformName(e.target.value)}
-                placeholder="Platform name..."
-                className="px-3 py-1 text-sm bg-transparent outline-none"
-                onKeyDown={(e) => e.key === 'Enter' && handleAddPlatform()}
-              />
-              <button 
-                onClick={handleAddPlatform}
-                disabled={isSaving}
-                className="p-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
-              >
-                <CheckCircle2 className="w-4 h-4" />
+        <button onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 font-medium w-fit">
+          <Plus className="w-4 h-4" /> Add Platform
+        </button>
+      </div>
+
+      {platforms.length === 0 ? (
+        <div className="p-16 text-center rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
+          <Sparkles className="w-12 h-12 text-zinc-300 mx-auto mb-4" />
+          <h3 className="font-semibold text-zinc-600 dark:text-zinc-300 mb-2">No platforms yet</h3>
+          <p className="text-sm text-zinc-500 mb-6">Add your first social media platform to get started.</p>
+          <button onClick={() => setShowAddModal(true)} className="px-6 py-2 bg-primary text-white rounded-lg font-semibold text-sm hover:opacity-90">
+            <Plus className="w-4 h-4 inline mr-1" /> Add First Platform
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Platform tab strip */}
+          <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 overflow-x-auto pb-px">
+            {platforms.map((p) => (
+              <button key={p.platform} onClick={() => setActivePlatform(p.platform)}
+                className={`px-5 py-3 text-sm font-semibold whitespace-nowrap border-b-2 transition-all relative -mb-px ${
+                  activePlatform === p.platform
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                }`}>
+                {p.platform}
               </button>
-              <button 
-                onClick={() => setIsAddingPlatform(false)}
-                className="p-1.5 text-zinc-500 hover:text-zinc-700"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <button 
-              onClick={() => setIsAddingPlatform(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 font-medium"
-            >
-              <Plus className="w-4 h-4" /> Add Platform
-            </button>
+            ))}
+          </div>
+
+          {/* Active platform content */}
+          {activePlatformData && (
+            <PlatformTab
+              key={activePlatform}
+              platform={activePlatformData}
+              onDelete={() => handleDeletePlatform(activePlatformData.id, activePlatform)}
+            />
           )}
-        </div>
-      </div>
-
-      {/* Platform Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {platforms.map((p) => (
-          <button
-            key={p.platform}
-            onClick={() => setActivePlatform(p.platform)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
-              activePlatform === p.platform
-                ? "bg-primary text-white shadow-lg shadow-primary/20"
-                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700"
-            }`}
-          >
-            {p.platform}
-          </button>
-        ))}
-      </div>
-
-      {/* Main Tabs */}
-      <div className="flex border-b border-zinc-200 dark:border-zinc-800 gap-6">
-        {[
-          { id: "overview", label: "Intelligence Hub", icon: BarChart3 },
-          { id: "generation", label: "Content Forge", icon: MessageSquare },
-          { id: "config", label: "AI Settings", icon: SettingsIcon }
-        ].map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 pb-4 text-sm font-medium transition-all relative ${
-              activeTab === tab.id 
-                ? "text-primary" 
-                : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-            }`}
-          >
-            <tab.icon className="w-4 h-4" />
-            {tab.label}
-            {activeTab === tab.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Message Banner */}
-      {message && (
-        <div className={`p-4 rounded-xl text-sm flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 ${
-          message.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-800' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-800'
-        }`}>
-          {message.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
-          {message.text}
-        </div>
+        </>
       )}
 
-      {/* Tab Content */}
-      <div className="space-y-6">
-        {activeTab === "overview" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2 space-y-6">
-              {/* Screenshot Analysis Card */}
-              <div className="p-6 bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 rounded-2xl">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-primary/10 text-primary rounded-lg">
-                    <Upload className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-zinc-900 dark:text-white">Growth Learning</h3>
-                    <div className="flex items-center gap-4 mt-1">
-                      <p className="text-xs text-zinc-500">Analyze screenshots with:</p>
-                      <select 
-                        value={screenshotModel}
-                        onChange={(e) => setScreenshotModel(e.target.value)}
-                        className="text-xs font-bold text-primary bg-primary/5 rounded px-2 py-0.5 outline-none border-none cursor-pointer"
-                      >
-                        <option value="gemini-vision">Gemini Vision</option>
-                        <option value="gpt-4o">GPT-4o Vision</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-primary/10">
-                  <MediaPicker 
-                    onSelect={handleAnalyze}
-                    currentUrl={screenshotUrl}
-                    label="Profile Screenshot"
-                  />
-                  {isAnalyzing && (
-                    <div className="mt-4 flex items-center gap-2 text-sm text-primary font-medium animate-pulse">
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      {screenshotModel.includes('gemini') ? 'Gemini' : 'GPT-4o'} is reading your metrics...
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Insights List */}
-              <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
-                <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
-                  <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <History className="w-4 h-4 text-zinc-400" /> Recent Activity
-                  </h3>
-                </div>
-                <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {insights.length > 0 ? (
-                    insights.map((insight) => (
-                      <div key={insight.id} className="p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
-                            {insight.screenshotUrl ? (
-                              <img src={insight.screenshotUrl} className="w-full h-full object-cover" alt="Profile" />
-                            ) : (
-                              <Globe className="w-5 h-5 text-zinc-400" />
-                            )}
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-zinc-900 dark:text-white">
-                              {insight.handle || "New Analysis"}
-                            </p>
-                            <p className="text-xs text-zinc-500">
-                              {new Date(insight.lastAnalyzed).toLocaleDateString()} • {insight.followerCount || '0'} followers
-                            </p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-xs font-bold text-primary">
-                            {insight.engagementRate || '0%'} Engagement
-                          </p>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-8 text-center">
-                      <p className="text-sm text-zinc-500">Upload a screenshot to start tracking growth insights.</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+      {/* Add Platform Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowAddModal(false)} />
+          <div className="relative bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border border-zinc-200 dark:border-zinc-800 p-6 w-full max-w-sm mx-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="font-bold text-lg">Add New Platform</h2>
+              <button onClick={() => setShowAddModal(false)} className="p-1.5 text-zinc-400 hover:text-zinc-600 rounded-lg"><X className="w-5 h-5" /></button>
             </div>
-
-            <div className="space-y-6">
-              {/* Context Memory */}
-              <div className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-4">Platform Memory</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-500">Preferred Model</span>
-                    <span className="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-primary uppercase">
-                      {config.preferredModel}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-zinc-500">Voice</span>
-                    <span className="text-xs text-zinc-700 dark:text-zinc-300 italic">
-                      "{config.brandVoice}"
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Tips Card */}
-              <div className="p-4 bg-zinc-900 text-white rounded-2xl shadow-xl overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <Sparkles className="w-16 h-16" />
-                </div>
-                <h4 className="font-bold text-sm mb-2">Pro Tip</h4>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Use GPT-4o for complex engagement trends, and Gemini for rapid profile data extraction.
-                </p>
-              </div>
+            <div>
+              <label className="text-xs font-medium text-zinc-500 block mb-1.5">Platform Name</label>
+              <input
+                value={newPlatformName}
+                onChange={(e) => setNewPlatformName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddPlatform()}
+                placeholder="e.g. YouTube, TikTok, GitHub..."
+                autoFocus
+                className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm outline-none focus:border-primary transition-colors"
+              />
+              {addError && <p className="text-xs text-red-500 mt-1">{addError}</p>}
+            </div>
+            <div className="flex gap-2 pt-1">
+              <button onClick={() => setShowAddModal(false)} className="flex-1 py-2 rounded-xl text-sm font-medium border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+              <button onClick={handleAddPlatform} disabled={isAdding || !newPlatformName.trim()}
+                className="flex-1 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2">
+                {isAdding ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                {isAdding ? "Adding..." : "Add Platform"}
+              </button>
             </div>
           </div>
-        )}
-
-        {activeTab === "generation" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Generator Card */}
-            <div className="space-y-6">
-              <div className="p-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm">
-                <h3 className="font-semibold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary" /> Content Forge
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">Topic or Theme (Optional)</label>
-                    <textarea 
-                      value={topic}
-                      onChange={(e) => setTopic(e.target.value)}
-                      placeholder="e.g. My new project using Next.js and AI..."
-                      className="w-full p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 outline-none h-32 resize-none transition-all"
-                    />
-                  </div>
-                  
-                  <button 
-                    onClick={handleGenerate}
-                    disabled={isGenerating}
-                    className="w-full py-3 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 shadow-lg"
-                  >
-                    {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-                    Generate for {activePlatform}
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Preview/Calendar Feed */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Drafts & Suggestions</h3>
-              <div className="space-y-4">
-                {drafts.length > 0 ? (
-                  drafts.map((draft) => (
-                    <div key={draft.id} className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-3 group transition-all hover:border-primary/20">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-primary px-2 py-0.5 bg-primary/10 rounded-full">
-                          {draft.status}
-                        </span>
-                        <span className="text-[10px] text-zinc-400">
-                          {new Date(draft.createdAt).toLocaleString()}
-                        </span>
-                      </div>
-                      <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
-                        {draft.content}
-                      </p>
-                      <div className="flex items-center gap-2 pt-2 border-t border-zinc-50 dark:border-zinc-800 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button className="text-xs font-medium text-primary hover:underline">Edit</button>
-                        <button className="text-xs font-medium text-zinc-500 hover:underline">Approve</button>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-12 text-center bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
-                    <p className="text-sm text-zinc-500">Your generated posts will appear here.</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "config" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* AI Model Config */}
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-               <div className="flex items-center justify-between mb-6">
-                 <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
-                   <SettingsIcon className="w-4 h-4 text-zinc-400" /> Model Settings: {activePlatform}
-                 </h3>
-                 <button 
-                   onClick={async () => {
-                     if (confirm(`Are you sure you want to remove ${activePlatform}?`)) {
-                       const id = platforms.find(p => p.platform === activePlatform)?.id;
-                       if (id) {
-                         const res = await deleteAiPlatform(id);
-                         if (res.success) {
-                           const newList = await getAiPlatforms();
-                           setPlatforms(newList);
-                           if (newList.length > 0) setActivePlatform(newList[0].platform);
-                           else setActivePlatform("");
-                           setMessage({ type: 'success', text: "Platform removed." });
-                         }
-                       }
-                     }
-                   }}
-                   className="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest"
-                 >
-                   Delete Platform
-                 </button>
-               </div>
-               <div className="space-y-4">
-                  <div className="grid grid-cols-1 gap-4">
-                    <div>
-                      <label className="text-xs font-medium text-zinc-500 block mb-1.5">Brand Voice</label>
-                      <select 
-                        value={config.brandVoice}
-                        onChange={(e) => setConfig({ ...config, brandVoice: e.target.value })}
-                        className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none"
-                      >
-                        <option>Sarcastic & Technical</option>
-                        <option>Formal & Professional</option>
-                        <option>Enthusiastic & Friendly</option>
-                        <option>Minimalist</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-zinc-500 block mb-1.5">Preferred Model</label>
-                      <select 
-                        value={config.preferredModel}
-                        onChange={(e) => setConfig({ ...config, preferredModel: e.target.value })}
-                        className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none"
-                      >
-                        <option value="mistral">Mistral Large (High Quality)</option>
-                        <option value="gemini">Gemini 1.5 Pro</option>
-                        <option value="gpt4o">GPT-4o (via OpenRouter)</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">Growth Goals</label>
-                    <textarea 
-                      value={config.growthGoals}
-                      onChange={(e) => setConfig({ ...config, growthGoals: e.target.value })}
-                      placeholder="e.g. Gain 100 followers this month by posting daily technical tips."
-                      className="w-full p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm outline-none h-24 resize-none"
-                    />
-                  </div>
-               </div>
-            </div>
-
-            {/* API Keys Config */}
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-               <h3 className="font-semibold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
-                 <Key className="w-4 h-4 text-zinc-400" /> Global API Credentials
-               </h3>
-               <div className="space-y-4">
-                  <div>
-                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">Gemini API Key</label>
-                    <input 
-                      type="password"
-                      value={keys.geminiApiKey}
-                      onChange={(e) => setKeys({ ...keys, geminiApiKey: e.target.value })}
-                      placeholder="Enter Google AI Studio Key..."
-                      className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">Mistral API Key</label>
-                    <input 
-                      type="password"
-                      value={keys.mistralApiKey}
-                      onChange={(e) => setKeys({ ...keys, mistralApiKey: e.target.value })}
-                      placeholder="Enter Mistral Console Key..."
-                      className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">OpenRouter API Key</label>
-                    <input 
-                      type="password"
-                      value={keys.openrouterApiKey}
-                      onChange={(e) => setKeys({ ...keys, openrouterApiKey: e.target.value })}
-                      placeholder="Enter OpenRouter Key..."
-                      className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none"
-                    />
-                  </div>
-               </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Footer Save Button (Fixed at bottom when in Config tab) */}
-      {activeTab === "config" && (
-        <div className="flex justify-end pt-6">
-          <button 
-            onClick={handleSaveConfig}
-            disabled={isSaving}
-            className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-bold hover:opacity-90 transition-all disabled:opacity-50 shadow-xl shadow-primary/20"
-          >
-            {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
-            {isSaving ? "Saving..." : "Save All Settings"}
-          </button>
         </div>
       )}
     </div>

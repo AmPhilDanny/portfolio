@@ -40,35 +40,27 @@ export async function updateSettings(formData: FormData) {
     const customCss = formData.get("customCss") as string;
     
     const existing = await getSettings();
-    const values: any = {
+    const values = {
       siteName, showSiteName, logoUrl, faviconUrl, copyrightText,
       githubUrl, linkedinUrl, twitterUrl, facebookUrl, instagramUrl,
       email, primaryColor, secondaryColor, backgroundColor, accentColor,
       fontFamily, customCss,
+      geminiApiKey: formData.get("geminiApiKey") as string,
+      mistralApiKey: formData.get("mistralApiKey") as string,
+      openrouterApiKey: formData.get("openrouterApiKey") as string,
+      globalAiModel: formData.get("globalAiModel") as string,
     };
 
-    // Only update API keys if they are actually in the form
-    const geminiKey = formData.get("geminiApiKey");
-    const mistralKey = formData.get("mistralApiKey");
-    const openrouterKey = formData.get("openrouterApiKey");
 
-    if (geminiKey !== null) values.geminiApiKey = geminiKey as string;
-    if (mistralKey !== null) values.mistralApiKey = mistralKey as string;
-    if (openrouterKey !== null) values.openrouterApiKey = openrouterKey as string;
-
-    if (existing) {
+    if(existing) {
       await db.update(settings).set(values).where(eq(settings.id, existing.id));
     } else {
       await db.insert(settings).values(values);
     }
     revalidatePath("/");
     revalidatePath("/admin/settings");
-    revalidatePath("/admin/social-ai");
     return { success: true };
-  } catch(e: any) { 
-    console.error("Settings Update Error:", e);
-    return { success: false, error: e.message || "Failed to update settings" }; 
-  }
+  } catch(e) { return { success: false, error: "Failed to update settings" }; }
 }
 
 /**
@@ -80,27 +72,16 @@ export async function updateAiApiKeys(data: {
   openrouterApiKey?: string;
 }) {
   try {
-    console.log("Updating AI API Keys");
     const existing = await getSettings();
-    
-    const values = {
-      geminiApiKey: data.geminiApiKey,
-      mistralApiKey: data.mistralApiKey,
-      openrouterApiKey: data.openrouterApiKey,
-    };
-
     if (existing) {
-      await db.update(settings).set(values).where(eq(settings.id, existing.id));
+      await db.update(settings).set(data).where(eq(settings.id, existing.id));
     } else {
-      // If no settings exist, create one with default empty values for other fields if needed
-      await db.insert(settings).values(values);
+      await db.insert(settings).values(data);
     }
     revalidatePath("/admin/social-ai");
-    revalidatePath("/admin/settings");
     return { success: true };
   } catch (error: any) {
-    console.error("Failed to update AI API keys:", error);
-    return { success: false, error: error.message || "Failed to save API credentials" };
+    return { success: false, error: error.message };
   }
 }
 

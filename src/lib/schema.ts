@@ -145,6 +145,7 @@ export const settings = pgTable('settings', {
   geminiApiKey: text('gemini_api_key'),
   mistralApiKey: text('mistral_api_key'),
   openrouterApiKey: text('openrouter_api_key'),
+  globalAiModel: text('global_ai_model').default('mistral-large'), // 'gemini-pro' | 'gemini-vision' | 'mistral-large' | 'gpt-4o'
 });
 
 

@@ -3,11 +3,34 @@
 import { db } from "@/lib/db";
 import { 
   socialMediaInsights, socialPlatformMetrics, 
-  contentCalendar, aiConfig 
+  contentCalendar, aiConfig, settings
 } from "@/lib/schema";
 import { callAi } from "@/lib/ai-provider";
 import { eq, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+
+type AiModel = 'gemini-vision' | 'gemini-pro' | 'mistral-large' | 'gpt-4o';
+
+/**
+ * Resolve the AI model to use, with priority:
+ * explicit (from UI) > per-platform config > global settings > hardcoded default
+ */
+async function resolveModel(
+  explicit: AiModel | undefined,
+  platform: string,
+  fallback: AiModel
+): Promise<AiModel> {
+  if (explicit) return explicit;
+  // Try per-platform config
+  const config = await db.select().from(aiConfig).where(eq(aiConfig.platform, platform)).limit(1);
+  const platformModel = config[0]?.preferredModel as AiModel | null;
+  if (platformModel) return platformModel;
+  // Try global settings
+  const globalConfig = await db.select().from(settings).limit(1);
+  const globalModel = globalConfig[0]?.globalAiModel as AiModel | null;
+  if (globalModel) return globalModel;
+  return fallback;
+}
 
 /**
  * Track a growth metric for a platform
@@ -27,34 +50,48 @@ export async function trackGrowthMetric(platform: string, type: string, value: s
 }
 
 /**
- * Analyze a social media profile screenshot
+ * Analyze a social media profile screenshot.
+ * @param model - Optional: 'gemini-vision' or 'gpt-4o'. Mistral is excluded (no vision).
  */
-export async function analyzeScreenshot(platform: string, imageUrl: string, model: any = 'gemini-vision') {
+export async function analyzeScreenshot(
+  platform: string,
+  imageUrl: string,
+  model?: AiModel
+) {
   try {
+    // Vision analysis only works with Gemini or GPT-4o
+    const visionModel = model === 'gpt-4o' ? 'gpt-4o' : 'gemini-vision';
+
     const response = await callAi({
-      model: model,
-      prompt: `Analyze this screenshot of a ${platform} profile. Extract the handle, follower count, following count, and engagement trends. Return the data in JSON format.`,
+      model: visionModel,
+      prompt: `Analyze this screenshot of a ${platform} profile. Extract the handle, follower count, following count, and engagement trends. Return the data as valid JSON with keys: handle, followers, following, engagement_rate, summary.`,
       image: imageUrl
     });
 
     if (response.error) throw new Error(response.error);
 
-    const data = JSON.parse(response.content);
+    let data: any = {};
+    try {
+      // Strip markdown code fences if present
+      const cleaned = response.content.replace(/```json\n?|\n?```/g, "").trim();
+      data = JSON.parse(cleaned);
+    } catch {
+      data = { summary: response.content };
+    }
 
     // Save insight to DB
     await db.insert(socialMediaInsights).values({
       platform,
       handle: data.handle,
-      followerCount: data.followers,
-      followingCount: data.following,
-      engagementRate: data.engagement_rate,
+      followerCount: String(data.followers || ""),
+      followingCount: String(data.following || ""),
+      engagementRate: String(data.engagement_rate || ""),
       analysisSummary: data.summary,
       screenshotUrl: imageUrl,
       rawAiResponse: response.content
     });
 
-    // Also track the follower count as a metric
-    await trackGrowthMetric(platform, 'followers', data.followers);
+    await trackGrowthMetric(platform, 'followers', String(data.followers || "0"));
 
     revalidatePath("/admin/social-ai");
     return { success: true, data };
@@ -64,9 +101,10 @@ export async function analyzeScreenshot(platform: string, imageUrl: string, mode
 }
 
 /**
- * Generate a new social media post
+ * Generate a new social media post.
+ * @param model - Optional model to use; falls back to platform config then global settings.
  */
-export async function generateSocialPost(platform: string, topic?: string) {
+export async function generateSocialPost(platform: string, topic?: string, model?: AiModel) {
   try {
     // 1. Get platform config
     const config = await db.select().from(aiConfig).where(eq(aiConfig.platform, platform)).limit(1);
@@ -84,9 +122,12 @@ export async function generateSocialPost(platform: string, topic?: string) {
       ? `Last analysis: ${insights[0].analysisSummary}` 
       : "No previous analysis available.";
 
-    // 3. Call AI
+    // 3. Resolve model
+    const resolvedModel = await resolveModel(model, platform, 'mistral-large');
+
+    // 4. Call AI
     const response = await callAi({
-      model: 'mistral-large',
+      model: resolvedModel,
       prompt: `Act as a Social Media Strategist for ${platform}. 
       Brand Voice: ${brandVoice}
       Growth Goals: ${goals}
@@ -98,7 +139,7 @@ export async function generateSocialPost(platform: string, topic?: string) {
 
     if (response.error) throw new Error(response.error);
 
-    // 4. Save to content calendar
+    // 5. Save to content calendar
     await db.insert(contentCalendar).values({
       platform,
       content: response.content,
@@ -124,28 +165,18 @@ export async function updateAiConfig(data: {
   growthGoals: string;
 }) {
   try {
-    console.log("Updating AI Config for:", data.platform);
     const existing = await db.select().from(aiConfig).where(eq(aiConfig.platform, data.platform)).limit(1);
     
-    const values = {
-      platform: data.platform,
-      brandVoice: data.brandVoice,
-      targetAudience: data.targetAudience,
-      preferredModel: data.preferredModel,
-      growthGoals: data.growthGoals,
-    };
-
     if (existing.length > 0) {
-      await db.update(aiConfig).set(values).where(eq(aiConfig.platform, data.platform));
+      await db.update(aiConfig).set(data).where(eq(aiConfig.platform, data.platform));
     } else {
-      await db.insert(aiConfig).values(values);
+      await db.insert(aiConfig).values(data);
     }
 
     revalidatePath("/admin/social-ai");
     return { success: true };
   } catch (error: any) {
-    console.error("Failed to update AI config:", error);
-    return { success: false, error: error.message || "Failed to save platform configuration" };
+    return { success: false, error: error.message };
   }
 }
 

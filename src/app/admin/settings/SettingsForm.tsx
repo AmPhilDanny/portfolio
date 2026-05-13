@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { updateSettings } from "@/app/actions/settings";
-import { Save, Palette, Type, Globe, Image as ImageIcon } from "lucide-react";
+import { Save, Palette, Type, Globe, Image as ImageIcon, Cpu, Key, Eye, EyeOff } from "lucide-react";
 import MediaPicker from "@/components/MediaPicker";
 import SocialLinksManager from "./SocialLinksManager";
 
@@ -23,25 +23,80 @@ const COLOR_PRESETS = [
   { name: "Solar Orange", primary: "#f97316", secondary: "#ef4444", accent: "#facc15", bg: "#0c0602" },
 ];
 
-type Section = "branding" | "colors" | "typography" | "links";
+const AI_MODELS = [
+  { value: "mistral-large", label: "Mistral Large", description: "Fast, high quality text generation" },
+  { value: "gemini-pro", label: "Gemini 1.5 Pro", description: "Google's powerful text model" },
+  { value: "gemini-vision", label: "Gemini 1.5 Flash (Vision)", description: "Image + text analysis" },
+  { value: "gpt-4o", label: "GPT-4o (OpenRouter)", description: "OpenAI's multimodal model" },
+];
+
+type Section = "branding" | "colors" | "typography" | "links" | "ai";
 
 export default function SettingsForm({ initialData, socials }: { initialData: any, socials: any[] }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [activeSection, setActiveSection] = useState<Section>("branding");
+
+  // ── Branding state ──
+  const [siteName, setSiteName] = useState(initialData?.siteName || "NovaxFolio");
+  const [showSiteName, setShowSiteName] = useState(initialData?.showSiteName !== "false");
+  const [copyrightText, setCopyrightText] = useState(initialData?.copyrightText || "NovaxFolio | Amaechi Philip Ekaba. All rights reserved.");
   const [logoUrl, setLogoUrl] = useState(initialData?.logoUrl || "");
   const [faviconUrl, setFaviconUrl] = useState(initialData?.faviconUrl || "");
+
+  // ── Colors state ──
   const [primaryColor, setPrimaryColor] = useState(initialData?.primaryColor || "#3b82f6");
   const [secondaryColor, setSecondaryColor] = useState(initialData?.secondaryColor || "#10b981");
   const [backgroundColor, setBackgroundColor] = useState(initialData?.backgroundColor || "#020617");
   const [accentColor, setAccentColor] = useState(initialData?.accentColor || "#f59e0b");
+
+  // ── Typography state ──
   const [fontFamily, setFontFamily] = useState(initialData?.fontFamily || "Inter");
+  const [customCss, setCustomCss] = useState(initialData?.customCss || "");
+
+  // ── Links state ──
+  const [email, setEmail] = useState(initialData?.email || "amaechiphilipekaba@gmail.com");
+
+  // ── AI state ──
+  const [globalAiModel, setGlobalAiModel] = useState(initialData?.globalAiModel || "mistral-large");
+  const [geminiApiKey, setGeminiApiKey] = useState(initialData?.geminiApiKey || "");
+  const [mistralApiKey, setMistralApiKey] = useState(initialData?.mistralApiKey || "");
+  const [openrouterApiKey, setOpenrouterApiKey] = useState(initialData?.openrouterApiKey || "");
+  const [showGemini, setShowGemini] = useState(false);
+  const [showMistral, setShowMistral] = useState(false);
+  const [showOpenRouter, setShowOpenRouter] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-    const result = await updateSettings(new FormData(e.currentTarget));
+
+    // Build FormData manually from state so inactive tabs are always included
+    const formData = new FormData();
+    formData.set("siteName", siteName);
+    formData.set("showSiteName", showSiteName ? "on" : "off");
+    formData.set("copyrightText", copyrightText);
+    formData.set("logoUrl", logoUrl);
+    formData.set("faviconUrl", faviconUrl);
+    formData.set("primaryColor", primaryColor);
+    formData.set("secondaryColor", secondaryColor);
+    formData.set("backgroundColor", backgroundColor);
+    formData.set("accentColor", accentColor);
+    formData.set("fontFamily", fontFamily);
+    formData.set("customCss", customCss);
+    formData.set("email", email);
+    formData.set("globalAiModel", globalAiModel);
+    formData.set("geminiApiKey", geminiApiKey);
+    formData.set("mistralApiKey", mistralApiKey);
+    formData.set("openrouterApiKey", openrouterApiKey);
+    // Legacy link fields (kept for backward compat)
+    formData.set("githubUrl", initialData?.githubUrl || "");
+    formData.set("linkedinUrl", initialData?.linkedinUrl || "");
+    formData.set("twitterUrl", initialData?.twitterUrl || "");
+    formData.set("facebookUrl", initialData?.facebookUrl || "");
+    formData.set("instagramUrl", initialData?.instagramUrl || "");
+
+    const result = await updateSettings(formData);
     setMessage(result.success ? "Settings saved successfully." : "Failed to save settings.");
     setLoading(false);
   };
@@ -58,6 +113,7 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
     { id: "colors", label: "Colors", icon: <Palette className="w-4 h-4" /> },
     { id: "typography", label: "Typography", icon: <Type className="w-4 h-4" /> },
     { id: "links", label: "Links & Contact", icon: <Globe className="w-4 h-4" /> },
+    { id: "ai", label: "AI & Keys", icon: <Cpu className="w-4 h-4" /> },
   ];
 
   const inputCls = "w-full px-4 py-2.5 rounded-xl border text-sm outline-none transition-colors focus:border-primary";
@@ -108,11 +164,9 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
           <div className="grid md:grid-cols-2 gap-6">
             <div className="p-4 rounded-xl border space-y-4" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>
               <MediaPicker label="Site Logo (Navbar)" type="image" currentUrl={logoUrl} onSelect={setLogoUrl} />
-              <input type="hidden" name="logoUrl" value={logoUrl} />
             </div>
             <div className="p-4 rounded-xl border space-y-4" style={{ background: "var(--muted)", borderColor: "var(--border)" }}>
               <MediaPicker label="Favicon (Browser Tab)" type="image" currentUrl={faviconUrl} onSelect={setFaviconUrl} />
-              <input type="hidden" name="faviconUrl" value={faviconUrl} />
             </div>
           </div>
 
@@ -120,13 +174,13 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="block text-sm font-semibold" style={{ color: "var(--muted-foreground)" }}>Site Name</label>
-                <input 
-                  type="text" 
-                  name="siteName" 
-                  defaultValue={initialData?.siteName || "NovaxFolio"} 
+                <input
+                  type="text"
+                  value={siteName}
+                  onChange={(e) => setSiteName(e.target.value)}
                   placeholder="e.g. NovaxFolio"
-                  className={inputCls} 
-                  style={inputStyle} 
+                  className={inputCls}
+                  style={inputStyle}
                 />
               </div>
 
@@ -136,11 +190,11 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
                   <p className="text-xs opacity-60">Display the name next to the logo in the Navbar</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    name="showSiteName" 
-                    defaultChecked={initialData?.showSiteName !== "false"} 
-                    className="sr-only peer" 
+                  <input
+                    type="checkbox"
+                    checked={showSiteName}
+                    onChange={(e) => setShowSiteName(e.target.checked)}
+                    className="sr-only peer"
                   />
                   <div className="w-11 h-6 bg-border peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary shadow-sm" />
                 </label>
@@ -149,12 +203,12 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
 
             <div className="space-y-2">
               <label className="block text-sm font-semibold" style={{ color: "var(--muted-foreground)" }}>Footer Copyright Text</label>
-              <textarea 
-                name="copyrightText" 
+              <textarea
                 rows={2}
-                defaultValue={initialData?.copyrightText || "NovaxFolio | Amaechi Philip Ekaba. All rights reserved."} 
-                className={inputCls} 
-                style={{ ...inputStyle, resize: "none" }} 
+                value={copyrightText}
+                onChange={(e) => setCopyrightText(e.target.value)}
+                className={inputCls}
+                style={{ ...inputStyle, resize: "none" }}
               />
               <p className="text-[10px] opacity-40 uppercase tracking-widest font-bold">Supported in site-wide footer</p>
             </div>
@@ -189,28 +243,28 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
               <label className="block text-sm font-semibold">Primary Color</label>
               <div className="flex gap-2">
                 <input type="color" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
-                <input type="text" name="primaryColor" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className={inputCls} style={inputStyle} />
+                <input type="text" value={primaryColor} onChange={(e) => setPrimaryColor(e.target.value)} className={inputCls} style={inputStyle} />
               </div>
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-semibold">Secondary Color</label>
               <div className="flex gap-2">
                 <input type="color" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
-                <input type="text" name="secondaryColor" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className={inputCls} style={inputStyle} />
+                <input type="text" value={secondaryColor} onChange={(e) => setSecondaryColor(e.target.value)} className={inputCls} style={inputStyle} />
               </div>
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-semibold">Accent Color</label>
               <div className="flex gap-2">
                 <input type="color" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
-                <input type="text" name="accentColor" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className={inputCls} style={inputStyle} />
+                <input type="text" value={accentColor} onChange={(e) => setAccentColor(e.target.value)} className={inputCls} style={inputStyle} />
               </div>
             </div>
             <div className="space-y-2">
               <label className="block text-sm font-semibold">Background (Dark)</label>
               <div className="flex gap-2">
                 <input type="color" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className="w-10 h-10 rounded-lg cursor-pointer" />
-                <input type="text" name="backgroundColor" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className={inputCls} style={inputStyle} />
+                <input type="text" value={backgroundColor} onChange={(e) => setBackgroundColor(e.target.value)} className={inputCls} style={inputStyle} />
               </div>
             </div>
           </div>
@@ -222,7 +276,7 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
         <div className="p-6 rounded-2xl border space-y-6" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
           <div className="space-y-2">
             <label className="block text-sm font-semibold">Font Family</label>
-            <select name="fontFamily" value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className={inputCls} style={inputStyle}>
+            <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className={inputCls} style={inputStyle}>
               {FONT_OPTIONS.map((f) => (
                 <option key={f.value} value={f.value}>{f.label}</option>
               ))}
@@ -234,7 +288,14 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
           </div>
           <div className="space-y-2">
             <label className="block text-sm font-semibold">Custom CSS</label>
-            <textarea name="customCss" defaultValue={initialData?.customCss || ""} rows={5} className={inputCls} style={{ ...inputStyle, fontFamily: "monospace" }} placeholder="/* Add your custom CSS here */" />
+            <textarea
+              value={customCss}
+              onChange={(e) => setCustomCss(e.target.value)}
+              rows={5}
+              className={inputCls}
+              style={{ ...inputStyle, fontFamily: "monospace" }}
+              placeholder="/* Add your custom CSS here */"
+            />
           </div>
         </div>
       )}
@@ -249,8 +310,8 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
               </label>
               <input
                 type="email"
-                name="email"
-                defaultValue={initialData?.email || "amaechiphilipekaba@gmail.com"}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className={inputCls}
                 style={inputStyle}
               />
@@ -263,6 +324,76 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
         </div>
       )}
 
+      {/* ─── AI & KEYS ─── */}
+      {activeSection === "ai" && (
+        <div className="space-y-6">
+          {/* Global default model */}
+          <div className="p-6 rounded-2xl border space-y-4" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+            <div>
+              <h3 className="font-semibold flex items-center gap-2"><Cpu className="w-4 h-4 text-primary" /> Global Default AI Model</h3>
+              <p className="text-xs text-muted-foreground mt-1">Used site-wide when no per-platform model is set. Per-platform settings override this.</p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {AI_MODELS.map((m) => (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => setGlobalAiModel(m.value)}
+                  className={`p-4 rounded-xl border text-left transition-all ${
+                    globalAiModel === m.value
+                      ? "border-primary bg-primary/5"
+                      : "border-border hover:border-primary/40"
+                  }`}
+                  style={{ background: globalAiModel === m.value ? "var(--primary)" + "0D" : "var(--muted)" }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-bold">{m.label}</span>
+                    {globalAiModel === m.value && (
+                      <div className="w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">{m.description}</p>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* API Keys */}
+          <div className="p-6 rounded-2xl border space-y-5" style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+            <div>
+              <h3 className="font-semibold flex items-center gap-2"><Key className="w-4 h-4 text-primary" /> API Credentials</h3>
+              <p className="text-xs text-muted-foreground mt-1">Keys are stored securely in the database and never exposed to the client.</p>
+            </div>
+
+            {[
+              { label: "Gemini API Key", state: geminiApiKey, setter: setGeminiApiKey, show: showGemini, toggle: () => setShowGemini(!showGemini), placeholder: "Google AI Studio key..." },
+              { label: "Mistral API Key", state: mistralApiKey, setter: setMistralApiKey, show: showMistral, toggle: () => setShowMistral(!showMistral), placeholder: "Mistral Console key..." },
+              { label: "OpenRouter API Key", state: openrouterApiKey, setter: setOpenrouterApiKey, show: showOpenRouter, toggle: () => setShowOpenRouter(!showOpenRouter), placeholder: "OpenRouter key..." },
+            ].map((field) => (
+              <div key={field.label} className="space-y-1.5">
+                <label className="block text-sm font-semibold" style={{ color: "var(--muted-foreground)" }}>{field.label}</label>
+                <div className="relative">
+                  <input
+                    type={field.show ? "text" : "password"}
+                    value={field.state}
+                    onChange={(e) => field.setter(e.target.value)}
+                    placeholder={field.placeholder}
+                    className={inputCls + " pr-12"}
+                    style={inputStyle}
+                  />
+                  <button
+                    type="button"
+                    onClick={field.toggle}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {field.show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Save button */}
       <div className="flex items-center gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
