@@ -151,3 +151,35 @@ export async function getAiConfig(platform: string) {
     return null;
   }
 }
+
+/**
+ * Fetch recent social media insights for a platform
+ */
+export async function getSocialInsights(platform: string) {
+  try {
+    return await db.select()
+      .from(socialMediaInsights)
+      .where(eq(socialMediaInsights.platform, platform))
+      .orderBy(desc(socialMediaInsights.lastAnalyzed))
+      .limit(5);
+  } catch (error) {
+    console.error("Failed to fetch insights:", error);
+    return [];
+  }
+}
+
+/**
+ * Fetch drafts from the content calendar for a platform
+ */
+export async function getContentDrafts(platform: string) {
+  try {
+    return await db.select()
+      .from(contentCalendar)
+      .where(eq(contentCalendar.platform, platform))
+      .orderBy(desc(contentCalendar.createdAt))
+      .limit(10);
+  } catch (error) {
+    console.error("Failed to fetch drafts:", error);
+    return [];
+  }
+}

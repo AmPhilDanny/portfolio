@@ -10,7 +10,8 @@ import { PostCard } from "@/components/PostCard";
 import MediaPicker from "@/components/MediaPicker";
 import { 
   generateSocialPost, analyzeScreenshot, 
-  updateAiConfig, getAiConfig
+  updateAiConfig, getAiConfig,
+  getSocialInsights, getContentDrafts
 } from "@/app/actions/ai-learning";
 import { getSettings, updateAiApiKeys } from "@/app/actions/settings";
 
@@ -24,6 +25,8 @@ export default function SocialAiPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [topic, setTopic] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState("");
+  const [insights, setInsights] = useState<any[]>([]);
+  const [drafts, setDrafts] = useState<any[]>([]);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   // API Keys state
@@ -75,6 +78,17 @@ export default function SocialAiPage() {
       }
     }
     loadConfig();
+
+    // Load insights and drafts
+    async function loadData() {
+      const [insightsRes, draftsRes] = await Promise.all([
+        getSocialInsights(activePlatform),
+        getContentDrafts(activePlatform)
+      ]);
+      setInsights(insightsRes);
+      setDrafts(draftsRes);
+    }
+    loadData();
   }, [activePlatform]);
 
   const handleGenerate = async () => {
@@ -85,6 +99,9 @@ export default function SocialAiPage() {
       if (res.success) {
         setMessage({ type: 'success', text: "Post generated and added to calendar!" });
         setTopic("");
+        // Refresh drafts
+        const newDrafts = await getContentDrafts(activePlatform);
+        setDrafts(newDrafts);
       } else {
         setMessage({ type: 'error', text: res.error || "Generation failed" });
       }
@@ -105,6 +122,9 @@ export default function SocialAiPage() {
       const res = await analyzeScreenshot(activePlatform, url);
       if (res.success) {
         setMessage({ type: 'success', text: `Analysis complete! Found ${res.data?.followers || 'some'} followers.` });
+        // Refresh insights
+        const newInsights = await getSocialInsights(activePlatform);
+        setInsights(newInsights);
       } else {
         setMessage({ type: 'error', text: res.error || "Analysis failed" });
       }
@@ -222,15 +242,46 @@ export default function SocialAiPage() {
                 </div>
               </div>
 
-              {/* Insights List Placeholder */}
+              {/* Insights List */}
               <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
                 <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
                     <History className="w-4 h-4 text-zinc-400" /> Recent Activity
                   </h3>
                 </div>
-                <div className="p-8 text-center">
-                  <p className="text-sm text-zinc-500">Upload a screenshot to start tracking growth insights.</p>
+                <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                  {insights.length > 0 ? (
+                    insights.map((insight) => (
+                      <div key={insight.id} className="p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
+                            {insight.screenshotUrl ? (
+                              <img src={insight.screenshotUrl} className="w-full h-full object-cover" alt="Profile" />
+                            ) : (
+                              <Globe className="w-5 h-5 text-zinc-400" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-zinc-900 dark:text-white">
+                              {insight.handle || "New Analysis"}
+                            </p>
+                            <p className="text-xs text-zinc-500">
+                              {new Date(insight.lastAnalyzed).toLocaleDateString()} • {insight.followerCount || '0'} followers
+                            </p>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-primary">
+                            {insight.engagementRate || '0%'} Engagement
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-8 text-center">
+                      <p className="text-sm text-zinc-500">Upload a screenshot to start tracking growth insights.</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -291,11 +342,35 @@ export default function SocialAiPage() {
               </div>
             </div>
 
-            {/* Preview/Calendar Feed Placeholder */}
+            {/* Preview/Calendar Feed */}
             <div className="space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Drafts & Suggestions</h3>
-              <div className="p-12 text-center bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
-                <p className="text-sm text-zinc-500">Your generated posts will appear here.</p>
+              <div className="space-y-4">
+                {drafts.length > 0 ? (
+                  drafts.map((draft) => (
+                    <div key={draft.id} className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm space-y-3 group transition-all hover:border-primary/20">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-primary px-2 py-0.5 bg-primary/10 rounded-full">
+                          {draft.status}
+                        </span>
+                        <span className="text-[10px] text-zinc-400">
+                          {new Date(draft.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap">
+                        {draft.content}
+                      </p>
+                      <div className="flex items-center gap-2 pt-2 border-t border-zinc-50 dark:border-zinc-800 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button className="text-xs font-medium text-primary hover:underline">Edit</button>
+                        <button className="text-xs font-medium text-zinc-500 hover:underline">Approve</button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-12 text-center bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
+                    <p className="text-sm text-zinc-500">Your generated posts will appear here.</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

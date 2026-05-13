@@ -14,7 +14,7 @@ interface AiCallOptions {
   image?: string; // URL or base64
 }
 
-export async function callAi(options: AiCallOptions) {
+export async function callAi(options: AiCallOptions): Promise<{ content: string; error?: string }> {
   try {
     // 1. Fetch API Keys from DB
     const config = await db.select().from(settings).limit(1);
