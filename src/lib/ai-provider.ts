@@ -123,17 +123,51 @@ async function callMistral(options: AiCallOptions, apiKey?: string | null) {
 async function callOpenRouter(options: AiCallOptions, apiKey?: string | null) {
   if (!apiKey) throw new Error("OpenRouter API Key is missing in settings.");
 
+  const messages: any[] = [];
+  
+  if (options.image) {
+    let base64Data = "";
+    let mimeType = "image/png";
+
+    if (options.image.startsWith("data:")) {
+      const match = options.image.match(/^data:(.*);base64,(.*)$/);
+      if (match) {
+        mimeType = match[1];
+        base64Data = match[2];
+      }
+    } else {
+      const fullUrl = options.image.startsWith("/") ? `${process.env.NEXTAUTH_URL}${options.image}` : options.image;
+      const res = await fetch(fullUrl);
+      const buffer = await res.arrayBuffer();
+      base64Data = Buffer.from(buffer).toString("base64");
+      mimeType = res.headers.get("Content-Type") || "image/png";
+    }
+
+    messages.push({
+      role: "user",
+      content: [
+        { type: "text", text: options.prompt },
+        { 
+          type: "image_url", 
+          image_url: { url: `data:${mimeType};base64,${base64Data}` } 
+        }
+      ]
+    });
+  } else {
+    messages.push({ role: "user", content: options.prompt });
+  }
+
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
-      "HTTP-Referer": "https://novaxfolio.vercel.app", // Optional
+      "HTTP-Referer": "https://novaxfolio.vercel.app", 
       "X-Title": "NovaxFolio"
     },
     body: JSON.stringify({
-      model: "openai/gpt-4o",
-      messages: [{ role: "user", content: options.prompt }]
+      model: options.model === 'gpt-4o' ? "openai/gpt-4o" : options.model,
+      messages
     })
   });
 

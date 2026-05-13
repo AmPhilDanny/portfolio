@@ -14,17 +14,20 @@ import {
   getSocialInsights, getContentDrafts
 } from "@/app/actions/ai-learning";
 import { getSettings, updateAiApiKeys } from "@/app/actions/settings";
-
-const PLATFORMS = ["GitHub", "X", "LinkedIn", "Instagram"];
+import { getAiPlatforms, addAiPlatform, deleteAiPlatform } from "@/app/actions/platforms";
 
 export default function SocialAiPage() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [activePlatform, setActivePlatform] = useState(PLATFORMS[0]);
+  const [platforms, setPlatforms] = useState<any[]>([]);
+  const [activePlatform, setActivePlatform] = useState<string>("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isAddingPlatform, setIsAddingPlatform] = useState(false);
+  const [newPlatformName, setNewPlatformName] = useState("");
   const [topic, setTopic] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState("");
+  const [screenshotModel, setScreenshotModel] = useState("gemini-vision");
   const [insights, setInsights] = useState<any[]>([]);
   const [drafts, setDrafts] = useState<any[]>([]);
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
@@ -44,9 +47,13 @@ export default function SocialAiPage() {
   });
 
   useEffect(() => {
-    // Load API keys
-    async function loadSettings() {
-      const settings = await getSettings();
+    // Load API keys and platforms
+    async function init() {
+      const [settings, platformList] = await Promise.all([
+        getSettings(),
+        getAiPlatforms()
+      ]);
+      
       if (settings) {
         setKeys({
           geminiApiKey: settings.geminiApiKey || "",
@@ -54,11 +61,18 @@ export default function SocialAiPage() {
           openrouterApiKey: settings.openrouterApiKey || ""
         });
       }
+      
+      setPlatforms(platformList);
+      if (platformList.length > 0 && !activePlatform) {
+        setActivePlatform(platformList[0].platform);
+      }
     }
-    loadSettings();
+    init();
   }, []);
 
   useEffect(() => {
+    if (!activePlatform) return;
+    
     // Load platform specific config
     async function loadConfig() {
       const res = await getAiConfig(activePlatform);
@@ -69,7 +83,6 @@ export default function SocialAiPage() {
           growthGoals: res.growthGoals || ""
         });
       } else {
-        // Reset to defaults if no config found
         setConfig({
           brandVoice: "Formal & Professional",
           preferredModel: "mistral",
@@ -91,6 +104,23 @@ export default function SocialAiPage() {
     loadData();
   }, [activePlatform]);
 
+  const handleAddPlatform = async () => {
+    if (!newPlatformName) return;
+    setIsSaving(true);
+    const res = await addAiPlatform(newPlatformName);
+    if (res.success) {
+      const newList = await getAiPlatforms();
+      setPlatforms(newList);
+      setActivePlatform(newPlatformName);
+      setNewPlatformName("");
+      setIsAddingPlatform(false);
+      setMessage({ type: 'success', text: "Platform added!" });
+    } else {
+      setMessage({ type: 'error', text: res.error || "Failed to add platform" });
+    }
+    setIsSaving(false);
+  };
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     setMessage(null);
@@ -99,7 +129,6 @@ export default function SocialAiPage() {
       if (res.success) {
         setMessage({ type: 'success', text: "Post generated and added to calendar!" });
         setTopic("");
-        // Refresh drafts
         const newDrafts = await getContentDrafts(activePlatform);
         setDrafts(newDrafts);
       } else {
@@ -119,10 +148,9 @@ export default function SocialAiPage() {
     setIsAnalyzing(true);
     setMessage(null);
     try {
-      const res = await analyzeScreenshot(activePlatform, url);
+      const res = await analyzeScreenshot(activePlatform, url, screenshotModel);
       if (res.success) {
-        setMessage({ type: 'success', text: `Analysis complete! Found ${res.data?.followers || 'some'} followers.` });
-        // Refresh insights
+        setMessage({ type: 'success', text: `Analysis complete! Found ${res.data?.followerCount || res.data?.followers || 'some'} followers.` });
         const newInsights = await getSocialInsights(activePlatform);
         setInsights(newInsights);
       } else {
@@ -139,20 +167,18 @@ export default function SocialAiPage() {
     setIsSaving(true);
     setMessage(null);
     try {
-      // 1. Save Platform Config
       const configRes = await updateAiConfig({
         platform: activePlatform,
-        targetAudience: "Technical Professionals", // Default
+        targetAudience: "Technical Professionals",
         ...config
       });
 
-      // 2. Save API Keys
       const keysRes = await updateAiApiKeys(keys);
 
       if (configRes.success && keysRes.success) {
         setMessage({ type: 'success', text: "AI Configuration saved successfully!" });
       } else {
-        setMessage({ type: 'error', text: "Failed to save some settings." });
+        setMessage({ type: 'error', text: "Failed to save some settings. Check server logs." });
       }
     } catch (err) {
       setMessage({ type: 'error', text: "An error occurred while saving." });
@@ -171,9 +197,57 @@ export default function SocialAiPage() {
           </h1>
           <p className="text-zinc-500 mt-1">Multi-model AI intelligence for automated social growth.</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 font-medium">
-          <Plus className="w-4 h-4" /> Add Platform
-        </button>
+        <div className="flex items-center gap-3">
+          {isAddingPlatform ? (
+            <div className="flex items-center gap-2 bg-white dark:bg-zinc-800 p-1 rounded-lg border border-zinc-200 dark:border-zinc-700">
+              <input 
+                autoFocus
+                value={newPlatformName}
+                onChange={(e) => setNewPlatformName(e.target.value)}
+                placeholder="Platform name..."
+                className="px-3 py-1 text-sm bg-transparent outline-none"
+                onKeyDown={(e) => e.key === 'Enter' && handleAddPlatform()}
+              />
+              <button 
+                onClick={handleAddPlatform}
+                disabled={isSaving}
+                className="p-1.5 bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
+              >
+                <CheckCircle2 className="w-4 h-4" />
+              </button>
+              <button 
+                onClick={() => setIsAddingPlatform(false)}
+                className="p-1.5 text-zinc-500 hover:text-zinc-700"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setIsAddingPlatform(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 font-medium"
+            >
+              <Plus className="w-4 h-4" /> Add Platform
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Platform Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        {platforms.map((p) => (
+          <button
+            key={p.platform}
+            onClick={() => setActivePlatform(p.platform)}
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+              activePlatform === p.platform
+                ? "bg-primary text-white shadow-lg shadow-primary/20"
+                : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500 hover:bg-zinc-200 dark:hover:bg-zinc-700"
+            }`}
+          >
+            {p.platform}
+          </button>
+        ))}
       </div>
 
       {/* Main Tabs */}
@@ -224,7 +298,17 @@ export default function SocialAiPage() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-zinc-900 dark:text-white">Growth Learning</h3>
-                    <p className="text-xs text-zinc-500">Upload profile screenshots for Gemini Vision analysis.</p>
+                    <div className="flex items-center gap-4 mt-1">
+                      <p className="text-xs text-zinc-500">Analyze screenshots with:</p>
+                      <select 
+                        value={screenshotModel}
+                        onChange={(e) => setScreenshotModel(e.target.value)}
+                        className="text-xs font-bold text-primary bg-primary/5 rounded px-2 py-0.5 outline-none border-none cursor-pointer"
+                      >
+                        <option value="gemini-vision">Gemini Vision</option>
+                        <option value="gpt-4o">GPT-4o Vision</option>
+                      </select>
+                    </div>
                   </div>
                 </div>
                 <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-primary/10">
@@ -236,7 +320,7 @@ export default function SocialAiPage() {
                   {isAnalyzing && (
                     <div className="mt-4 flex items-center gap-2 text-sm text-primary font-medium animate-pulse">
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      AI is reading your metrics...
+                      {screenshotModel.includes('gemini') ? 'Gemini' : 'GPT-4o'} is reading your metrics...
                     </div>
                   )}
                 </div>
@@ -287,25 +371,34 @@ export default function SocialAiPage() {
             </div>
 
             <div className="space-y-6">
-              {/* Platform Selector */}
+              {/* Context Memory */}
               <div className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-4">Active Platforms</h3>
-                <div className="space-y-2">
-                  {PLATFORMS.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setActivePlatform(p)}
-                      className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
-                        activePlatform === p 
-                          ? "bg-primary/10 text-primary border border-primary/20" 
-                          : "hover:bg-zinc-50 dark:hover:bg-zinc-800 border border-transparent"
-                      }`}
-                    >
-                      <span className="text-sm font-medium">{p}</span>
-                      {activePlatform === p && <CheckCircle2 className="w-4 h-4" />}
-                    </button>
-                  ))}
+                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-4">Platform Memory</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-zinc-500">Preferred Model</span>
+                    <span className="font-mono text-xs bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 rounded text-primary uppercase">
+                      {config.preferredModel}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-zinc-500">Voice</span>
+                    <span className="text-xs text-zinc-700 dark:text-zinc-300 italic">
+                      "{config.brandVoice}"
+                    </span>
+                  </div>
                 </div>
+              </div>
+
+              {/* Tips Card */}
+              <div className="p-4 bg-zinc-900 text-white rounded-2xl shadow-xl overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                  <Sparkles className="w-16 h-16" />
+                </div>
+                <h4 className="font-bold text-sm mb-2">Pro Tip</h4>
+                <p className="text-xs text-zinc-400 leading-relaxed">
+                  Use GPT-4o for complex engagement trends, and Gemini for rapid profile data extraction.
+                </p>
               </div>
             </div>
           </div>
@@ -380,9 +473,31 @@ export default function SocialAiPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* AI Model Config */}
             <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
-               <h3 className="font-semibold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
-                 <SettingsIcon className="w-4 h-4 text-zinc-400" /> Model Settings: {activePlatform}
-               </h3>
+               <div className="flex items-center justify-between mb-6">
+                 <h3 className="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
+                   <SettingsIcon className="w-4 h-4 text-zinc-400" /> Model Settings: {activePlatform}
+                 </h3>
+                 <button 
+                   onClick={async () => {
+                     if (confirm(`Are you sure you want to remove ${activePlatform}?`)) {
+                       const id = platforms.find(p => p.platform === activePlatform)?.id;
+                       if (id) {
+                         const res = await deleteAiPlatform(id);
+                         if (res.success) {
+                           const newList = await getAiPlatforms();
+                           setPlatforms(newList);
+                           if (newList.length > 0) setActivePlatform(newList[0].platform);
+                           else setActivePlatform("");
+                           setMessage({ type: 'success', text: "Platform removed." });
+                         }
+                       }
+                     }
+                   }}
+                   className="text-[10px] font-bold text-red-500 hover:text-red-600 transition-colors uppercase tracking-widest"
+                 >
+                   Delete Platform
+                 </button>
+               </div>
                <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-4">
                     <div>

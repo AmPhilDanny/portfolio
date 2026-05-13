@@ -29,10 +29,10 @@ export async function trackGrowthMetric(platform: string, type: string, value: s
 /**
  * Analyze a social media profile screenshot
  */
-export async function analyzeScreenshot(platform: string, imageUrl: string) {
+export async function analyzeScreenshot(platform: string, imageUrl: string, model: any = 'gemini-vision') {
   try {
     const response = await callAi({
-      model: 'gemini-vision',
+      model: model,
       prompt: `Analyze this screenshot of a ${platform} profile. Extract the handle, follower count, following count, and engagement trends. Return the data in JSON format.`,
       image: imageUrl
     });
@@ -124,18 +124,28 @@ export async function updateAiConfig(data: {
   growthGoals: string;
 }) {
   try {
+    console.log("Updating AI Config for:", data.platform);
     const existing = await db.select().from(aiConfig).where(eq(aiConfig.platform, data.platform)).limit(1);
     
+    const values = {
+      platform: data.platform,
+      brandVoice: data.brandVoice,
+      targetAudience: data.targetAudience,
+      preferredModel: data.preferredModel,
+      growthGoals: data.growthGoals,
+    };
+
     if (existing.length > 0) {
-      await db.update(aiConfig).set(data).where(eq(aiConfig.platform, data.platform));
+      await db.update(aiConfig).set(values).where(eq(aiConfig.platform, data.platform));
     } else {
-      await db.insert(aiConfig).values(data);
+      await db.insert(aiConfig).values(values);
     }
 
     revalidatePath("/admin/social-ai");
     return { success: true };
   } catch (error: any) {
-    return { success: false, error: error.message };
+    console.error("Failed to update AI config:", error);
+    return { success: false, error: error.message || "Failed to save platform configuration" };
   }
 }
 
