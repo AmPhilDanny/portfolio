@@ -1,111 +1,144 @@
 /**
- * AI Provider Layer
+ * NovaxFolio AI Provider
  * 
- * This service routes AI requests to various providers based on the task:
- * - Gemini: Vision tasks (Screenshot analysis)
- * - Mistral: High-quality text generation and strategy
- * - OpenRouter: Creative content and fallback models
+ * This module handles communication with various AI models (Gemini, Mistral, OpenRouter).
+ * It fetches API keys directly from the database to ensure a 'Zero-Setup' experience.
  */
 
-export type AiModel = 'gemini-vision' | 'mistral-large' | 'openrouter-creative';
+import { db } from "./db";
+import { settings } from "./schema";
 
-export interface AiRequest {
-  model: AiModel;
+interface AiCallOptions {
+  model: 'gemini-vision' | 'mistral-large' | 'gpt-4o';
   prompt: string;
-  image?: string; // Base64 encoded image for vision tasks
+  image?: string; // URL or base64
 }
 
-export interface AiResponse {
-  content: string;
-  raw?: any;
-  error?: string;
-}
-
-export async function callAi(request: AiRequest): Promise<AiResponse> {
-  const { model, prompt, image } = request;
-
+export async function callAi(options: AiCallOptions) {
   try {
-    if (model === 'gemini-vision') {
-      return await callGeminiVision(prompt, image);
-    } else if (model === 'mistral-large') {
-      return await callMistral(prompt);
+    // 1. Fetch API Keys from DB
+    const config = await db.select().from(settings).limit(1);
+    const keys = config[0] || {};
+
+    if (options.model === 'gemini-vision') {
+      return await callGemini(options, keys.geminiApiKey);
+    } else if (options.model === 'mistral-large') {
+      return await callMistral(options, keys.mistralApiKey);
     } else {
-      return await callOpenRouter(prompt);
+      return await callOpenRouter(options, keys.openrouterApiKey);
     }
   } catch (error: any) {
-    console.error(`AI call failed (${model}):`, error.message);
-    return { 
-      content: "", 
-      error: error.message || "Unknown AI error" 
-    };
+    console.error("AI Provider Error:", error);
+    return { content: "", error: error.message };
   }
 }
 
 /**
- * Google Gemini Vision Implementation
+ * Call Google Gemini API
  */
-async function callGeminiVision(prompt: string, image?: string): Promise<AiResponse> {
-  const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
-  
-  if (!apiKey) {
-    return mockVisionResponse(prompt);
+async function callGemini(options: AiCallOptions, apiKey?: string | null) {
+  if (!apiKey) throw new Error("Gemini API Key is missing in settings.");
+
+  const isVision = !!options.image;
+  const modelName = isVision ? "gemini-1.5-flash" : "gemini-1.5-pro";
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+  const contents: any[] = [];
+  const parts: any[] = [{ text: options.prompt }];
+
+  if (options.image) {
+    // Handle image (if it's a URL, we need to fetch it or convert to base64)
+    let base64Data = "";
+    let mimeType = "image/png";
+
+    if (options.image.startsWith("data:")) {
+      const match = options.image.match(/^data:(.*);base64,(.*)$/);
+      if (match) {
+        mimeType = match[1];
+        base64Data = match[2];
+      }
+    } else if (options.image.startsWith("http") || options.image.startsWith("/")) {
+        // For simplicity in this environment, we assume the frontend sends base64 
+        // or we'd need to fetch the image here.
+        // If it's a relative URL (our media API), we can fetch it.
+        const fullUrl = options.image.startsWith("/") ? `${process.env.NEXTAUTH_URL}${options.image}` : options.image;
+        const res = await fetch(fullUrl);
+        const buffer = await res.arrayBuffer();
+        base64Data = Buffer.from(buffer).toString("base64");
+        mimeType = res.headers.get("Content-Type") || "image/png";
+    }
+
+    if (base64Data) {
+      parts.push({
+        inline_data: {
+          mime_type: mimeType,
+          data: base64Data
+        }
+      });
+    }
   }
 
-  // Implementation for Gemini API would go here
-  // For now, returning mock to allow UI development
-  return mockVisionResponse(prompt);
+  contents.push({ parts });
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contents })
+  });
+
+  const data = await response.json();
+  if (data.error) throw new Error(data.error.message);
+
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  return { content: text };
 }
 
 /**
- * Mistral AI Implementation
+ * Call Mistral AI API
  */
-async function callMistral(prompt: string): Promise<AiResponse> {
-  const apiKey = process.env.MISTRAL_API_KEY;
+async function callMistral(options: AiCallOptions, apiKey?: string | null) {
+  if (!apiKey) throw new Error("Mistral API Key is missing in settings.");
 
-  if (!apiKey) {
-    return mockTextResponse("Mistral", prompt);
-  }
+  const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: "mistral-large-latest",
+      messages: [{ role: "user", content: options.prompt }]
+    })
+  });
 
-  // Implementation for Mistral API
-  return mockTextResponse("Mistral", prompt);
+  const data = await response.json();
+  if (data.error) throw new Error(data.error.message);
+
+  return { content: data.choices?.[0]?.message?.content || "" };
 }
 
 /**
- * OpenRouter Implementation
+ * Call OpenRouter API
  */
-async function callOpenRouter(prompt: string): Promise<AiResponse> {
-  const apiKey = process.env.OPENROUTER_API_KEY;
+async function callOpenRouter(options: AiCallOptions, apiKey?: string | null) {
+  if (!apiKey) throw new Error("OpenRouter API Key is missing in settings.");
 
-  if (!apiKey) {
-    return mockTextResponse("OpenRouter", prompt);
-  }
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`,
+      "HTTP-Referer": "https://novaxfolio.vercel.app", // Optional
+      "X-Title": "NovaxFolio"
+    },
+    body: JSON.stringify({
+      model: "openai/gpt-4o",
+      messages: [{ role: "user", content: options.prompt }]
+    })
+  });
 
-  // Implementation for OpenRouter API
-  return mockTextResponse("OpenRouter", prompt);
-}
+  const data = await response.json();
+  if (data.error) throw new Error(data.error.message);
 
-/**
- * MOCK RESPONSES FOR DEVELOPMENT
- * These allow the UI to be built and tested without active API keys.
- */
-
-function mockVisionResponse(prompt: string): AiResponse {
-  return {
-    content: JSON.stringify({
-      platform: "X (formerly Twitter)",
-      handle: "@AmPhilDanny",
-      followers: "1,240",
-      following: "450",
-      engagement_rate: "3.2%",
-      summary: "Steady growth observed over the last 30 days. Engagement is highest on technical posts related to Data Analysis."
-    }),
-    raw: { status: "mocked" }
-  };
-}
-
-function mockTextResponse(provider: string, prompt: string): AiResponse {
-  return {
-    content: `[MOCK ${provider}] Based on your growth goals, I recommend posting more about your latest portfolio projects. Here's a draft: "Just updated my portfolio with a new AI Social Media Strategist tool! 🚀 #DataAnalysis #FullStack #AI"`,
-    raw: { status: "mocked" }
-  };
+  return { content: data.choices?.[0]?.message?.content || "" };
 }

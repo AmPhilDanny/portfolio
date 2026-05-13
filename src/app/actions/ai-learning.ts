@@ -138,3 +138,16 @@ export async function updateAiConfig(data: {
     return { success: false, error: error.message };
   }
 }
+
+/**
+ * Fetch AI Configuration for a platform
+ */
+export async function getAiConfig(platform: string) {
+  try {
+    const config = await db.select().from(aiConfig).where(eq(aiConfig.platform, platform)).limit(1);
+    return config[0] || null;
+  } catch (error) {
+    console.error("Failed to fetch AI config:", error);
+    return null;
+  }
+}

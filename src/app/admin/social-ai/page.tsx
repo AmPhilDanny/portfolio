@@ -4,14 +4,15 @@ import React, { useState, useEffect } from "react";
 import { 
   Sparkles, TrendingUp, Calendar, Settings as SettingsIcon, 
   Plus, BarChart3, MessageSquare, History, Globe, 
-  Upload, Loader2, CheckCircle2, AlertCircle, Search
+  Upload, Loader2, CheckCircle2, AlertCircle, Key
 } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
 import MediaPicker from "@/components/MediaPicker";
 import { 
   generateSocialPost, analyzeScreenshot, 
-  updateAiConfig, trackGrowthMetric 
+  updateAiConfig, getAiConfig
 } from "@/app/actions/ai-learning";
+import { getSettings, updateAiApiKeys } from "@/app/actions/settings";
 
 const PLATFORMS = ["GitHub", "X", "LinkedIn", "Instagram"];
 
@@ -20,17 +21,61 @@ export default function SocialAiPage() {
   const [activePlatform, setActivePlatform] = useState(PLATFORMS[0]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [topic, setTopic] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState("");
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-  // Mock data for initial UI (In a real app, this would be fetched via server components/actions)
-  const stats = [
-    { label: "Total Followers", value: "4.8K", trend: "+12%", icon: TrendingUp },
-    { label: "AI Insights", value: "24", trend: "Active", icon: Sparkles },
-    { label: "Scheduled Posts", value: "5", trend: "Next: Tomorrow", icon: Calendar },
-    { label: "Platforms", value: "4", trend: "Syncing", icon: Globe },
-  ];
+  // API Keys state
+  const [keys, setKeys] = useState({
+    geminiApiKey: "",
+    mistralApiKey: "",
+    openrouterApiKey: ""
+  });
+
+  // Platform config state
+  const [config, setConfig] = useState({
+    brandVoice: "Formal & Professional",
+    preferredModel: "mistral",
+    growthGoals: ""
+  });
+
+  useEffect(() => {
+    // Load API keys
+    async function loadSettings() {
+      const settings = await getSettings();
+      if (settings) {
+        setKeys({
+          geminiApiKey: settings.geminiApiKey || "",
+          mistralApiKey: settings.mistralApiKey || "",
+          openrouterApiKey: settings.openrouterApiKey || ""
+        });
+      }
+    }
+    loadSettings();
+  }, []);
+
+  useEffect(() => {
+    // Load platform specific config
+    async function loadConfig() {
+      const res = await getAiConfig(activePlatform);
+      if (res) {
+        setConfig({
+          brandVoice: res.brandVoice || "Formal & Professional",
+          preferredModel: res.preferredModel || "mistral",
+          growthGoals: res.growthGoals || ""
+        });
+      } else {
+        // Reset to defaults if no config found
+        setConfig({
+          brandVoice: "Formal & Professional",
+          preferredModel: "mistral",
+          growthGoals: ""
+        });
+      }
+    }
+    loadConfig();
+  }, [activePlatform]);
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -59,7 +104,7 @@ export default function SocialAiPage() {
     try {
       const res = await analyzeScreenshot(activePlatform, url);
       if (res.success) {
-        setMessage({ type: 'success', text: `Analysis complete! Found ${res.data?.followers} followers.` });
+        setMessage({ type: 'success', text: `Analysis complete! Found ${res.data?.followers || 'some'} followers.` });
       } else {
         setMessage({ type: 'error', text: res.error || "Analysis failed" });
       }
@@ -67,6 +112,32 @@ export default function SocialAiPage() {
       setMessage({ type: 'error', text: "An unexpected error occurred during analysis" });
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleSaveConfig = async () => {
+    setIsSaving(true);
+    setMessage(null);
+    try {
+      // 1. Save Platform Config
+      const configRes = await updateAiConfig({
+        platform: activePlatform,
+        targetAudience: "Technical Professionals", // Default
+        ...config
+      });
+
+      // 2. Save API Keys
+      const keysRes = await updateAiApiKeys(keys);
+
+      if (configRes.success && keysRes.success) {
+        setMessage({ type: 'success', text: "AI Configuration saved successfully!" });
+      } else {
+        setMessage({ type: 'error', text: "Failed to save some settings." });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: "An error occurred while saving." });
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -83,22 +154,6 @@ export default function SocialAiPage() {
         <button className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 font-medium">
           <Plus className="w-4 h-4" /> Add Platform
         </button>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {stats.map((stat, i) => (
-          <div key={i} className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm">
-            <div className="flex items-center justify-between mb-2">
-              <div className="p-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-zinc-600 dark:text-zinc-400">
-                <stat.icon className="w-4 h-4" />
-              </div>
-              <span className="text-[10px] font-bold text-green-500 uppercase">{stat.trend}</span>
-            </div>
-            <p className="text-2xl font-bold text-zinc-900 dark:text-white">{stat.value}</p>
-            <p className="text-xs text-zinc-500">{stat.label}</p>
-          </div>
-        ))}
       </div>
 
       {/* Main Tabs */}
@@ -125,6 +180,16 @@ export default function SocialAiPage() {
           </button>
         ))}
       </div>
+
+      {/* Message Banner */}
+      {message && (
+        <div className={`p-4 rounded-xl text-sm flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 ${
+          message.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 border border-green-200 dark:border-green-800' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 border border-red-200 dark:border-red-800'
+        }`}>
+          {message.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+          {message.text}
+        </div>
+      )}
 
       {/* Tab Content */}
       <div className="space-y-6">
@@ -157,39 +222,22 @@ export default function SocialAiPage() {
                 </div>
               </div>
 
-              {/* Insights List */}
+              {/* Insights List Placeholder */}
               <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
                 <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between">
                   <h3 className="font-semibold text-sm flex items-center gap-2">
-                    <History className="w-4 h-4 text-zinc-400" /> Recent Insights
+                    <History className="w-4 h-4 text-zinc-400" /> Recent Activity
                   </h3>
-                  <button className="text-xs text-primary font-medium">View All</button>
                 </div>
-                <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                  {PLATFORMS.map((p) => (
-                    <div key={p} className="p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors cursor-pointer">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-xs font-bold">
-                          {p[0]}
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-zinc-900 dark:text-white">{p}</p>
-                          <p className="text-[10px] text-zinc-500">Last analyzed: 2 hours ago</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs font-bold text-zinc-900 dark:text-white">Growth +2.4%</p>
-                        <p className="text-[10px] text-green-500">Trending Up</p>
-                      </div>
-                    </div>
-                  ))}
+                <div className="p-8 text-center">
+                  <p className="text-sm text-zinc-500">Upload a screenshot to start tracking growth insights.</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-6">
               {/* Platform Selector */}
-              <div className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl">
+              <div className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-4">Active Platforms</h3>
                 <div className="space-y-2">
                   {PLATFORMS.map((p) => (
@@ -231,19 +279,10 @@ export default function SocialAiPage() {
                     />
                   </div>
                   
-                  {message && (
-                    <div className={`p-3 rounded-lg text-xs flex items-center gap-2 ${
-                      message.type === 'success' ? 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400' : 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400'
-                    }`}>
-                      {message.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                      {message.text}
-                    </div>
-                  )}
-
                   <button 
                     onClick={handleGenerate}
                     disabled={isGenerating}
-                    className="w-full py-3 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50"
+                    className="w-full py-3 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all disabled:opacity-50 shadow-lg"
                   >
                     {isGenerating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
                     Generate for {activePlatform}
@@ -252,66 +291,118 @@ export default function SocialAiPage() {
               </div>
             </div>
 
-            {/* Preview/Calendar Feed */}
+            {/* Preview/Calendar Feed Placeholder */}
             <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Content Calendar (Drafts)</h3>
-              <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                <PostCard 
-                  id="1"
-                  platform={activePlatform}
-                  content="Just integrated a multi-model AI strategist into my portfolio! Gemini for vision, Mistral for strategy. 🚀 The future of social growth is automated. #BuildInPublic #AI #NextJS"
-                  status="draft"
-                  date="A few moments ago"
-                />
-                <PostCard 
-                  id="2"
-                  platform={activePlatform}
-                  content="Data Analysis is more than just numbers; it's about telling a story. Proud to show how I'm using AI to bridge that gap. 📊✨"
-                  status="scheduled"
-                  date="Scheduled for May 15"
-                />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Drafts & Suggestions</h3>
+              <div className="p-12 text-center bg-zinc-100 dark:bg-zinc-800/50 rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700">
+                <p className="text-sm text-zinc-500">Your generated posts will appear here.</p>
               </div>
             </div>
           </div>
         )}
 
         {activeTab === "config" && (
-          <div className="max-w-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6">
-             <h3 className="font-semibold text-zinc-900 dark:text-white mb-6">AI Configuration: {activePlatform}</h3>
-             <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">Brand Voice</label>
-                    <select className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none">
-                      <option>Sarcastic & Technical</option>
-                      <option>Formal & Professional</option>
-                      <option>Enthusiastic & Friendly</option>
-                      <option>Minimalist</option>
-                    </select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* AI Model Config */}
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+               <h3 className="font-semibold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
+                 <SettingsIcon className="w-4 h-4 text-zinc-400" /> Model Settings: {activePlatform}
+               </h3>
+               <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <label className="text-xs font-medium text-zinc-500 block mb-1.5">Brand Voice</label>
+                      <select 
+                        value={config.brandVoice}
+                        onChange={(e) => setConfig({ ...config, brandVoice: e.target.value })}
+                        className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none"
+                      >
+                        <option>Sarcastic & Technical</option>
+                        <option>Formal & Professional</option>
+                        <option>Enthusiastic & Friendly</option>
+                        <option>Minimalist</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-zinc-500 block mb-1.5">Preferred Model</label>
+                      <select 
+                        value={config.preferredModel}
+                        onChange={(e) => setConfig({ ...config, preferredModel: e.target.value })}
+                        className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none"
+                      >
+                        <option value="mistral">Mistral Large (High Quality)</option>
+                        <option value="gemini">Gemini 1.5 Pro</option>
+                        <option value="gpt4o">GPT-4o (via OpenRouter)</option>
+                      </select>
+                    </div>
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">Preferred Model</label>
-                    <select className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none">
-                      <option>Mistral Large (High Quality)</option>
-                      <option>Gemini 1.5 Pro</option>
-                      <option>GPT-4o (via OpenRouter)</option>
-                    </select>
+                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">Growth Goals</label>
+                    <textarea 
+                      value={config.growthGoals}
+                      onChange={(e) => setConfig({ ...config, growthGoals: e.target.value })}
+                      placeholder="e.g. Gain 100 followers this month by posting daily technical tips."
+                      className="w-full p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm outline-none h-24 resize-none"
+                    />
                   </div>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-zinc-500 block mb-1.5">Growth Goals</label>
-                  <textarea 
-                    placeholder="e.g. Gain 100 followers this month by posting daily technical tips."
-                    className="w-full p-3 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl text-sm outline-none h-24 resize-none"
-                  />
-                </div>
-                <button className="px-6 py-2 bg-zinc-900 dark:bg-white dark:text-zinc-900 text-white rounded-lg text-sm font-bold hover:opacity-90 transition-all">
-                  Save Configuration
-                </button>
-             </div>
+               </div>
+            </div>
+
+            {/* API Keys Config */}
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+               <h3 className="font-semibold text-zinc-900 dark:text-white mb-6 flex items-center gap-2">
+                 <Key className="w-4 h-4 text-zinc-400" /> Global API Credentials
+               </h3>
+               <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">Gemini API Key</label>
+                    <input 
+                      type="password"
+                      value={keys.geminiApiKey}
+                      onChange={(e) => setKeys({ ...keys, geminiApiKey: e.target.value })}
+                      placeholder="Enter Google AI Studio Key..."
+                      className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">Mistral API Key</label>
+                    <input 
+                      type="password"
+                      value={keys.mistralApiKey}
+                      onChange={(e) => setKeys({ ...keys, mistralApiKey: e.target.value })}
+                      placeholder="Enter Mistral Console Key..."
+                      className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-zinc-500 block mb-1.5">OpenRouter API Key</label>
+                    <input 
+                      type="password"
+                      value={keys.openrouterApiKey}
+                      onChange={(e) => setKeys({ ...keys, openrouterApiKey: e.target.value })}
+                      placeholder="Enter OpenRouter Key..."
+                      className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none"
+                    />
+                  </div>
+               </div>
+            </div>
           </div>
         )}
       </div>
+
+      {/* Footer Save Button (Fixed at bottom when in Config tab) */}
+      {activeTab === "config" && (
+        <div className="flex justify-end pt-6">
+          <button 
+            onClick={handleSaveConfig}
+            disabled={isSaving}
+            className="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-xl font-bold hover:opacity-90 transition-all disabled:opacity-50 shadow-xl shadow-primary/20"
+          >
+            {isSaving ? <Loader2 className="w-5 h-5 animate-spin" /> : <CheckCircle2 className="w-5 h-5" />}
+            {isSaving ? "Saving..." : "Save All Settings"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

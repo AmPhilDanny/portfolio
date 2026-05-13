@@ -44,7 +44,10 @@ export async function updateSettings(formData: FormData) {
       siteName, showSiteName, logoUrl, faviconUrl, copyrightText,
       githubUrl, linkedinUrl, twitterUrl, facebookUrl, instagramUrl,
       email, primaryColor, secondaryColor, backgroundColor, accentColor,
-      fontFamily, customCss
+      fontFamily, customCss,
+      geminiApiKey: formData.get("geminiApiKey") as string,
+      mistralApiKey: formData.get("mistralApiKey") as string,
+      openrouterApiKey: formData.get("openrouterApiKey") as string,
     };
 
 
@@ -57,5 +60,27 @@ export async function updateSettings(formData: FormData) {
     revalidatePath("/admin/settings");
     return { success: true };
   } catch(e) { return { success: false, error: "Failed to update settings" }; }
+}
+
+/**
+ * Specifically update AI API keys from the Social AI dashboard
+ */
+export async function updateAiApiKeys(data: {
+  geminiApiKey?: string;
+  mistralApiKey?: string;
+  openrouterApiKey?: string;
+}) {
+  try {
+    const existing = await getSettings();
+    if (existing) {
+      await db.update(settings).set(data).where(eq(settings.id, existing.id));
+    } else {
+      await db.insert(settings).values(data);
+    }
+    revalidatePath("/admin/social-ai");
+    return { success: true };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
 }
 

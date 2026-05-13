@@ -142,6 +142,9 @@ export const settings = pgTable('settings', {
   accentColor: text('accent_color'),
   fontFamily: text('font_family'),
   customCss: text('custom_css'),
+  geminiApiKey: text('gemini_api_key'),
+  mistralApiKey: text('mistral_api_key'),
+  openrouterApiKey: text('openrouter_api_key'),
 });
 
 
