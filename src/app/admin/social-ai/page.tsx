@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import MediaPicker from "@/components/MediaPicker";
 import {
-  generateSocialPost, analyzeScreenshot, updateAiConfig, getAiConfig,
+  generateSocialPost, analyzeScreenshot, analyzeProfileUrl, updateAiConfig, getAiConfig,
   getSocialInsights, getContentDrafts
 } from "@/app/actions/ai-learning";
 import { getSettings, updateAiApiKeys } from "@/app/actions/settings";
@@ -16,13 +16,13 @@ import { getAiPlatforms, addAiPlatform, deleteAiPlatform } from "@/app/actions/p
 type AiModel = 'gemini-vision' | 'gemini-pro' | 'mistral-large' | 'gpt-4o';
 
 const VISION_MODELS = [
-  { value: 'gemini-vision', label: 'Gemini 1.5 Flash (Vision)' },
+  { value: 'gemini-vision', label: 'Gemini 2.5 Flash (Vision)' },
   { value: 'gpt-4o', label: 'GPT-4o (OpenRouter)' },
 ];
 
 const TEXT_MODELS = [
   { value: 'mistral-large', label: 'Mistral Large' },
-  { value: 'gemini-pro', label: 'Gemini 1.5 Pro' },
+  { value: 'gemini-pro', label: 'Gemini 2.5 Flash' },
   { value: 'gpt-4o', label: 'GPT-4o (OpenRouter)' },
 ];
 
@@ -50,13 +50,19 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
   const [subTab, setSubTab] = useState<'metrics' | 'analysis' | 'forge' | 'config'>('metrics');
   const [insights, setInsights] = useState<any[]>([]);
   const [drafts, setDrafts] = useState<any[]>([]);
-  const [config, setConfig] = useState({ brandVoice: "Formal & Professional", preferredModel: "mistral-large", growthGoals: "" });
+  const [config, setConfig] = useState({ 
+    brandVoice: "Formal & Professional", 
+    preferredModel: "mistral-large", 
+    growthGoals: "",
+    profileUrl: "" 
+  });
   const [topic, setTopic] = useState("");
   const [screenshotUrl, setScreenshotUrl] = useState("");
   const [visionModel, setVisionModel] = useState<AiModel>('gemini-vision');
   const [genModel, setGenModel] = useState<AiModel>('mistral-large');
   const [isGenerating, setIsGenerating] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isAnalyzingUrl, setIsAnalyzingUrl] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -69,7 +75,12 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
     setInsights(ins);
     setDrafts(drs);
     if (cfg) {
-      setConfig({ brandVoice: cfg.brandVoice || "Formal & Professional", preferredModel: cfg.preferredModel || "mistral-large", growthGoals: cfg.growthGoals || "" });
+      setConfig({ 
+        brandVoice: cfg.brandVoice || "Formal & Professional", 
+        preferredModel: cfg.preferredModel || "mistral-large", 
+        growthGoals: cfg.growthGoals || "",
+        profileUrl: cfg.profileUrl || ""
+      });
       setGenModel((cfg.preferredModel as AiModel) || 'mistral-large');
     }
   }, [platform.platform]);
@@ -103,6 +114,23 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
       setMessage({ type: 'error', text: res.error || "Analysis failed" });
     }
     setIsAnalyzing(false);
+  };
+
+  const handleAnalyzeUrl = async () => {
+    if (!config.profileUrl) {
+      setMessage({ type: 'error', text: "Please add a profile URL in Settings first." });
+      return;
+    }
+    setIsAnalyzingUrl(true); setMessage(null);
+    const res = await analyzeProfileUrl(platform.platform, config.profileUrl, genModel);
+    if (res.success) {
+      setMessage({ type: 'success', text: "URL analysis complete!" });
+      const newIns = await getSocialInsights(platform.platform);
+      setInsights(newIns);
+    } else {
+      setMessage({ type: 'error', text: res.error || "URL analysis failed" });
+    }
+    setIsAnalyzingUrl(false);
   };
 
   const handleSaveConfig = async () => {
@@ -167,27 +195,53 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
       {/* GROWTH LEARNING */}
       {subTab === 'analysis' && (
         <div className="space-y-5">
-          <div className="p-6 bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 rounded-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold text-zinc-900 dark:text-white">Profile Screenshot Analysis</h3>
-                <p className="text-xs text-zinc-500 mt-0.5">AI reads your profile screenshot and extracts growth metrics.</p>
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="p-6 bg-gradient-to-br from-primary/5 to-transparent border border-primary/10 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">Profile Screenshot Analysis</h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">AI reads your profile screenshot and extracts growth metrics.</p>
+                </div>
+                <div className="flex flex-col items-end gap-1">
+                  <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Vision Model</label>
+                  <select value={visionModel} onChange={(e) => setVisionModel(e.target.value as AiModel)}
+                    className="text-xs px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg outline-none">
+                    {VISION_MODELS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+                  </select>
+                </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider">Vision Model</label>
-                <select value={visionModel} onChange={(e) => setVisionModel(e.target.value as AiModel)}
-                  className="text-xs px-3 py-1.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg outline-none">
-                  {VISION_MODELS.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
-                </select>
+              <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-primary/10">
+                <MediaPicker onSelect={handleAnalyze} currentUrl={screenshotUrl} label="Profile Screenshot" />
+                {isAnalyzing && (
+                  <div className="mt-4 flex items-center gap-2 text-sm text-primary font-medium animate-pulse">
+                    <Loader2 className="w-4 h-4 animate-spin" /> AI is reading your metrics...
+                  </div>
+                )}
               </div>
             </div>
-            <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-primary/10">
-              <MediaPicker onSelect={handleAnalyze} currentUrl={screenshotUrl} label="Profile Screenshot" />
-              {isAnalyzing && (
-                <div className="mt-4 flex items-center gap-2 text-sm text-primary font-medium animate-pulse">
-                  <Loader2 className="w-4 h-4 animate-spin" /> AI is reading your metrics...
+
+            <div className="p-6 bg-gradient-to-br from-blue-500/5 to-transparent border border-blue-500/10 rounded-2xl space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-zinc-900 dark:text-white">Profile URL Analysis</h3>
+                  <p className="text-xs text-zinc-500 mt-0.5">AI scrapes your profile page to extract insights.</p>
                 </div>
-              )}
+                <Globe className="w-5 h-5 text-blue-500/50" />
+              </div>
+              <div className="bg-white dark:bg-zinc-900 p-6 rounded-xl border border-blue-500/10 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-500">Profile / Page Link</label>
+                  <p className="text-[10px] text-zinc-400 font-mono break-all">{config.profileUrl || "Set URL in Settings tab"}</p>
+                </div>
+                <button 
+                  onClick={handleAnalyzeUrl} 
+                  disabled={isAnalyzingUrl || !config.profileUrl}
+                  className="w-full py-2.5 bg-blue-600 text-white rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-blue-700 transition-all disabled:opacity-50"
+                >
+                  {isAnalyzingUrl ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
+                  {isAnalyzingUrl ? "Scraping..." : "Analyze Profile Link"}
+                </button>
+              </div>
             </div>
           </div>
 
@@ -201,9 +255,14 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
                 <div className="p-8 text-center text-sm text-zinc-500">No analyses yet.</div>
               ) : insights.map((ins) => (
                 <div key={ins.id} className="p-4 flex items-center justify-between hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">
-                  <div>
-                    <p className="text-sm font-medium">{ins.handle || "Analysis"}</p>
-                    <p className="text-xs text-zinc-400">{new Date(ins.lastAnalyzed).toLocaleString()} • {ins.followerCount} followers</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                      {ins.screenshotUrl ? <Upload className="w-4 h-4 text-zinc-400" /> : <Globe className="w-4 h-4 text-zinc-400" />}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{ins.handle || "Analysis"}</p>
+                      <p className="text-xs text-zinc-400">{new Date(ins.lastAnalyzed).toLocaleString()} • {ins.followerCount} followers</p>
+                    </div>
                   </div>
                   <span className="text-xs font-bold text-primary">{ins.engagementRate}</span>
                 </div>
@@ -275,6 +334,16 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
               </button>
             </div>
             <div className="grid gap-4">
+              <div>
+                <label className="text-xs font-medium text-zinc-500 block mb-1.5">Profile / Page URL</label>
+                <input 
+                  type="url"
+                  value={config.profileUrl} 
+                  onChange={(e) => setConfig({ ...config, profileUrl: e.target.value })}
+                  placeholder="https://..."
+                  className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none focus:border-primary" 
+                />
+              </div>
               <div>
                 <label className="text-xs font-medium text-zinc-500 block mb-1.5">Brand Voice</label>
                 <select value={config.brandVoice} onChange={(e) => setConfig({ ...config, brandVoice: e.target.value })}

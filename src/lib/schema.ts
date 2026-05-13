@@ -231,8 +231,9 @@ export const contentCalendar = pgTable('content_calendar', {
 export const aiConfig = pgTable('ai_config', {
   id: uuid('id').primaryKey().defaultRandom(),
   platform: text('platform').notNull().unique(),
-  brandVoice: text('brand_voice'), // e.g. "Sarcastic & Technical", "Formal & Professional"
+  profileUrl: text('profile_url'),               // e.g. https://github.com/AmPhilDanny
+  brandVoice: text('brand_voice'),
   targetAudience: text('target_audience'),
-  preferredModel: text('preferred_model').default('mistral'),
+  preferredModel: text('preferred_model').default('mistral-large'),
   growthGoals: text('growth_goals'),
 });

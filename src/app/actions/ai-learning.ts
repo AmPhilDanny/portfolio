@@ -163,6 +163,7 @@ export async function updateAiConfig(data: {
   targetAudience: string;
   preferredModel: string;
   growthGoals: string;
+  profileUrl?: string;
 }) {
   try {
     const existing = await db.select().from(aiConfig).where(eq(aiConfig.platform, data.platform)).limit(1);
@@ -190,6 +191,88 @@ export async function getAiConfig(platform: string) {
   } catch (error) {
     console.error("Failed to fetch AI config:", error);
     return null;
+  }
+}
+
+/**
+ * Analyze a social media profile by fetching its public URL.
+ * Works best with GitHub, LinkedIn public pages. JS-heavy sites (Instagram, X)
+ * may return limited content — combine with screenshot analysis for best results.
+ */
+export async function analyzeProfileUrl(
+  platform: string,
+  profileUrl: string,
+  model?: AiModel
+) {
+  try {
+    // Fetch the page HTML server-side
+    const res = await fetch(profileUrl, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; NovaxFolioBot/1.0)" },
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) throw new Error(`Failed to fetch ${profileUrl} (status ${res.status})`);
+
+    const html = await res.text();
+
+    // Strip HTML tags and collapse whitespace to get readable text
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/gi, "")
+      .replace(/<style[\s\S]*?<\/style>/gi, "")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim()
+      .slice(0, 6000); // Keep within token budget
+
+    const resolvedModel = await resolveModel(model, platform, 'gemini-pro');
+
+    const response = await callAi({
+      model: resolvedModel,
+      prompt: `You are analyzing the public ${platform} profile page of a developer/creator.
+
+Page content (extracted text from ${profileUrl}):
+---
+${text}
+---
+
+Extract the following as JSON:
+- handle: username or display name
+- followers: follower/subscriber count (as a string, e.g. "1.2k")
+- following: following count (as a string)
+- engagement_rate: estimated engagement (if visible)
+- bio: short bio or description
+- summary: 2–3 sentence growth insights and recommendations
+
+Return only valid JSON.`,
+    });
+
+    if (response.error) throw new Error(response.error);
+
+    let data: any = {};
+    try {
+      const cleaned = response.content.replace(/```json\n?|\n?```/g, "").trim();
+      data = JSON.parse(cleaned);
+    } catch {
+      data = { summary: response.content };
+    }
+
+    // Save to DB
+    await db.insert(socialMediaInsights).values({
+      platform,
+      handle: data.handle,
+      followerCount: String(data.followers || ""),
+      followingCount: String(data.following || ""),
+      engagementRate: String(data.engagement_rate || ""),
+      analysisSummary: data.summary,
+      screenshotUrl: null,
+      rawAiResponse: response.content,
+    });
+
+    if (data.followers) await trackGrowthMetric(platform, 'followers', String(data.followers));
+
+    revalidatePath("/admin/social-ai");
+    return { success: true, data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 }
 

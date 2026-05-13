@@ -40,7 +40,8 @@ async function callGemini(options: AiCallOptions, apiKey?: string | null) {
   if (!apiKey) throw new Error("Gemini API Key is missing in settings.");
 
   const isVision = !!options.image;
-  const modelName = isVision ? "gemini-1.5-flash" : "gemini-1.5-pro";
+  // Use Gemini 2.5 Flash for both vision and text — supports both modalities
+  const modelName = "gemini-2.5-flash-preview-04-17";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
   const contents: any[] = [];
