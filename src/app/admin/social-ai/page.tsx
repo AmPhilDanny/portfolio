@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { 
   Sparkles, TrendingUp, Calendar, Settings as SettingsIcon, 
   Plus, BarChart3, MessageSquare, History, Globe, 
-  Upload, Loader2, CheckCircle2, AlertCircle, Key
+  Upload, Loader2, CheckCircle2, AlertCircle, Key, X
 } from "lucide-react";
 import { PostCard } from "@/components/PostCard";
 import MediaPicker from "@/components/MediaPicker";
