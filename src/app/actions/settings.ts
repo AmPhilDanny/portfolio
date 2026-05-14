@@ -48,6 +48,7 @@ export async function updateSettings(formData: FormData) {
       geminiApiKey: formData.get("geminiApiKey") as string,
       mistralApiKey: formData.get("mistralApiKey") as string,
       openrouterApiKey: formData.get("openrouterApiKey") as string,
+      openrouterModel: formData.get("openrouterModel") as string,
       globalAiModel: formData.get("globalAiModel") as string,
     };
 

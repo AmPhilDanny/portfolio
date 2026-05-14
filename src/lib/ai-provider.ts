@@ -25,7 +25,7 @@ export async function callAi(options: AiCallOptions): Promise<{ content: string;
     } else if (options.model === 'mistral-large') {
       return await callMistral(options, keys.mistralApiKey);
     } else {
-      return await callOpenRouter(options, keys.openrouterApiKey);
+      return await callOpenRouter(options, keys.openrouterApiKey, keys.openrouterModel);
     }
   } catch (error: any) {
     console.error("AI Provider Error:", error);
@@ -39,16 +39,14 @@ export async function callAi(options: AiCallOptions): Promise<{ content: string;
 async function callGemini(options: AiCallOptions, apiKey?: string | null) {
   if (!apiKey) throw new Error("Gemini API Key is missing in settings.");
 
-  const isVision = !!options.image;
-  // Use Gemini 2.5 Flash for both vision and text — supports both modalities
-  const modelName = "gemini-2.5-flash-preview-04-17";
+  // Use Gemini 1.5 Flash — latest stable flash model
+  const modelName = "gemini-1.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
   const contents: any[] = [];
   const parts: any[] = [{ text: options.prompt }];
 
   if (options.image) {
-    // Handle image (if it's a URL, we need to fetch it or convert to base64)
     let base64Data = "";
     let mimeType = "image/png";
 
@@ -59,9 +57,6 @@ async function callGemini(options: AiCallOptions, apiKey?: string | null) {
         base64Data = match[2];
       }
     } else if (options.image.startsWith("http") || options.image.startsWith("/")) {
-        // For simplicity in this environment, we assume the frontend sends base64 
-        // or we'd need to fetch the image here.
-        // If it's a relative URL (our media API), we can fetch it.
         const fullUrl = options.image.startsWith("/") ? `${process.env.NEXTAUTH_URL}${options.image}` : options.image;
         const res = await fetch(fullUrl);
         const buffer = await res.arrayBuffer();
@@ -121,7 +116,7 @@ async function callMistral(options: AiCallOptions, apiKey?: string | null) {
 /**
  * Call OpenRouter API
  */
-async function callOpenRouter(options: AiCallOptions, apiKey?: string | null) {
+async function callOpenRouter(options: AiCallOptions, apiKey?: string | null, model?: string | null) {
   if (!apiKey) throw new Error("OpenRouter API Key is missing in settings.");
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -129,11 +124,11 @@ async function callOpenRouter(options: AiCallOptions, apiKey?: string | null) {
     headers: {
       "Content-Type": "application/json",
       "Authorization": `Bearer ${apiKey}`,
-      "HTTP-Referer": "https://novaxfolio.vercel.app", // Optional
+      "HTTP-Referer": "https://novaxfolio.vercel.app", 
       "X-Title": "NovaxFolio"
     },
     body: JSON.stringify({
-      model: "openai/gpt-4o",
+      model: model || "openai/gpt-4o",
       messages: [{ role: "user", content: options.prompt }]
     })
   });

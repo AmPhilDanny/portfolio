@@ -25,9 +25,9 @@ const COLOR_PRESETS = [
 
 const AI_MODELS = [
   { value: "mistral-large", label: "Mistral Large", description: "Fast, high quality text generation" },
-  { value: "gemini-pro", label: "Gemini 1.5 Pro", description: "Google's powerful text model" },
+  { value: "gemini-pro", label: "Gemini 1.5 Flash", description: "Google's ultra-fast flash model" },
   { value: "gemini-vision", label: "Gemini 1.5 Flash (Vision)", description: "Image + text analysis" },
-  { value: "gpt-4o", label: "GPT-4o (OpenRouter)", description: "OpenAI's multimodal model" },
+  { value: "gpt-4o", label: "OpenRouter (Custom)", description: "Use any model via OpenRouter" },
 ];
 
 type Section = "branding" | "colors" | "typography" | "links" | "ai";
@@ -62,6 +62,7 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
   const [geminiApiKey, setGeminiApiKey] = useState(initialData?.geminiApiKey || "");
   const [mistralApiKey, setMistralApiKey] = useState(initialData?.mistralApiKey || "");
   const [openrouterApiKey, setOpenrouterApiKey] = useState(initialData?.openrouterApiKey || "");
+  const [openrouterModel, setOpenrouterModel] = useState(initialData?.openrouterModel || "openai/gpt-4o");
   const [showGemini, setShowGemini] = useState(false);
   const [showMistral, setShowMistral] = useState(false);
   const [showOpenRouter, setShowOpenRouter] = useState(false);
@@ -89,6 +90,7 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
     formData.set("geminiApiKey", geminiApiKey);
     formData.set("mistralApiKey", mistralApiKey);
     formData.set("openrouterApiKey", openrouterApiKey);
+    formData.set("openrouterModel", openrouterModel);
     // Legacy link fields (kept for backward compat)
     formData.set("githubUrl", initialData?.githubUrl || "");
     formData.set("linkedinUrl", initialData?.linkedinUrl || "");
@@ -391,6 +393,22 @@ export default function SettingsForm({ initialData, socials }: { initialData: an
                 </div>
               </div>
             ))}
+
+            {/* Custom OpenRouter Model */}
+            {globalAiModel === "gpt-4o" && (
+              <div className="space-y-1.5 p-4 rounded-xl border border-dashed border-primary/30 bg-primary/5 animate-in slide-in-from-top-2 duration-300">
+                <label className="block text-sm font-bold text-primary">OpenRouter Model ID</label>
+                <input
+                  type="text"
+                  value={openrouterModel}
+                  onChange={(e) => setOpenrouterModel(e.target.value)}
+                  placeholder="e.g. google/gemini-pro-1.5"
+                  className={inputCls}
+                  style={inputStyle}
+                />
+                <p className="text-[10px] text-muted-foreground">Find model IDs at <a href="https://openrouter.ai/models" target="_blank" rel="noreferrer" className="underline text-primary">openrouter.ai/models</a></p>
+              </div>
+            )}
           </div>
         </div>
       )}

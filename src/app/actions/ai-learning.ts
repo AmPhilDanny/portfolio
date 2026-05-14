@@ -88,16 +88,25 @@ export async function analyzeScreenshot(
       data = { summary: response.content };
     }
 
+    // Robustness checks
+    const finalIdentity = typeof data.identity === 'object' && data.identity !== null
+      ? JSON.stringify(data.identity)
+      : String(data.identity || "");
+      
+    const finalPillars = Array.isArray(data.content_pillars) 
+      ? data.content_pillars 
+      : (data.content_pillars ? [String(data.content_pillars)] : []);
+
     // Save insight to DB
     await db.insert(socialMediaInsights).values({
       platform,
-      handle: data.handle,
+      handle: String(data.handle || ""),
       followerCount: String(data.followers || ""),
       followingCount: String(data.following || ""),
       engagementRate: String(data.engagement_rate || ""),
-      identity: data.identity || null,
-      contentPillars: data.content_pillars || [],
-      analysisSummary: data.summary,
+      identity: finalIdentity,
+      contentPillars: finalPillars,
+      analysisSummary: data.summary || response.content,
       screenshotUrl: imageUrl,
       rawAiResponse: response.content
     });
@@ -280,16 +289,25 @@ Return ONLY valid JSON.`,
       data = { summary: response.content };
     }
 
+    // Ensure identity is a string and contentPillars is an array (robustness)
+    const finalIdentity = typeof data.identity === 'object' && data.identity !== null
+      ? JSON.stringify(data.identity)
+      : String(data.identity || "");
+      
+    const finalPillars = Array.isArray(data.content_pillars) 
+      ? data.content_pillars 
+      : (data.content_pillars ? [String(data.content_pillars)] : []);
+
     // Save to DB
     await db.insert(socialMediaInsights).values({
       platform,
-      handle: data.handle,
+      handle: String(data.handle || ""),
       followerCount: String(data.followers || ""),
       followingCount: String(data.following || ""),
       engagementRate: String(data.engagement_rate || ""),
-      identity: data.identity || null,
-      contentPillars: data.content_pillars || [],
-      analysisSummary: data.summary,
+      identity: finalIdentity,
+      contentPillars: finalPillars,
+      analysisSummary: data.summary || response.content,
       screenshotUrl: null,
       rawAiResponse: response.content,
     });
