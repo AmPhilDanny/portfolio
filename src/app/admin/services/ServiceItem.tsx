@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
-import { Trash2, Pencil, Layers } from "lucide-react";
+import { Trash2, Pencil, Layers, Share2 } from "lucide-react";
 import { deleteService } from "@/app/actions/services";
 import ServicesForm from "./ServicesForm";
+import SocialShareModal from "@/components/SocialShareModal";
 
 export default function ServiceItem({ svc }: { svc: any }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
 
   if (isEditing) {
     return (
@@ -26,6 +28,15 @@ export default function ServiceItem({ svc }: { svc: any }) {
   return (
     <div className="p-4 rounded-xl border flex justify-between items-start gap-3"
       style={{ background: "var(--card)", borderColor: "var(--border)" }}>
+      
+      <SocialShareModal 
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        title={svc.title}
+        content={svc.description}
+        type="general"
+      />
+
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <Layers className="w-4 h-4 shrink-0" style={{ color: "var(--primary)" }} />
@@ -39,6 +50,14 @@ export default function ServiceItem({ svc }: { svc: any }) {
         />
       </div>
       <div className="flex gap-1 shrink-0">
+        <button 
+          type="button"
+          onClick={() => setIsShareModalOpen(true)}
+          title="Share Service on Socials"
+          className="p-2 rounded-lg transition-colors text-purple-500 hover:bg-purple-500/10"
+        >
+          <Share2 className="w-4 h-4" />
+        </button>
         <button 
           type="button"
           onClick={() => setIsEditing(true)}

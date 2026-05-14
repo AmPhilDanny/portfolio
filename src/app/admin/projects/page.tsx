@@ -1,5 +1,6 @@
 import { getProjects, deleteProject } from "@/app/actions/projects";
 import ProjectForm from "./ProjectForm";
+import ProjectItem from "./ProjectItem";
 import { Trash2 } from "lucide-react";
 
 /**
@@ -27,22 +28,11 @@ export default async function AdminProjectsPage() {
           {projectsList.length === 0 ? (
             <p className="text-gray-500">No projects added yet. Fallback data will be shown on the live site.</p>
           ) : (
-            projectsList.map((project: any) => (
-              <div key={project.id} className="p-4 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-gray-800 rounded-xl flex justify-between items-center">
-                <div>
-                  <h3 className="font-bold">{project.title}</h3>
-                  <p className="text-sm text-gray-500 truncate max-w-[200px]">{project.description}</p>
-                </div>
-                <form action={async () => {
-                  "use server";
-                  await deleteProject(project.id);
-                }}>
-                  <button type="submit" className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors cursor-pointer">
-                    <Trash2 className="w-5 h-5" />
-                  </button>
-                </form>
-              </div>
-            ))
+            <div className="space-y-3">
+              {projectsList.map((project: any) => (
+                <ProjectItem key={project.id} project={project} />
+              ))}
+            </div>
           )}
         </div>
       </div>

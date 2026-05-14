@@ -43,14 +43,14 @@ export function AdminSidebar({ email }: { email?: string | null }) {
       {/* Sidebar Overlay for Mobile */}
       {isOpen && (
         <div 
-          className="md:hidden fixed inset-0 bg-black/50 z-40"
+          className="md:hidden fixed inset-0 bg-black/50 z-30"
           onClick={() => setIsOpen(false)}
         />
       )}
 
       {/* Sidebar Content */}
       <aside className={`
-        fixed md:static inset-y-0 left-0 z-50
+        fixed md:static inset-y-0 left-0 z-40
         w-64 bg-white dark:bg-zinc-900 border-r border-gray-200 dark:border-gray-800 flex flex-col
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}

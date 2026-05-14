@@ -11,7 +11,15 @@ import { revalidatePath } from "next/cache";
  */
 export async function getMedia() {
   try {
-    return await db.select().from(media).orderBy(desc(media.createdAt));
+    return await db.select({
+      id: media.id,
+      name: media.name,
+      url: media.url,
+      type: media.type,
+      size: media.size,
+      mimeType: media.mimeType,
+      createdAt: media.createdAt,
+    }).from(media).orderBy(desc(media.createdAt));
   } catch (error) {
     console.error("Failed to fetch media:", error);
     return [];

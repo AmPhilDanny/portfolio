@@ -194,6 +194,8 @@ export const socialMediaInsights = pgTable('social_media_insights', {
   followerCount: text('follower_count'),
   followingCount: text('following_count'),
   engagementRate: text('engagement_rate'),
+  identity: text('identity'),
+  contentPillars: jsonb('content_pillars'),
   analysisSummary: text('analysis_summary'),
   screenshotUrl: text('screenshot_url'),
   rawAiResponse: text('raw_ai_response'),

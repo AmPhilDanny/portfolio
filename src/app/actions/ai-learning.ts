@@ -64,7 +64,17 @@ export async function analyzeScreenshot(
 
     const response = await callAi({
       model: visionModel,
-      prompt: `Analyze this screenshot of a ${platform} profile. Extract the handle, follower count, following count, and engagement trends. Return the data as valid JSON with keys: handle, followers, following, engagement_rate, summary.`,
+      prompt: `Analyze this screenshot of a ${platform} profile. 
+      Extract the following:
+      - handle
+      - follower count
+      - following count
+      - engagement rate
+      - identity: the core brand voice/vibe (e.g. "Minimalist & Sophisticated", "Hacker Spirit")
+      - content_pillars: array of 3-5 key topics they post about
+      - summary: brief strategic growth advice
+      
+      Return as valid JSON.`,
       image: imageUrl
     });
 
@@ -72,7 +82,6 @@ export async function analyzeScreenshot(
 
     let data: any = {};
     try {
-      // Strip markdown code fences if present
       const cleaned = response.content.replace(/```json\n?|\n?```/g, "").trim();
       data = JSON.parse(cleaned);
     } catch {
@@ -86,6 +95,8 @@ export async function analyzeScreenshot(
       followerCount: String(data.followers || ""),
       followingCount: String(data.following || ""),
       engagementRate: String(data.engagement_rate || ""),
+      identity: data.identity || null,
+      contentPillars: data.content_pillars || [],
       analysisSummary: data.summary,
       screenshotUrl: imageUrl,
       rawAiResponse: response.content
@@ -103,12 +114,19 @@ export async function analyzeScreenshot(
 /**
  * Generate a new social media post.
  * @param model - Optional model to use; falls back to platform config then global settings.
+ * @param customContext - Optional extra context (e.g. Project title/desc) to base the post on.
  */
-export async function generateSocialPost(platform: string, topic?: string, model?: AiModel) {
+export async function generateSocialPost(
+  platform: string, 
+  topic?: string, 
+  model?: AiModel,
+  customContext?: string
+) {
   try {
     // 1. Get platform config
     const config = await db.select().from(aiConfig).where(eq(aiConfig.platform, platform)).limit(1);
     const brandVoice = config[0]?.brandVoice || "Professional and engaging";
+    const targetAudience = config[0]?.targetAudience || "General tech audience";
     const goals = config[0]?.growthGoals || "Increase reach and engagement";
 
     // 2. Get latest insights for context
@@ -118,8 +136,10 @@ export async function generateSocialPost(platform: string, topic?: string, model
       .orderBy(desc(socialMediaInsights.lastAnalyzed))
       .limit(1);
 
-    const context = insights[0] 
-      ? `Last analysis: ${insights[0].analysisSummary}` 
+    const brandContext = insights[0] 
+      ? `Identity: ${insights[0].identity || "N/A"}
+         Content Pillars: ${Array.isArray(insights[0].contentPillars) ? (insights[0].contentPillars as string[]).join(", ") : "N/A"}
+         Growth Summary: ${insights[0].analysisSummary}` 
       : "No previous analysis available.";
 
     // 3. Resolve model
@@ -130,11 +150,14 @@ export async function generateSocialPost(platform: string, topic?: string, model
       model: resolvedModel,
       prompt: `Act as a Social Media Strategist for ${platform}. 
       Brand Voice: ${brandVoice}
+      Target Audience: ${targetAudience}
       Growth Goals: ${goals}
-      Context: ${context}
-      Topic: ${topic || "Recent achievements in Data Analysis and Web Development"}
+      Brand Context: ${brandContext}
       
-      Generate a high-impact post with relevant hashtags. Return only the post content.`
+      ${customContext ? `Primary Content Source: ${customContext}` : ""}
+      Topic/Request: ${topic || "Recent achievements in Data Analysis and Web Development"}
+      
+      Generate a high-impact post that resonates deeply with the target audience. Return only the post content.`
     });
 
     if (response.error) throw new Error(response.error);
@@ -227,22 +250,24 @@ export async function analyzeProfileUrl(
 
     const response = await callAi({
       model: resolvedModel,
-      prompt: `You are analyzing the public ${platform} profile page of a developer/creator.
+      prompt: `You are an elite Social Media Analyst. Analyze this public ${platform} profile data for a professional brand.
 
 Page content (extracted text from ${profileUrl}):
 ---
 ${text}
 ---
 
-Extract the following as JSON:
-- handle: username or display name
-- followers: follower/subscriber count (as a string, e.g. "1.2k")
-- following: following count (as a string)
-- engagement_rate: estimated engagement (if visible)
-- bio: short bio or description
-- summary: 2–3 sentence growth insights and recommendations
+Extract the following as a structured JSON object:
+- handle: The username or professional display name.
+- followers: Total followers/subscribers (e.g., "1.2k", "500").
+- following: Total accounts followed.
+- engagement_rate: An estimated engagement level based on visible activity (e.g., "High", "3.2%", "N/A").
+- bio: A concise summary of their professional identity.
+- identity: The core "Brand Voice" detected (e.g., "Sarcastic & Technical", "Visionary", "Educational").
+- content_pillars: Key topics they frequently post about.
+- summary: A 2-3 sentence strategic insight on their growth and specific recommendations for improvement.
 
-Return only valid JSON.`,
+Return ONLY valid JSON.`,
     });
 
     if (response.error) throw new Error(response.error);
@@ -262,6 +287,8 @@ Return only valid JSON.`,
       followerCount: String(data.followers || ""),
       followingCount: String(data.following || ""),
       engagementRate: String(data.engagement_rate || ""),
+      identity: data.identity || null,
+      contentPillars: data.content_pillars || [],
       analysisSummary: data.summary,
       screenshotUrl: null,
       rawAiResponse: response.content,

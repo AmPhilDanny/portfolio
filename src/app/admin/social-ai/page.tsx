@@ -53,6 +53,7 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
   const [config, setConfig] = useState({ 
     brandVoice: "Formal & Professional", 
     preferredModel: "mistral-large", 
+    targetAudience: "",
     growthGoals: "",
     profileUrl: "" 
   });
@@ -77,6 +78,7 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
     if (cfg) {
       setConfig({ 
         brandVoice: cfg.brandVoice || "Formal & Professional", 
+        targetAudience: cfg.targetAudience || "Technical Professionals",
         preferredModel: cfg.preferredModel || "mistral-large", 
         growthGoals: cfg.growthGoals || "",
         profileUrl: cfg.profileUrl || ""
@@ -135,7 +137,7 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
 
   const handleSaveConfig = async () => {
     setIsSaving(true); setMessage(null);
-    const res = await updateAiConfig({ platform: platform.platform, targetAudience: "Technical Professionals", ...config });
+    const res = await updateAiConfig(config as any);
     setMessage(res.success ? { type: 'success', text: "Config saved!" } : { type: 'error', text: "Save failed." });
     setIsSaving(false);
   };
@@ -165,30 +167,128 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
 
       {/* METRICS */}
       {subTab === 'metrics' && (
-        <div className="space-y-4">
-          {insights.length === 0 ? (
-            <div className="p-12 text-center rounded-2xl border border-dashed border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/30">
-              <BarChart3 className="w-10 h-10 text-zinc-300 mx-auto mb-3" />
-              <p className="text-sm text-zinc-500">No data yet. Upload a screenshot in Growth Learning to start tracking.</p>
-            </div>
-          ) : insights.map((ins) => (
-            <div key={ins.id} className="p-5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden shrink-0">
-                  {ins.screenshotUrl ? <img src={ins.screenshotUrl} className="w-full h-full object-cover" alt="Profile" /> : <Globe className="w-6 h-6 text-primary" />}
-                </div>
-                <div>
-                  <p className="font-semibold text-zinc-900 dark:text-white">{ins.handle || "Profile"}</p>
-                  <p className="text-xs text-zinc-500">{new Date(ins.lastAnalyzed).toLocaleDateString()} • {ins.followerCount || '0'} followers</p>
-                  {ins.analysisSummary && <p className="text-xs text-zinc-400 mt-1 line-clamp-1">{ins.analysisSummary}</p>}
-                </div>
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          {/* Top Level Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Current Reach */}
+            <div className="p-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                <Globe className="w-12 h-12 text-primary" />
               </div>
-              <div className="text-right shrink-0">
-                <p className="text-lg font-bold text-primary">{ins.engagementRate || '—'}</p>
-                <p className="text-xs text-zinc-400">Engagement</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Current Reach</p>
+              <p className="text-3xl font-bold text-zinc-900 dark:text-white tracking-tight">
+                {insights[0]?.followerCount || "0"}
+              </p>
+              <div className="flex items-center gap-1.5 mt-2">
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                <span className="text-[10px] text-zinc-500 font-medium">Last synced {insights[0] ? new Date(insights[0].lastAnalyzed).toLocaleDateString() : "Never"}</span>
               </div>
             </div>
-          ))}
+
+            {/* Growth Trend */}
+            <div className="p-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm relative overflow-hidden">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Growth Trend</p>
+              {(() => {
+                if (insights.length < 2) return <p className="text-sm text-zinc-400 mt-2 italic">Need more data to track trends...</p>;
+                const current = parseFloat((insights[0].followerCount || "0").replace(/[^0-9.]/g, ""));
+                const prev = parseFloat((insights[1].followerCount || "0").replace(/[^0-9.]/g, ""));
+                const diff = current - prev;
+                return (
+                  <>
+                    <p className={`text-3xl font-bold tracking-tight ${diff >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {diff >= 0 ? '+' : ''}{diff} <span className="text-xs font-normal text-zinc-400">followers</span>
+                    </p>
+                    <p className="text-[10px] text-zinc-500 mt-2 font-medium">Since {new Date(insights[1].lastAnalyzed).toLocaleDateString()}</p>
+                  </>
+                );
+              })()}
+            </div>
+
+            {/* Engagement Score */}
+            <div className="p-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-sm relative overflow-hidden">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-1">Engagement</p>
+              <p className="text-3xl font-bold text-primary tracking-tight">{insights[0]?.engagementRate || "—"}</p>
+              <p className="text-[10px] text-zinc-500 mt-2 font-medium">Platform efficiency score</p>
+            </div>
+          </div>
+
+          {/* Identity & Strategy Overview */}
+          {insights[0] && (insights[0].identity || insights[0].contentPillars?.length > 0) && (
+            <div className="p-8 bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 rounded-[2.5rem] shadow-2xl shadow-primary/5 relative overflow-hidden">
+              <div className="absolute top-0 right-0 -m-8 w-64 h-64 bg-primary/20 blur-[100px]" />
+              
+              <div className="relative z-10 flex flex-col md:flex-row gap-8">
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-50 mb-2">Brand Identity</h3>
+                    <p className="text-2xl font-bold tracking-tight italic">
+                      "{insights[0].identity || "Identity not yet established"}"
+                    </p>
+                  </div>
+                  <div className="pt-4 border-t border-white/10 dark:border-zinc-200">
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-50 mb-3">Core Content Pillars</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {Array.isArray(insights[0].contentPillars) && insights[0].contentPillars.length > 0 ? (
+                        (insights[0].contentPillars as string[]).map((p, i) => (
+                          <span key={i} className="px-3 py-1 bg-white/10 dark:bg-zinc-100 rounded-full text-xs font-bold border border-white/5">
+                            {p}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-sm opacity-60">No pillars detected yet.</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="md:w-1/3 bg-white/5 dark:bg-zinc-50 p-6 rounded-3xl border border-white/5 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-xs font-black uppercase tracking-[0.2em] opacity-50 mb-4">Strategic Insight</h3>
+                    <p className="text-sm leading-relaxed opacity-80 italic">
+                      {insights[0].analysisSummary || "AI analysis pending..."}
+                    </p>
+                  </div>
+                  <div className="mt-6 flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-wider">
+                    <Sparkles className="w-4 h-4" /> AI Generated Strategy
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Detailed Feed */}
+          <div className="space-y-4">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-zinc-500 px-2">Analysis Timeline</h3>
+            {insights.length === 0 ? (
+              <div className="p-12 text-center rounded-3xl border border-dashed border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/30">
+                <BarChart3 className="w-10 h-10 text-zinc-300 mx-auto mb-3" />
+                <p className="text-sm text-zinc-500 font-medium">No data points yet. Run an analysis to start the timeline.</p>
+              </div>
+            ) : insights.map((ins) => (
+              <div key={ins.id} className="p-6 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl flex items-center justify-between gap-4 hover:border-primary/30 transition-all group">
+                <div className="flex items-center gap-5">
+                  <div className="w-14 h-14 rounded-2xl bg-zinc-50 dark:bg-zinc-800 border border-zinc-100 dark:border-zinc-700 flex items-center justify-center overflow-hidden shrink-0 shadow-inner group-hover:scale-105 transition-transform">
+                    {ins.screenshotUrl ? <img src={ins.screenshotUrl} className="w-full h-full object-cover" alt="Profile" /> : <Globe className="w-6 h-6 text-primary" />}
+                  </div>
+                  <div>
+                    <p className="font-bold text-zinc-900 dark:text-white text-lg tracking-tight">{ins.handle || "Sync Record"}</p>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      <p className="text-xs text-zinc-500 font-medium">{new Date(ins.lastAnalyzed).toLocaleDateString()}</p>
+                      <span className="w-1 h-1 rounded-full bg-zinc-300" />
+                      <p className="text-xs font-bold text-primary">{ins.followerCount || '0'} Followers</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <div className="flex items-center justify-end gap-1.5 mb-0.5">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    <p className="text-xl font-black text-zinc-900 dark:text-white tracking-tighter">{ins.engagementRate || '—'}</p>
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400">Reach Efficiency</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
@@ -350,6 +450,16 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
                   className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none">
                   {BRAND_VOICES.map((v) => <option key={v}>{v}</option>)}
                 </select>
+              </div>
+              <div>
+                <label className="text-xs font-medium text-zinc-500 block mb-1.5">Target Audience</label>
+                <input 
+                  type="text"
+                  value={config.targetAudience} 
+                  onChange={(e) => setConfig({ ...config, targetAudience: e.target.value })}
+                  placeholder="e.g. Technical Professionals, Indie Hackers, Recuiters..."
+                  className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm outline-none focus:border-primary" 
+                />
               </div>
               <div>
                 <label className="text-xs font-medium text-zinc-500 block mb-1.5">Default AI Model (for this platform)</label>

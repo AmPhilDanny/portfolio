@@ -117,7 +117,7 @@ body::after {
 }
 
 /* Ensure content is above background effects */
-#__next, main, header, footer, section {
+#__next, header, footer, section {
   position: relative;
   z-index: 1;
 }
