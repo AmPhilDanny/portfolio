@@ -76,10 +76,6 @@ export default function RichTextEditor({ content, onChange, label }: RichTextEdi
     },
   });
 
-  if (!editor) {
-    return null;
-  }
-
   // Handle clicking outside to close AI menu
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -90,6 +86,10 @@ export default function RichTextEditor({ content, onChange, label }: RichTextEdi
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  if (!editor) {
+    return null;
+  }
 
   const handleAiAction = async (actionType: EditorAiAction) => {
     setIsAiLoading(true);
