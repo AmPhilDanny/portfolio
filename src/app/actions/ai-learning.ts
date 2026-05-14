@@ -154,10 +154,21 @@ export async function generateSocialPost(
     // 3. Resolve model
     const resolvedModel = await resolveModel(model, platform, 'mistral-large');
 
-    // 4. Call AI
+    // 4. Determine platform-specific constraints
+    const platformLimits: Record<string, string> = {
+      'X': 'strictly under 280 characters',
+      'Twitter': 'strictly under 280 characters',
+      'LinkedIn': 'between 150-300 words with bullet points',
+      'Facebook': 'long-form and engaging with a clear CTA',
+      'Instagram': 'under 2000 characters with 5-10 hashtags'
+    };
+    const limit = platformLimits[platform] || 'engaging and professionally sized';
+
+    // 5. Call AI
     const response = await callAi({
       model: resolvedModel,
       prompt: `Act as a Social Media Strategist for ${platform}. 
+      
       Brand Voice: ${brandVoice}
       Target Audience: ${targetAudience}
       Growth Goals: ${goals}
@@ -166,7 +177,13 @@ export async function generateSocialPost(
       ${customContext ? `Primary Content Source: ${customContext}` : ""}
       Topic/Request: ${topic || "Recent achievements in Data Analysis and Web Development"}
       
-      Generate a high-impact post that resonates deeply with the target audience. Return only the post content.`
+      Requirements:
+      1. Length: ${limit}.
+      2. Style: High-impact, engaging, and professional.
+      3. Format: Use HTML-style Markdown (e.g. <b>bold</b>, <i>italics</i>, bullet points).
+      4. Strategy: Include a soft call-to-action if appropriate.
+      
+      Return ONLY the final post content with formatting.`
     });
 
     if (response.error) throw new Error(response.error);

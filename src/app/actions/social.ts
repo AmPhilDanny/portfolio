@@ -34,6 +34,25 @@ export async function createSocialLink(formData: FormData) {
   }
 }
 
+export async function updateSocialLink(id: string, formData: FormData) {
+  try {
+    const platform = formData.get("platform") as string;
+    const url = formData.get("url") as string;
+    const icon = formData.get("icon") as string;
+
+    await db.update(socialLinks)
+      .set({ platform, url, icon })
+      .where(eq(socialLinks.id, id));
+
+    revalidatePath("/");
+    revalidatePath("/admin/settings");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Failed to update social link:", error);
+    return { success: false, error: error.message };
+  }
+}
+
 export async function deleteSocialLink(id: string) {
   try {
     await db.delete(socialLinks).where(eq(socialLinks.id, id));

@@ -26,9 +26,9 @@ export default function MediaManager() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size (4.5MB limit)
-    if (file.size > 4.5 * 1024 * 1024) {
-      alert("File too large. Max size is 4.5MB.");
+    // Check size (15MB limit)
+    if (file.size > 15 * 1024 * 1024) {
+      alert("File too large. Max size is 15MB.");
       return;
     }
 

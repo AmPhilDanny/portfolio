@@ -137,7 +137,10 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
 
   const handleSaveConfig = async () => {
     setIsSaving(true); setMessage(null);
-    const res = await updateAiConfig(config as any);
+    const res = await updateAiConfig({
+      ...config,
+      platform: platform.platform
+    } as any);
     setMessage(res.success ? { type: 'success', text: "Config saved!" } : { type: 'error', text: "Save failed." });
     setIsSaving(false);
   };
