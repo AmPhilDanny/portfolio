@@ -25,8 +25,8 @@ const COLOR_PRESETS = [
 
 const AI_MODELS = [
   { value: "mistral-large", label: "Mistral Large", description: "Fast, high quality text generation" },
-  { value: "gemini-pro", label: "Gemini 1.5 Flash", description: "Google's ultra-fast flash model" },
-  { value: "gemini-vision", label: "Gemini 1.5 Flash (Vision)", description: "Image + text analysis" },
+  { value: "gemini-pro", label: "Gemini 2.5 Flash", description: "Google's ultra-fast flash model" },
+  { value: "gemini-vision", label: "Gemini 2.5 Flash (Vision)", description: "Image + text analysis" },
   { value: "gpt-4o", label: "OpenRouter (Custom)", description: "Use any model via OpenRouter" },
 ];
 
