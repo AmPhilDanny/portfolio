@@ -26,33 +26,29 @@ export default function MediaManager() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Check size (4.5MB limit)
+    if (file.size > 4.5 * 1024 * 1024) {
+      alert("File too large. Max size is 4.5MB.");
+      return;
+    }
+
     setUploading(true);
     try {
-      const response = await fetch(`/api/upload?filename=${file.name}`, {
+      const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
         method: 'POST',
         body: file,
+        headers: { 'Content-Type': file.type }
       });
 
-      if (!response.ok) throw new Error('Upload failed');
-
-      const blob = await response.json();
-      
-      const fileType = file.type.startsWith('image/') ? 'image' : 
-                       file.type.startsWith('video/') ? 'video' : 'document';
-      
-      const sizeStr = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
-
-      await addMedia({
-        name: file.name,
-        url: blob.url,
-        type: fileType,
-        size: sizeStr
-      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ error: "Upload failed" }));
+        throw new Error(err.error || 'Upload failed');
+      }
 
       fetchMedia();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload failed:", error);
-      alert("Failed to upload media");
+      alert(error.message || "Failed to upload media");
     } finally {
       setUploading(false);
     }

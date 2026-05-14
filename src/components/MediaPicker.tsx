@@ -85,6 +85,13 @@ export default function MediaPicker({
 
   const handleFileUpload = async (file: File) => {
     if (!file) return;
+
+    // Check file size (4.5MB limit for many serverless platforms like Vercel)
+    if (file.size > 4.5 * 1024 * 1024) {
+      setUploadError("File too large. Max size is 4.5MB.");
+      return;
+    }
+
     setUploading(true);
     setUploadError("");
     setUploadProgress(10);

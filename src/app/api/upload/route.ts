@@ -36,19 +36,21 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     /**
      * ─── DIRECT DATABASE STORAGE STRATEGY (Octo-Storage) ───
-     * We insert the raw binary data into the database. This choice makes the 
-     * application extremely portable because it doesn't rely on local filesystem 
-     * persistence (which is read-only on many serverless hosts) or expensive 
-     * external cloud blobs.
      */
-    const [inserted] = await db.insert(media).values({
+    const result = await db.insert(media).values({
       name: filename,
-      url: "TEMP", // Temporary placeholder for the upcoming stable URL
+      url: "TEMP", 
       type: mimeType.startsWith("image/") ? "image" : "document",
       size: size,
       content: buffer,
       mimeType: mimeType,
     }).returning({ id: media.id });
+
+    if (!result || result.length === 0) {
+      throw new Error("Failed to insert media record into database");
+    }
+
+    const inserted = result[0];
 
     // Build the stable internal serving URL using the record ID
     const finalUrl = `/api/media/${inserted.id}`;
@@ -58,18 +60,16 @@ export async function POST(request: Request): Promise<NextResponse> {
       .set({ url: finalUrl })
       .where(eq(media.id, inserted.id));
 
-    // Return the stable asset metadata to the client
     return NextResponse.json({ 
       url: finalUrl, 
       name: filename, 
       id: inserted.id 
     });
 
-  } catch (error: unknown) {
-    console.error('Critical Upload Error (Neon Octo-Storage):', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
+  } catch (error: any) {
+    console.error('Critical Upload Error:', error);
     return NextResponse.json(
-      { error: `Database binary upload failed: ${message}` },
+      { error: `Upload failed: ${error.message || 'Unknown error'}` },
       { status: 500 }
     );
   }
