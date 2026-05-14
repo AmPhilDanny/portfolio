@@ -10,7 +10,15 @@ import {
   Wand2, Briefcase, AlignLeft, AlignJustify, CheckCircle
 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
-import { generateEditorContent, type EditorAiAction } from '@/app/actions/editor-ai';
+import { generateEditorContent } from '@/app/actions/editor-ai';
+
+type EditorAiAction = 
+  | 'improve'
+  | 'professional'
+  | 'shorter'
+  | 'longer'
+  | 'fix_grammar'
+  | 'custom';
 
 interface RichTextEditorProps {
   content: string;

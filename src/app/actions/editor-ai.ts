@@ -4,7 +4,7 @@ import { callAi } from "@/lib/ai-provider";
 import { db } from "@/lib/db";
 import { settings } from "@/lib/schema";
 
-export type EditorAiAction = 
+type EditorAiAction = 
   | 'improve'
   | 'professional'
   | 'shorter'
