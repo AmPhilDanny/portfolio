@@ -1,6 +1,6 @@
-import { getServices, deleteService } from "@/app/actions/services";
+import { getServices } from "@/app/actions/services";
 import ServicesForm from "./ServicesForm";
-import { Trash2, Layers } from "lucide-react";
+import ServiceItem from "./ServiceItem";
 
 export default async function AdminServicesPage() {
   const servicesList = await getServices();
@@ -20,22 +20,7 @@ export default async function AdminServicesPage() {
             <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>No services added yet. Fallback data will show on the site.</p>
           ) : (
             servicesList.map((svc: any) => (
-              <div key={svc.id} className="p-4 rounded-xl border flex justify-between items-start gap-3"
-                style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <Layers className="w-4 h-4 shrink-0" style={{ color: "var(--primary)" }} />
-                    <h3 className="font-bold text-sm" style={{ color: "var(--foreground)" }}>{svc.title}</h3>
-                    {svc.icon && <span className="code-badge ml-auto">{svc.icon}</span>}
-                  </div>
-                  <p className="text-xs line-clamp-2" style={{ color: "var(--muted-foreground)" }}>{svc.description}</p>
-                </div>
-                <form action={async () => { "use server"; await deleteService(svc.id); }}>
-                  <button type="submit" className="p-2 rounded-lg transition-colors text-red-500 hover:bg-red-500/10">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </form>
-              </div>
+              <ServiceItem key={svc.id} svc={svc} />
             ))
           )}
         </div>

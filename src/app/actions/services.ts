@@ -38,3 +38,22 @@ export async function deleteService(id: string) {
     return { success: true };
   } catch { return { success: false }; }
 }
+
+export async function updateService(id: string, formData: FormData) {
+  try {
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const icon = formData.get("icon") as string;
+    
+    await db.update(services)
+      .set({ title, description, icon })
+      .where(eq(services.id, id));
+      
+    revalidatePath("/");
+    revalidatePath("/admin/services");
+    return { success: true };
+  } catch (error) { 
+    console.error("Failed to update service:", error);
+    return { success: false }; 
+  }
+}

@@ -41,3 +41,25 @@ export async function deleteExperience(id: string) {
     return { success: true };
   } catch { return { success: false }; }
 }
+
+export async function updateExperience(id: string, formData: FormData) {
+  try {
+    const role = formData.get("role") as string;
+    const company = formData.get("company") as string;
+    const period = formData.get("period") as string;
+    const description = formData.get("description") as string;
+    const achievementsRaw = formData.get("achievements") as string;
+    const achievements = achievementsRaw.split("\n").map((a) => a.trim()).filter(Boolean);
+    
+    await db.update(experiences)
+      .set({ role, company, period, description, achievements })
+      .where(eq(experiences.id, id));
+      
+    revalidatePath("/");
+    revalidatePath("/admin/experience");
+    return { success: true };
+  } catch (error) { 
+    console.error("Failed to update experience:", error);
+    return { success: false }; 
+  }
+}

@@ -1,26 +1,41 @@
 "use client";
 import { useState } from "react";
-import { createExperience } from "@/app/actions/experience";
-import { Plus } from "lucide-react";
+import { createExperience, updateExperience } from "@/app/actions/experience";
+import { Plus, Save, X } from "lucide-react";
 import RichTextEditor from "@/components/RichTextEditor";
 
-export default function ExperienceForm() {
+interface ExperienceFormProps {
+  initialData?: any;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export default function ExperienceForm({ initialData, onSuccess, onCancel }: ExperienceFormProps = {}) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(initialData?.description || "");
+  
+  const isEditMode = !!initialData;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
     const form = e.currentTarget;
-    const result = await createExperience(new FormData(form));
+    
+    const result = isEditMode 
+      ? await updateExperience(initialData.id, new FormData(form))
+      : await createExperience(new FormData(form));
+      
     if (result.success) {
-      setMessage("Experience added successfully.");
-      form.reset();
-      setDescription("");
+      setMessage(`Experience ${isEditMode ? 'updated' : 'added'} successfully.`);
+      if (!isEditMode) {
+        form.reset();
+        setDescription("");
+      }
+      if (onSuccess) onSuccess();
     } else {
-      setMessage("Failed to add experience.");
+      setMessage(`Failed to ${isEditMode ? 'update' : 'add'} experience.`);
     }
     setLoading(false);
   };
@@ -39,16 +54,16 @@ export default function ExperienceForm() {
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Role</label>
-          <input type="text" name="role" placeholder="e.g. Senior Data Analyst" className={inputCls} style={inputStyle} required />
+          <input type="text" name="role" defaultValue={initialData?.role} placeholder="e.g. Senior Data Analyst" className={inputCls} style={inputStyle} required />
         </div>
         <div>
           <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Company</label>
-          <input type="text" name="company" placeholder="e.g. Tech Solutions Inc." className={inputCls} style={inputStyle} required />
+          <input type="text" name="company" defaultValue={initialData?.company} placeholder="e.g. Tech Solutions Inc." className={inputCls} style={inputStyle} required />
         </div>
       </div>
       <div>
         <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Period</label>
-        <input type="text" name="period" placeholder="e.g. Jan 2022 - Present" className={inputCls} style={inputStyle} required />
+        <input type="text" name="period" defaultValue={initialData?.period} placeholder="e.g. Jan 2022 - Present" className={inputCls} style={inputStyle} required />
       </div>
       
       <RichTextEditor 
@@ -60,14 +75,25 @@ export default function ExperienceForm() {
 
       <div>
         <label className="block text-sm font-medium mb-1.5" style={{ color: "var(--muted-foreground)" }}>Achievements (one per line)</label>
-        <textarea name="achievements" rows={4} placeholder="Increased data processing efficiency by 30%&#10;Led a team of 5 analysts..." className={inputCls} style={inputStyle} required />
+        <textarea name="achievements" defaultValue={initialData?.achievements?.join('\n')} rows={4} placeholder="Increased data processing efficiency by 30%&#10;Led a team of 5 analysts..." className={inputCls} style={inputStyle} required />
       </div>
-      <button type="submit" disabled={loading}
-        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50 transition-all font-mono"
-        style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
-        {loading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Plus className="w-4 h-4" />}
-        Add Experience
-      </button>
+      
+      <div className="flex gap-3 pt-2">
+        <button type="submit" disabled={loading}
+          className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm disabled:opacity-50 transition-all font-mono"
+          style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
+          {loading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : (isEditMode ? <Save className="w-4 h-4" /> : <Plus className="w-4 h-4" />)}
+          {isEditMode ? "Save Changes" : "Add Experience"}
+        </button>
+        
+        {isEditMode && onCancel && (
+          <button type="button" onClick={onCancel} disabled={loading}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-gray-300">
+            <X className="w-4 h-4" />
+            Cancel
+          </button>
+        )}
+      </div>
     </form>
   );
 }

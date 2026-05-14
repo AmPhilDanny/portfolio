@@ -1,6 +1,7 @@
-import { getExperiences, deleteExperience } from "@/app/actions/experience";
+import { getExperiences } from "@/app/actions/experience";
 import ExperienceForm from "./ExperienceForm";
-import { Trash2, Briefcase } from "lucide-react";
+import ExperienceItem from "./ExperienceItem";
+import { Briefcase } from "lucide-react";
 
 export default async function AdminExperiencePage() {
   const experiencesList = await getExperiences();
@@ -40,35 +41,7 @@ export default async function AdminExperiencePage() {
             </div>
           ) : (
             experiencesList.map((exp: any) => (
-              <div key={exp.id} className="p-5 rounded-2xl border transition-all tech-card-glow"
-                style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-                <div className="flex justify-between items-start gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="font-bold text-lg" style={{ color: "var(--foreground)" }}>{exp.role}</h3>
-                      <span className="code-badge">{exp.period}</span>
-                    </div>
-                    <p className="font-semibold text-primary mb-3">{exp.company}</p>
-                    <p className="text-sm mb-4 leading-relaxed" style={{ color: "var(--muted-foreground)" }}>{exp.description}</p>
-                    <div className="space-y-2">
-                      <p className="text-[10px] uppercase font-bold tracking-widest text-primary/60">Key Achievements</p>
-                      <ul className="grid grid-cols-1 gap-2">
-                        {(exp.achievements as string[]).map((ach: string, i: number) => (
-                          <li key={i} className="text-xs flex items-start gap-2" style={{ color: "var(--foreground)" }}>
-                            <span className="text-primary font-mono select-none">→</span>
-                            {ach}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                  <form action={async () => { "use server"; await deleteExperience(exp.id); }}>
-                    <button type="submit" className="p-2 rounded-lg transition-colors text-red-500 hover:bg-red-500/10 group">
-                      <Trash2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    </button>
-                  </form>
-                </div>
-              </div>
+              <ExperienceItem key={exp.id} exp={exp} />
             ))
           )}
         </div>
