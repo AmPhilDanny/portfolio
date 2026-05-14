@@ -2,33 +2,31 @@
 
 import { useState } from "react";
 import { createSocialLink, deleteSocialLink } from "@/app/actions/social";
-import { Trash2, Plus, Globe, Mail } from "lucide-react";
-import { GithubIcon, LinkedinIcon, TwitterIcon, InstagramIcon, FacebookIcon, KaggleIcon } from "@/components/Icons";
-import DynamicIcon from "@/components/DynamicIcon";
-
-const PLATFORM_ICONS: Record<string, any> = {
-  Github: GithubIcon,
-  GitHub: GithubIcon,
-  LinkedIn: LinkedinIcon,
-  Linkedin: LinkedinIcon,
-  Twitter: TwitterIcon,
-  X: TwitterIcon,
-  Instagram: InstagramIcon,
-  Facebook: FacebookIcon,
-  Kaggle: KaggleIcon,
-};
+import { Trash2, Plus, Globe, Mail, AlertCircle } from "lucide-react";
+import SocialIcon from "@/components/SocialIcon";
 
 export default function SocialLinksManager({ initialLinks }: { initialLinks: any[] }) {
   const [loading, setLoading] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setAdding(true);
-    const formData = new FormData(e.currentTarget);
-    await createSocialLink(formData);
-    setAdding(false);
-    (e.target as HTMLFormElement).reset();
+    setError(null);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const res = await createSocialLink(formData);
+      if (res.success) {
+        (e.target as HTMLFormElement).reset();
+      } else {
+        setError(res.error || "Failed to add link");
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
+    } finally {
+      setAdding(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -46,19 +44,14 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
 
       <div className="grid gap-3">
         {initialLinks.map((link) => {
-          const BrandIcon = PLATFORM_ICONS[link.icon || link.platform];
           return (
             <div 
               key={link.id} 
               className="flex items-center justify-between p-3 rounded-xl border bg-muted/20 border-border"
             >
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 text-primary rounded-lg">
-                  {BrandIcon ? (
-                    <BrandIcon className="w-4 h-4" />
-                  ) : (
-                    <DynamicIcon name={(link.icon?.toLowerCase() || "globe") as any} className="w-4 h-4" />
-                  )}
+                <div className="w-10 h-10 flex items-center justify-center bg-primary/10 text-primary rounded-xl">
+                  <SocialIcon platform={link.platform} className="w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-sm font-bold">{link.platform}</p>
@@ -80,6 +73,13 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
 
       <form onSubmit={handleAdd} className="p-4 rounded-xl border border-dashed border-border bg-muted/5 space-y-4">
         <p className="text-xs font-bold uppercase text-muted-foreground">Add New Social Link</p>
+        {error && (
+          <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-500 text-xs flex items-center gap-2">
+            <AlertCircle className="w-4 h-4" />
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3">
           <input 
             name="platform" 
@@ -88,15 +88,9 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
             required
           />
           <div className="space-y-1">
-            <input 
-              name="icon" 
-              placeholder="Icon name (e.g. Github)"
-              className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-border rounded-lg text-sm"
-              required
-            />
-            <div className="flex justify-between px-1">
-              <span className="text-[10px] text-muted-foreground">Lucide or Brand name</span>
-              <a href="https://lucide.dev/icons" target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary hover:underline">Lucide Icons</a>
+            <div className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800/50 border border-border rounded-lg text-xs text-muted-foreground flex items-center justify-between">
+              <span>Icons automated by Brand Engine</span>
+              <Globe className="w-3.5 h-3.5 opacity-40" />
             </div>
           </div>
         </div>

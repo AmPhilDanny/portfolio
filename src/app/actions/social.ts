@@ -28,9 +28,9 @@ export async function createSocialLink(formData: FormData) {
     revalidatePath("/");
     revalidatePath("/admin/settings");
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error("Failed to create social link:", error);
-    return { success: false };
+    return { success: false, error: error.message };
   }
 }
 
