@@ -64,7 +64,7 @@ export function ScrollSystem() {
             exit={{ opacity: 0, y: 30, scale: 0.8 }}
             onClick={scrollToTop}
             aria-label="Back to Top"
-            className="fixed bottom-10 right-10 z-[200] group p-4 rounded-2xl bg-white/10 dark:bg-zinc-900/10 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl transition-all duration-300 active:scale-90"
+            className="fixed bottom-24 right-10 z-[200] group p-4 rounded-2xl bg-white/10 dark:bg-zinc-900/10 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl transition-all duration-300 active:scale-90"
             style={{ 
               boxShadow: "0 10px 40px -10px rgba(0,0,0,0.5), 0 0 20px var(--glow-primary)"
             }}
