@@ -16,7 +16,7 @@ import {
   AlertCircleIcon as AlertCircle,
   FileZipIcon as FileArchive,
   AiSheetsIcon as FileSpreadsheet,
-  CodeSnippet01Icon as FileCode,
+  SourceCodeIcon as FileCode,
   PackageIcon as FileBox,
 } from "hugeicons-react";
 
