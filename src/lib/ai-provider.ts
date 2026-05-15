@@ -17,7 +17,7 @@ export async function callAi(options: AiCallOptions): Promise<{ content: string;
   try {
     // 1. Fetch API Keys from DB
     const db = await getDb();
-    const keys = await db.collection("settings").findOne({}) || {};
+    const keys: any = await db.collection<any>("settings").findOne({}) || {};
 
     if (options.model === 'gemini-vision' || options.model === 'gemini-pro') {
       return await callGemini(options, keys.geminiApiKey);
