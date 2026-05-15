@@ -26,23 +26,49 @@ export default function MediaManager() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size (20MB limit)
-    if (file.size > 20 * 1024 * 1024) {
-      alert("File too large. Max size is 20MB.");
+    // Check size (15MB limit)
+    if (file.size > 15 * 1024 * 1024) {
+      alert("File too large. Max size is 15MB due to database constraints.");
       return;
     }
 
     setUploading(true);
     try {
-      const response = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, {
-        method: 'POST',
-        body: file,
-        headers: { 'Content-Type': file.type }
-      });
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+      const CHUNK_SIZE = 2 * 1024 * 1024; // 2MB
+      const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+      const fileId = crypto.randomUUID();
+      let finalResult = null;
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: "Upload failed" }));
-        throw new Error(err.error || 'Upload failed');
+      for (let i = 0; i < totalChunks; i++) {
+        const chunk = file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+        const formData = new FormData();
+        formData.append('chunk', chunk);
+        formData.append('chunkIndex', i.toString());
+        formData.append('totalChunks', totalChunks.toString());
+        formData.append('fileId', fileId);
+        formData.append('filename', safeName);
+        formData.append('mimeType', file.type);
+
+        const response = await fetch('/api/upload', {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({ error: "Upload failed" }));
+          throw new Error(err.error || "Upload failed");
+        }
+
+        const result = await response.json();
+        
+        if (result.completed) {
+          finalResult = result;
+        }
+      }
+
+      if (!finalResult) {
+        throw new Error("Upload did not complete successfully");
       }
 
       fetchMedia();
