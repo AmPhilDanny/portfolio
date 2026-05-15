@@ -13,32 +13,10 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
   const [editingId, setEditingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleAdd = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setAdding(true);
-    setError(null);
-    try {
-      const formData = new FormData(e.currentTarget);
-      const res = await createSocialLink(formData);
-      if (res.success) {
-        (e.target as HTMLFormElement).reset();
-        router.refresh();
-      } else {
-        setError(res.error || "Failed to add link");
-      }
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred");
-    } finally {
-      setAdding(false);
-    }
-  };
-
-  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>, id: string) => {
-    e.preventDefault();
+  const handleUpdateManual = async (id: string, formData: FormData) => {
     setLoading(id);
     setError(null);
     try {
-      const formData = new FormData(e.currentTarget);
       const res = await updateSocialLink(id, formData);
       if (res.success) {
         setEditingId(null);
@@ -77,10 +55,10 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
             }`}
           >
             {editingId === link.id ? (
-              <form onSubmit={(e) => handleUpdate(e, link.id)} className="space-y-3">
+              <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-2">
                   <input 
-                    name="platform" 
+                    id={`platform-${link.id}`}
                     defaultValue={link.platform}
                     placeholder="Platform Name"
                     className="px-3 py-1.5 bg-white dark:bg-zinc-900 border border-border rounded-lg text-sm"
@@ -94,20 +72,32 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
                 <div className="flex gap-2">
                   <input 
                     type="url" 
-                    name="url" 
+                    id={`url-${link.id}`}
                     defaultValue={link.url}
                     placeholder="https://..." 
                     className="flex-1 px-3 py-1.5 bg-white dark:bg-zinc-900 border border-border rounded-lg text-sm"
                     required
                   />
-                  <button type="submit" disabled={loading === link.id} className="p-1.5 bg-primary text-white rounded-lg hover:opacity-90 transition-all">
+                  <button 
+                    type="button" 
+                    onClick={() => {
+                      const platform = (document.getElementById(`platform-${link.id}`) as HTMLInputElement).value;
+                      const url = (document.getElementById(`url-${link.id}`) as HTMLInputElement).value;
+                      const formData = new FormData();
+                      formData.append("platform", platform);
+                      formData.append("url", url);
+                      handleUpdateManual(id, formData);
+                    }}
+                    disabled={loading === link.id} 
+                    className="p-1.5 bg-primary text-white rounded-lg hover:opacity-90 transition-all"
+                  >
                     {loading === link.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
                   </button>
                   <button type="button" onClick={() => setEditingId(null)} className="p-1.5 border border-border rounded-lg hover:bg-muted transition-all">
                     <CloseIcon className="w-4 h-4" />
                   </button>
                 </div>
-              </form>
+              </div>
             ) : (
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -142,7 +132,7 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
         ))}
       </div>
 
-      <form onSubmit={handleAdd} className="p-4 rounded-2xl border border-dashed border-border bg-muted/5 space-y-4">
+      <div className="p-4 rounded-2xl border border-dashed border-border bg-muted/5 space-y-4">
         <p className="text-xs font-bold uppercase text-muted-foreground">Add New Social Link</p>
         
         {error && (
@@ -151,10 +141,9 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
             {error}
           </div>
         )}
-
         <div className="grid grid-cols-2 gap-3">
           <input 
-            name="platform" 
+            id="new-platform"
             placeholder="Platform Name (e.g. GitHub)"
             className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-border rounded-lg text-sm"
             required
@@ -167,13 +156,35 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
         <div className="flex gap-2">
           <input 
             type="url" 
-            name="url" 
+            id="new-url"
             placeholder="https://..." 
             className="flex-1 px-3 py-2 bg-white dark:bg-zinc-900 border border-border rounded-lg text-sm"
             required
           />
           <button 
-            type="submit"
+            type="button"
+            onClick={async () => {
+              const platformInput = document.getElementById("new-platform") as HTMLInputElement;
+              const urlInput = document.getElementById("new-url") as HTMLInputElement;
+              if (!platformInput.value || !urlInput.value) {
+                setError("Platform and URL are required");
+                return;
+              }
+              setAdding(true);
+              setError(null);
+              const formData = new FormData();
+              formData.append("platform", platformInput.value);
+              formData.append("url", urlInput.value);
+              const res = await createSocialLink(formData);
+              if (res.success) {
+                platformInput.value = "";
+                urlInput.value = "";
+                router.refresh();
+              } else {
+                setError(res.error || "Failed to add link");
+              }
+              setAdding(false);
+            }}
             disabled={adding}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-bold flex items-center gap-2 hover:opacity-90 disabled:opacity-50"
           >
@@ -181,7 +192,7 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
             {adding ? "Adding..." : "Add"}
           </button>
         </div>
-      </form>
+      </div>
     </div>
   );
 }

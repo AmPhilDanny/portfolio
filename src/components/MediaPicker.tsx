@@ -86,10 +86,9 @@ export default function MediaPicker({
   const handleFileUpload = async (file: File) => {
     if (!file) return;
 
-    // Check file size (4MB limit for Vercel/MongoDB binary)
-    if (file.size > 4 * 1024 * 1024) {
-      setUploadError("File too large. Vercel limits uploads to 4.5MB. Please use a smaller file or a direct URL.");
-      setUploading(false);
+    // Check size (20MB limit)
+    if (file.size > 20 * 1024 * 1024) {
+      alert("File too large. Max size is 20MB.");
       return;
     }
 
