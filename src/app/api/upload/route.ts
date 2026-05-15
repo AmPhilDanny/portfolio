@@ -4,7 +4,16 @@ import { Binary } from 'mongodb';
 
 /**
  * Binary Upload Route (Octo-Storage)
+ * Note: Vercel has a 4.5MB limit for Serverless Function bodies.
  */
+export const config = {
+  api: {
+    bodyParser: false, // Handle binary data directly
+  },
+};
+
+export const maxDuration = 60; // Increase timeout for large uploads
+
 export async function POST(request: Request): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
   const filename = searchParams.get('filename');

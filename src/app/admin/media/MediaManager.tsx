@@ -26,9 +26,9 @@ export default function MediaManager() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size (15MB limit)
-    if (file.size > 15 * 1024 * 1024) {
-      alert("File too large. Max size is 15MB.");
+    // Check size (4MB limit for Vercel)
+    if (file.size > 4 * 1024 * 1024) {
+      alert("File too large. Vercel limits uploads to 4.5MB. Please use a smaller file or a URL.");
       return;
     }
 
