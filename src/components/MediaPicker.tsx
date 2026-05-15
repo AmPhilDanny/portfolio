@@ -12,10 +12,10 @@ import {
   Video01Icon as Video,
   CloudUploadIcon as CloudUpload,
   Folder01Icon as FolderOpen,
-  AiLoaderIcon as Loader2,
+  Loading01Icon as Loader2,
   AlertCircleIcon as AlertCircle,
   FileZipIcon as FileArchive,
-  SpreadsheetIcon as FileSpreadsheet,
+  AiSheetsIcon as FileSpreadsheet,
   CodeSnippet01Icon as FileCode,
   PackageIcon as FileBox,
 } from "hugeicons-react";

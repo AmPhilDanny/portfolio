@@ -4,16 +4,16 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   SparklesIcon as Sparkles,
-  Plus02Icon as Plus,
-  BarChart02Icon as BarChart3,
+  Add01Icon as Plus,
+  Chart01Icon as BarChart3,
   Message01Icon as MessageSquare,
   Settings02Icon as SettingsIcon,
   Upload02Icon as Upload,
-  AiLoaderIcon as Loader2,
-  Tick02Icon as CheckCircle2,
+  Loading01Icon as Loader2,
+  Tick01Icon as CheckCircle2,
   AlertCircleIcon as AlertCircle,
   GlobalIcon as Globe,
-  TimeHistoryIcon as History,
+  Clock01Icon as History,
   Cancel01Icon as X,
   Delete02Icon as Trash2
 } from "hugeicons-react";

@@ -7,7 +7,7 @@ import {
   Cancel01Icon as X, 
   Login03Icon as LogIn, 
   Logout03Icon as LogOut, 
-  TerminalBrowserIcon as Terminal 
+  ComputerTerminal01Icon as Terminal 
 } from "hugeicons-react";
 import { ThemeToggle } from "./ThemeToggle";
 
