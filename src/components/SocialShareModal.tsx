@@ -12,6 +12,26 @@ interface SocialShareModalProps {
   type: 'project' | 'experience' | 'general';
 }
 
+function MarkdownPreview({ content }: { content: string }) {
+  // Simple regex-based markdown parser for preview
+  const html = content
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^\* (.*$)/gim, '<li>$1</li>')
+    .replace(/^\- (.*$)/gim, '<li>$1</li>')
+    .replace(/\n/g, '<br />');
+
+  return (
+    <div 
+      className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed prose-sm dark:prose-invert max-w-none"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
+  );
+}
+
 export default function SocialShareModal({ isOpen, onClose, title, content, type }: SocialShareModalProps) {
   const [platforms, setPlatforms] = useState<any[]>([]);
   const [selectedPlatform, setSelectedPlatform] = useState("");
@@ -112,17 +132,15 @@ export default function SocialShareModal({ isOpen, onClose, title, content, type
               {generatedPost && (
                 <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <div className="relative">
-                    <textarea
-                      readOnly
-                      value={generatedPost}
-                      className="w-full p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl text-sm font-medium leading-relaxed resize-none h-48 focus:outline-none"
-                    />
-                    <div className="absolute bottom-3 right-3 flex gap-2">
+                    <div className="w-full p-4 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-2xl min-h-[12rem] overflow-y-auto">
+                      <MarkdownPreview content={generatedPost} />
+                    </div>
+                    <div className="absolute top-2 right-2 flex gap-2">
                       <button
                         onClick={handleCopy}
-                        className="p-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-sm hover:border-primary transition-all flex items-center gap-2 text-xs font-bold"
+                        className="p-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg shadow-sm hover:border-primary transition-all flex items-center gap-1.5 text-[10px] font-bold"
                       >
-                        {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5 text-primary" />}
+                        {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3 text-primary" />}
                         {copied ? "Copied" : "Copy"}
                       </button>
                     </div>
