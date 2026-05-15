@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 export async function getServices() {
   try {
     const db = await getDb();
-    const services = await db.collection("services").find({}).toArray();
+    const services = await db.collection<any>("services").find({}).toArray();
     return services.map(s => ({ ...s, id: s._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch services:", error);
@@ -24,7 +24,7 @@ export async function createService(formData: FormData) {
     const icon = formData.get("icon") as string;
     
     const db = await getDb();
-    await db.collection("services").insertOne({
+    await db.collection<any>("services").insertOne({
       _id: crypto.randomUUID(),
       title,
       description,
@@ -41,7 +41,7 @@ export async function createService(formData: FormData) {
 export async function deleteService(id: string) {
   try {
     const db = await getDb();
-    await db.collection("services").deleteOne({ _id: id });
+    await db.collection<any>("services").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/services");
     return { success: true };

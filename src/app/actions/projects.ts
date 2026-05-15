@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 export async function getProjects() {
   try {
     const db = await getDb();
-    const projects = await db.collection("projects").find({}).toArray();
+    const projects = await db.collection<any>("projects").find({}).toArray();
     return projects.map(p => ({ ...p, id: p._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch projects:", error);
@@ -27,7 +27,7 @@ export async function createProject(formData: FormData) {
     const tags = tagsString ? tagsString.split(",").map(t => t.trim()) : [];
 
     const db = await getDb();
-    await db.collection("projects").insertOne({
+    await db.collection<any>("projects").insertOne({
       _id: crypto.randomUUID(),
       title,
       description,
@@ -51,7 +51,7 @@ export async function createProject(formData: FormData) {
 export async function deleteProject(id: string) {
   try {
     const db = await getDb();
-    await db.collection("projects").deleteOne({ _id: id });
+    await db.collection<any>("projects").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/projects");
     return { success: true };

@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 export async function getAbout() {
   try {
     const db = await getDb();
-    const about = await db.collection("abouts").findOne({});
+    const about = await db.collection<any>("abouts").findOne({});
     if (about) {
       return { ...about, id: about._id.toString() };
     }
@@ -31,7 +31,7 @@ export async function updateAbout(formData: FormData) {
     const features = featuresStr ? JSON.parse(featuresStr) : null;
     
     const db = await getDb();
-    const existing = await db.collection("abouts").findOne({});
+    const existing = await db.collection<any>("abouts").findOne({});
 
     const payload = {
       description,
@@ -41,12 +41,12 @@ export async function updateAbout(formData: FormData) {
     };
 
     if (existing) {
-      await db.collection("abouts").updateOne(
+      await db.collection<any>("abouts").updateOne(
         { _id: existing._id },
         { $set: payload }
       );
     } else {
-      await db.collection("abouts").insertOne({
+      await db.collection<any>("abouts").insertOne({
         ...payload,
         _id: crypto.randomUUID()
       });

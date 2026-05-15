@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 export async function getCertifications() {
   try {
     const db = await getDb();
-    const certifications = await db.collection("certifications").find({}).toArray();
+    const certifications = await db.collection<any>("certifications").find({}).toArray();
     return certifications.map(c => ({ ...c, id: c._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch certifications:", error);
@@ -27,7 +27,7 @@ export async function createCertification(formData: FormData) {
     const imageUrl = formData.get("imageUrl") as string;
 
     const db = await getDb();
-    await db.collection("certifications").insertOne({
+    await db.collection<any>("certifications").insertOne({
       _id: crypto.randomUUID(),
       name,
       issuer,
@@ -50,7 +50,7 @@ export async function createCertification(formData: FormData) {
 export async function deleteCertification(id: string) {
   try {
     const db = await getDb();
-    await db.collection("certifications").deleteOne({ _id: id });
+    await db.collection<any>("certifications").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/certifications");
     return { success: true };

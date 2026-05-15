@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 export async function getSkillCategories() {
   try {
     const db = await getDb();
-    const categories = await db.collection("skill_categories").find({}).toArray();
+    const categories = await db.collection<any>("skill_categories").find({}).toArray();
     return categories.map(c => ({ ...c, id: c._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch skills:", error);
@@ -24,7 +24,7 @@ export async function createSkillCategory(formData: FormData) {
     const skills = skillsRaw.split(",").map((s) => s.trim()).filter(Boolean);
 
     const db = await getDb();
-    await db.collection("skill_categories").insertOne({
+    await db.collection<any>("skill_categories").insertOne({
       _id: crypto.randomUUID(),
       category,
       skills,
@@ -40,7 +40,7 @@ export async function createSkillCategory(formData: FormData) {
 export async function deleteSkillCategory(id: string) {
   try {
     const db = await getDb();
-    await db.collection("skill_categories").deleteOne({ _id: id });
+    await db.collection<any>("skill_categories").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/skills");
     return { success: true };

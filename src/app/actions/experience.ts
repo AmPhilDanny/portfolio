@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 export async function getExperiences() {
   try {
     const db = await getDb();
-    const experiences = await db.collection("experiences").find({}).toArray();
+    const experiences = await db.collection<any>("experiences").find({}).toArray();
     return experiences.map(e => ({ ...e, id: e._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch experiences:", error);
@@ -27,7 +27,7 @@ export async function createExperience(formData: FormData) {
     const achievements = achievementsRaw.split("\n").map((a) => a.trim()).filter(Boolean);
 
     const db = await getDb();
-    await db.collection("experiences").insertOne({
+    await db.collection<any>("experiences").insertOne({
       _id: crypto.randomUUID(),
       role,
       company,
@@ -46,7 +46,7 @@ export async function createExperience(formData: FormData) {
 export async function deleteExperience(id: string) {
   try {
     const db = await getDb();
-    await db.collection("experiences").deleteOne({ _id: id });
+    await db.collection<any>("experiences").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/experience");
     return { success: true };

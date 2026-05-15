@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 export async function getSectionConfigs() {
   try {
     const db = await getDb();
-    const configs = await db.collection("section_configs").find({}).toArray();
+    const configs = await db.collection<any>("section_configs").find({}).toArray();
     return configs.map(c => ({ ...c, id: c._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch section configs:", error);
@@ -21,7 +21,7 @@ export async function updateSectionConfig(formData: FormData) {
     const description = formData.get("description") as string;
 
     const db = await getDb();
-    await db.collection("section_configs").updateOne(
+    await db.collection<any>("section_configs").updateOne(
       { sectionId: sectionId },
       { 
         $set: { title, description, updatedAt: new Date() },

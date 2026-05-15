@@ -27,7 +27,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     const id = crypto.randomUUID();
     const finalUrl = `/api/media/${id}`;
 
-    await db.collection("media").insertOne({
+    await db.collection<any>("media").insertOne({
       _id: id,
       name: filename,
       url: finalUrl,

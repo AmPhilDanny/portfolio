@@ -6,7 +6,7 @@ import { revalidatePath } from "next/cache";
 export async function getSocialLinks() {
   try {
     const db = await getDb();
-    const links = await db.collection("social_links").find({}).toArray();
+    const links = await db.collection<any>("social_links").find({}).toArray();
     return links.map(l => ({ ...l, id: l._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch social links:", error);
@@ -21,7 +21,7 @@ export async function createSocialLink(formData: FormData) {
     const icon = formData.get("icon") as string;
 
     const db = await getDb();
-    await db.collection("social_links").insertOne({
+    await db.collection<any>("social_links").insertOne({
       _id: crypto.randomUUID(),
       platform,
       url,
@@ -45,7 +45,7 @@ export async function updateSocialLink(id: string, formData: FormData) {
     const icon = formData.get("icon") as string;
 
     const db = await getDb();
-    await db.collection("social_links").updateOne(
+    await db.collection<any>("social_links").updateOne(
       { _id: id },
       { $set: { platform, url, icon, updatedAt: new Date() } }
     );
@@ -62,7 +62,7 @@ export async function updateSocialLink(id: string, formData: FormData) {
 export async function deleteSocialLink(id: string) {
   try {
     const db = await getDb();
-    await db.collection("social_links").deleteOne({ _id: id });
+    await db.collection<any>("social_links").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/settings");
     return { success: true };

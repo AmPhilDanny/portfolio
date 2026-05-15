@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 export async function getMedia() {
   try {
     const db = await getDb();
-    const mediaItems = await db.collection("media")
+    const mediaItems = await db.collection<any>("media")
       .find({}, { projection: { content: 0 } }) // Exclude binary content for listing
       .sort({ createdAt: -1 })
       .toArray();
@@ -28,7 +28,7 @@ export async function getMedia() {
 export async function addMedia(data: { name: string; url: string; type: string; size?: string }) {
   try {
     const db = await getDb();
-    await db.collection("media").insertOne({
+    await db.collection<any>("media").insertOne({
       ...data,
       _id: crypto.randomUUID(),
       createdAt: new Date()
@@ -47,7 +47,7 @@ export async function addMedia(data: { name: string; url: string; type: string; 
 export async function deleteMedia(id: string) {
   try {
     const db = await getDb();
-    await db.collection("media").deleteOne({ _id: id });
+    await db.collection<any>("media").deleteOne({ _id: id });
     revalidatePath("/admin/media");
     return { success: true };
   } catch (error) {

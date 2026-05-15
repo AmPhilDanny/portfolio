@@ -12,7 +12,7 @@ export async function GET(
     const { id } = await params;
     const db = await getDb();
     
-    const item = await db.collection("media").findOne({ _id: id });
+    const item = await db.collection<any>("media").findOne({ _id: id });
 
     if (!item || !item.content) {
       return new NextResponse("Media Not Found", { status: 404 });

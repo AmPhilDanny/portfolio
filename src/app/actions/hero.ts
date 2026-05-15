@@ -10,7 +10,7 @@ import { revalidatePath } from "next/cache";
 export async function getHero() {
   try {
     const db = await getDb();
-    const hero = await db.collection("heroes").findOne({});
+    const hero = await db.collection<any>("heroes").findOne({});
     if (hero) {
       return { ...hero, id: hero._id.toString() };
     }
@@ -35,7 +35,7 @@ export async function updateHero(formData: FormData) {
     const badgeText = formData.get("badgeText") as string;
 
     const db = await getDb();
-    const hero = await db.collection("heroes").findOne({});
+    const hero = await db.collection<any>("heroes").findOne({});
 
     const payload = {
       name,

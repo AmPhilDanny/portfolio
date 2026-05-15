@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 export async function getSettings() {
   try {
     const db = await getDb();
-    const res = await db.collection("settings").findOne({});
+    const res = await db.collection<any>("settings").findOne({});
     if (res) {
       return { ...res, id: res._id.toString() };
     }
@@ -49,15 +49,15 @@ export async function updateSettings(formData: FormData) {
     };
     
     const db = await getDb();
-    const existing = await db.collection("settings").findOne({});
+    const existing = await db.collection<any>("settings").findOne({});
 
     if(existing) {
-      await db.collection("settings").updateOne(
+      await db.collection<any>("settings").updateOne(
         { _id: existing._id },
         { $set: values }
       );
     } else {
-      await db.collection("settings").insertOne({
+      await db.collection<any>("settings").insertOne({
         ...values,
         _id: crypto.randomUUID()
       });
@@ -78,15 +78,15 @@ export async function updateAiApiKeys(data: {
 }) {
   try {
     const db = await getDb();
-    const existing = await db.collection("settings").findOne({});
+    const existing = await db.collection<any>("settings").findOne({});
     
     if (existing) {
-      await db.collection("settings").updateOne(
+      await db.collection<any>("settings").updateOne(
         { _id: existing._id },
         { $set: { ...data, updatedAt: new Date() } }
       );
     } else {
-      await db.collection("settings").insertOne({
+      await db.collection<any>("settings").insertOne({
         ...data,
         _id: crypto.randomUUID(),
         updatedAt: new Date()

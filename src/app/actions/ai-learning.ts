@@ -20,12 +20,12 @@ async function resolveModel(
   const db = await getDb();
   
   // Try per-platform config
-  const config = await db.collection("ai_config").findOne({ platform });
+  const config = await db.collection<any>("ai_config").findOne({ platform });
   const platformModel = config?.preferredModel as AiModel | null;
   if (platformModel) return platformModel;
   
   // Try global settings
-  const globalConfig = await db.collection("settings").findOne({});
+  const globalConfig = await db.collection<any>("settings").findOne({});
   const globalModel = globalConfig?.globalAiModel as AiModel | null;
   if (globalModel) return globalModel;
   
@@ -38,7 +38,7 @@ async function resolveModel(
 export async function trackGrowthMetric(platform: string, type: string, value: string) {
   try {
     const db = await getDb();
-    await db.collection("social_platform_metrics").insertOne({
+    await db.collection<any>("social_platform_metrics").insertOne({
       _id: crypto.randomUUID(),
       platform,
       metricType: type,
@@ -99,7 +99,7 @@ export async function analyzeScreenshot(
       : (data.content_pillars ? [String(data.content_pillars)] : []);
 
     const db = await getDb();
-    await db.collection("social_media_insights").insertOne({
+    await db.collection<any>("social_media_insights").insertOne({
       _id: crypto.randomUUID(),
       platform,
       handle: String(data.handle || ""),
@@ -137,13 +137,13 @@ export async function generateSocialPost(
     const db = await getDb();
     
     // 1. Get platform config
-    const config = await db.collection("ai_config").findOne({ platform });
+    const config = await db.collection<any>("ai_config").findOne({ platform });
     const brandVoice = config?.brandVoice || "Professional and engaging";
     const targetAudience = config?.targetAudience || "General tech audience";
     const goals = config?.growthGoals || "Increase reach and engagement";
 
     // 2. Get latest insights for context
-    const insight = await db.collection("social_media_insights")
+    const insight = await db.collection<any>("social_media_insights")
       .find({ platform })
       .sort({ lastAnalyzed: -1 })
       .limit(1)
@@ -189,7 +189,7 @@ export async function generateSocialPost(
 
     if (response.error) throw new Error(response.error);
 
-    await db.collection("content_calendar").insertOne({
+    await db.collection<any>("content_calendar").insertOne({
       _id: crypto.randomUUID(),
       platform,
       content: response.content,
@@ -221,7 +221,7 @@ export async function updateAiConfig(data: {
     const db = await getDb();
     const { platform, ...updateData } = data;
     
-    await db.collection("ai_config").updateOne(
+    await db.collection<any>("ai_config").updateOne(
       { platform: platform },
       { 
         $set: { ...updateData, updatedAt: new Date() },
@@ -244,7 +244,7 @@ export async function updateAiConfig(data: {
 export async function getAiConfig(platform: string) {
   try {
     const db = await getDb();
-    const config = await db.collection("ai_config").findOne({ platform });
+    const config = await db.collection<any>("ai_config").findOne({ platform });
     if (config) {
       return { ...config, id: config._id.toString() };
     }
@@ -308,7 +308,7 @@ export async function analyzeProfileUrl(
       : (data.content_pillars ? [String(data.content_pillars)] : []);
 
     const db = await getDb();
-    await db.collection("social_media_insights").insertOne({
+    await db.collection<any>("social_media_insights").insertOne({
       _id: crypto.randomUUID(),
       platform,
       handle: String(data.handle || ""),
@@ -339,7 +339,7 @@ export async function analyzeProfileUrl(
 export async function getSocialInsights(platform: string) {
   try {
     const db = await getDb();
-    const insights = await db.collection("social_media_insights")
+    const insights = await db.collection<any>("social_media_insights")
       .find({ platform })
       .sort({ lastAnalyzed: -1 })
       .limit(5)
@@ -357,7 +357,7 @@ export async function getSocialInsights(platform: string) {
 export async function getContentDrafts(platform: string) {
   try {
     const db = await getDb();
-    const drafts = await db.collection("content_calendar")
+    const drafts = await db.collection<any>("content_calendar")
       .find({ platform })
       .sort({ createdAt: -1 })
       .limit(10)

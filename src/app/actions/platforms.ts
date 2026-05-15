@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 export async function getAiPlatforms() {
   try {
     const db = await getDb();
-    const platforms = await db.collection("ai_config").find({}).toArray();
+    const platforms = await db.collection<any>("ai_config").find({}).toArray();
     return platforms.map(p => ({ ...p, id: p._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch AI platforms:", error);
@@ -25,10 +25,10 @@ export async function addAiPlatform(platform: string) {
     const db = await getDb();
     
     // Check if already exists
-    const existing = await db.collection("ai_config").findOne({ platform });
+    const existing = await db.collection<any>("ai_config").findOne({ platform });
     if (existing) return { success: false, error: "Platform already exists" };
 
-    await db.collection("ai_config").insertOne({
+    await db.collection<any>("ai_config").insertOne({
       _id: crypto.randomUUID(),
       platform,
       brandVoice: "Professional and Technical",
@@ -51,7 +51,7 @@ export async function addAiPlatform(platform: string) {
 export async function deleteAiPlatform(id: string) {
   try {
     const db = await getDb();
-    await db.collection("ai_config").deleteOne({ _id: id });
+    await db.collection<any>("ai_config").deleteOne({ _id: id });
     revalidatePath("/admin/social-ai");
     return { success: true };
   } catch (error: any) {

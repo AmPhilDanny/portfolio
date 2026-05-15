@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 export async function getContact() {
   try {
     const db = await getDb();
-    const res = await db.collection("contacts").findOne({});
+    const res = await db.collection<any>("contacts").findOne({});
     if (res) {
       return { ...res, id: res._id.toString() };
     }
@@ -27,17 +27,17 @@ export async function updateContact(formData: FormData) {
     const location = formData.get("location") as string;
     
     const db = await getDb();
-    const existing = await db.collection("contacts").findOne({});
+    const existing = await db.collection<any>("contacts").findOne({});
     
     const payload = { email, phone, location, updatedAt: new Date() };
 
     if (existing) {
-      await db.collection("contacts").updateOne(
+      await db.collection<any>("contacts").updateOne(
         { _id: existing._id },
         { $set: payload }
       );
     } else {
-      await db.collection("contacts").insertOne({
+      await db.collection<any>("contacts").insertOne({
         ...payload,
         _id: crypto.randomUUID()
       });
