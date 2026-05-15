@@ -17,6 +17,22 @@ export const bytea = customType<{ data: Buffer }>({
   dataType() {
     return 'bytea';
   },
+  toDriver(value: Buffer) {
+    if (Buffer.isBuffer(value)) {
+      return `\\x${value.toString('hex')}`;
+    }
+    return value;
+  },
+  fromDriver(value: unknown) {
+    if (Buffer.isBuffer(value)) return value;
+    if (typeof value === 'string') {
+      if (value.startsWith('\\x')) {
+        return Buffer.from(value.slice(2), 'hex');
+      }
+      return Buffer.from(value);
+    }
+    return Buffer.from(value as any);
+  },
 });
 
 /**

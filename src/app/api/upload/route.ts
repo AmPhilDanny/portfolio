@@ -67,7 +67,11 @@ export async function POST(request: Request): Promise<NextResponse> {
     });
 
   } catch (error: any) {
-    console.error('Critical Upload Error:', error);
+    console.error('Critical Upload Error:', {
+      message: error.message,
+      stack: error.stack,
+      filename: filename
+    });
     return NextResponse.json(
       { error: `Upload failed: ${error.message || 'Unknown error'}` },
       { status: 500 }
