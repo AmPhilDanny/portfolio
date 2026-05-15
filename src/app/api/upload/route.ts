@@ -5,13 +5,8 @@ import { Binary } from 'mongodb';
 /**
  * Binary Upload Route (Octo-Storage)
  * Note: Vercel has a 4.5MB limit for Serverless Function bodies.
+ * Next.js App Router body limits are configured in next.config.ts
  */
-export const config = {
-  api: {
-    bodyParser: false, // Handle binary data directly
-  },
-};
-
 export const maxDuration = 60; // Increase timeout for large uploads
 
 export async function POST(request: Request): Promise<NextResponse> {

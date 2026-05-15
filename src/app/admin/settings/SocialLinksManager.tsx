@@ -86,7 +86,7 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
                       const formData = new FormData();
                       formData.append("platform", platform);
                       formData.append("url", url);
-                      handleUpdateManual(id, formData);
+                      handleUpdateManual(link.id, formData);
                     }}
                     disabled={loading === link.id} 
                     className="p-1.5 bg-primary text-white rounded-lg hover:opacity-90 transition-all"
