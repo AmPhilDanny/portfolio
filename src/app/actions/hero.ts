@@ -48,12 +48,12 @@ export async function updateHero(formData: FormData) {
     };
 
     if (hero) {
-      await db.collection("heroes").updateOne(
+      await db.collection<any>("heroes").updateOne(
         { _id: hero._id },
         { $set: payload }
       );
     } else {
-      await db.collection("heroes").insertOne({
+      await db.collection<any>("heroes").insertOne({
         ...payload,
         _id: crypto.randomUUID() // Keep using UUIDs as strings for consistency
       });

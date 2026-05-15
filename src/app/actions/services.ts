@@ -55,7 +55,7 @@ export async function updateService(id: string, formData: FormData) {
     const icon = formData.get("icon") as string;
     
     const db = await getDb();
-    await db.collection("services").updateOne(
+    await db.collection<any>("services").updateOne(
       { _id: id },
       { $set: { title, description, icon, updatedAt: new Date() } }
     );

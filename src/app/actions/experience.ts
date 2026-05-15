@@ -63,7 +63,7 @@ export async function updateExperience(id: string, formData: FormData) {
     const achievements = achievementsRaw.split("\n").map((a) => a.trim()).filter(Boolean);
     
     const db = await getDb();
-    await db.collection("experiences").updateOne(
+    await db.collection<any>("experiences").updateOne(
       { _id: id },
       { $set: { role, company, period, description, achievements, updatedAt: new Date() } }
     );
