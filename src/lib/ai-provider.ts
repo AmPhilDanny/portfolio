@@ -5,8 +5,7 @@
  * It fetches API keys directly from the database to ensure a 'Zero-Setup' experience.
  */
 
-import { db } from "./db";
-import { settings } from "./schema";
+import { getDb } from "./db";
 
 interface AiCallOptions {
   model: 'gemini-vision' | 'gemini-pro' | 'mistral-large' | 'gpt-4o';
@@ -17,8 +16,8 @@ interface AiCallOptions {
 export async function callAi(options: AiCallOptions): Promise<{ content: string; error?: string }> {
   try {
     // 1. Fetch API Keys from DB
-    const config = await db.select().from(settings).limit(1);
-    const keys = config[0] || {};
+    const db = await getDb();
+    const keys = await db.collection("settings").findOne({}) || {};
 
     if (options.model === 'gemini-vision' || options.model === 'gemini-pro') {
       return await callGemini(options, keys.geminiApiKey);
