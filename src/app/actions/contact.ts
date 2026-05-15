@@ -1,17 +1,19 @@
 "use server";
-import { db } from "@/lib/db";
-import { contacts } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+
+import { getDb } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 /**
  * Fetches the 'Contact' section data from the database.
- * Used for displaying contact details on the footer and contact section.
  */
 export async function getContact() {
   try {
-    const res = await db.select().from(contacts).limit(1);
-    return res.length > 0 ? res[0] : null;
+    const db = await getDb();
+    const res = await db.collection("contacts").findOne({});
+    if (res) {
+      return { ...res, id: res._id.toString() };
+    }
+    return null;
   } catch (error) {
     console.error("Failed to fetch contact details:", error);
     return null; 
@@ -19,16 +21,26 @@ export async function getContact() {
 }
 
 export async function updateContact(formData: FormData) {
-
   try {
     const email = formData.get("email") as string;
     const phone = formData.get("phone") as string;
     const location = formData.get("location") as string;
-    const existing = await getContact();
+    
+    const db = await getDb();
+    const existing = await db.collection("contacts").findOne({});
+    
+    const payload = { email, phone, location, updatedAt: new Date() };
+
     if (existing) {
-      await db.update(contacts).set({ email, phone, location }).where(eq(contacts.id, existing.id));
+      await db.collection("contacts").updateOne(
+        { _id: existing._id },
+        { $set: payload }
+      );
     } else {
-      await db.insert(contacts).values({ email, phone, location });
+      await db.collection("contacts").insertOne({
+        ...payload,
+        _id: crypto.randomUUID()
+      });
     }
     revalidatePath("/");
     revalidatePath("/admin/contact");

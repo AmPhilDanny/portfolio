@@ -1,24 +1,48 @@
 /**
  * Database Configuration
  * 
- * This file initializes the Drizzle ORM and establishes a connection to the Neon 
- * Serverless PostgreSQL database using the HTTP driver. It exports the 'db' object 
- * which is used throughout the application to perform type-safe SQL queries.
+ * This file initializes the MongoDB native driver and establishes a connection 
+ * to the MongoDB Atlas cluster. It exports the 'db' object which is used 
+ * throughout the application to perform database operations.
  */
 
-import { neon } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-http';
-import * as schema from './schema';
+import { MongoClient } from 'mongodb';
 
-// Ensure the connection URL is present in the environment variables
-// This is critical for connecting to the Neon database instance
-if (!process.env.DATABASE_URL) {
-  console.warn("DATABASE_URL is not defined in environment variables.");
+const uri = process.env.DATABASE_URL || process.env.MONGODB_URI || "";
+
+if (!uri) {
+  console.warn("MONGODB_URI is not defined in environment variables.");
 }
 
-// SQL connection client focused on serverless HTTP execution
-const sql = neon(process.env.DATABASE_URL || "");
+// Create a singleton MongoDB client
+let client: MongoClient;
+let clientPromise: Promise<MongoClient>;
 
-// Combined export of the Drizzle database instance and the relational schema
-export const db = drizzle(sql, { schema });
+if (process.env.NODE_ENV === 'development') {
+  // In development mode, use a global variable so that the value
+  // is preserved across module reloads caused by HMR (Hot Module Replacement).
+  let globalWithMongo = global as typeof globalThis & {
+    _mongoClientPromise?: Promise<MongoClient>;
+  };
 
+  if (!globalWithMongo._mongoClientPromise) {
+    client = new MongoClient(uri);
+    globalWithMongo._mongoClientPromise = client.connect();
+  }
+  clientPromise = globalWithMongo._mongoClientPromise;
+} else {
+  // In production mode, it's best to not use a global variable.
+  client = new MongoClient(uri);
+  clientPromise = client.connect();
+}
+
+/**
+ * Helper function to get the database instance
+ */
+export async function getDb() {
+  const connectedClient = await clientPromise;
+  return connectedClient.db();
+}
+
+// Export the client promise for NextAuth or other integrations
+export default clientPromise;

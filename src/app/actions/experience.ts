@@ -1,22 +1,21 @@
 "use server";
-import { db } from "@/lib/db";
-import { experiences } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+
+import { getDb } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 /**
  * Fetches all professional experience records from the database.
- * Used for the timeline display on the public site and admin list.
  */
 export async function getExperiences() {
   try {
-    return await db.select().from(experiences);
+    const db = await getDb();
+    const experiences = await db.collection("experiences").find({}).toArray();
+    return experiences.map(e => ({ ...e, id: e._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch experiences:", error);
     return [];
   }
 }
-
 
 export async function createExperience(formData: FormData) {
   try {
@@ -26,7 +25,18 @@ export async function createExperience(formData: FormData) {
     const description = formData.get("description") as string;
     const achievementsRaw = formData.get("achievements") as string;
     const achievements = achievementsRaw.split("\n").map((a) => a.trim()).filter(Boolean);
-    await db.insert(experiences).values({ role, company, period, description, achievements });
+
+    const db = await getDb();
+    await db.collection("experiences").insertOne({
+      _id: crypto.randomUUID(),
+      role,
+      company,
+      period,
+      description,
+      achievements,
+      createdAt: new Date()
+    });
+
     revalidatePath("/");
     revalidatePath("/admin/experience");
     return { success: true };
@@ -35,7 +45,8 @@ export async function createExperience(formData: FormData) {
 
 export async function deleteExperience(id: string) {
   try {
-    await db.delete(experiences).where(eq(experiences.id, id));
+    const db = await getDb();
+    await db.collection("experiences").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/experience");
     return { success: true };
@@ -51,9 +62,11 @@ export async function updateExperience(id: string, formData: FormData) {
     const achievementsRaw = formData.get("achievements") as string;
     const achievements = achievementsRaw.split("\n").map((a) => a.trim()).filter(Boolean);
     
-    await db.update(experiences)
-      .set({ role, company, period, description, achievements })
-      .where(eq(experiences.id, id));
+    const db = await getDb();
+    await db.collection("experiences").updateOne(
+      { _id: id },
+      { $set: { role, company, period, description, achievements, updatedAt: new Date() } }
+    );
       
     revalidatePath("/");
     revalidatePath("/admin/experience");

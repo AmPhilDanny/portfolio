@@ -1,14 +1,13 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { socialLinks } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { getDb } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 export async function getSocialLinks() {
   try {
-    const links = await db.select().from(socialLinks);
-    return links;
+    const db = await getDb();
+    const links = await db.collection("social_links").find({}).toArray();
+    return links.map(l => ({ ...l, id: l._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch social links:", error);
     return [];
@@ -21,8 +20,13 @@ export async function createSocialLink(formData: FormData) {
     const url = formData.get("url") as string;
     const icon = formData.get("icon") as string;
 
-    await db.insert(socialLinks).values({
-      platform, url, icon
+    const db = await getDb();
+    await db.collection("social_links").insertOne({
+      _id: crypto.randomUUID(),
+      platform,
+      url,
+      icon,
+      createdAt: new Date()
     });
 
     revalidatePath("/");
@@ -40,9 +44,11 @@ export async function updateSocialLink(id: string, formData: FormData) {
     const url = formData.get("url") as string;
     const icon = formData.get("icon") as string;
 
-    await db.update(socialLinks)
-      .set({ platform, url, icon })
-      .where(eq(socialLinks.id, id));
+    const db = await getDb();
+    await db.collection("social_links").updateOne(
+      { _id: id },
+      { $set: { platform, url, icon, updatedAt: new Date() } }
+    );
 
     revalidatePath("/");
     revalidatePath("/admin/settings");
@@ -55,7 +61,8 @@ export async function updateSocialLink(id: string, formData: FormData) {
 
 export async function deleteSocialLink(id: string) {
   try {
-    await db.delete(socialLinks).where(eq(socialLinks.id, id));
+    const db = await getDb();
+    await db.collection("social_links").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/settings");
     return { success: true };

@@ -1,24 +1,25 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { abouts } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { getDb } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 /**
  * Fetches the 'About' section data from the database.
- * Returns the first record or null if the table is empty.
+ * Returns the first record or null if the collection is empty.
  */
 export async function getAbout() {
   try {
-    const about = await db.select().from(abouts).limit(1);
-    return about.length > 0 ? about[0] : null;
+    const db = await getDb();
+    const about = await db.collection("abouts").findOne({});
+    if (about) {
+      return { ...about, id: about._id.toString() };
+    }
+    return null;
   } catch (error) {
     console.error("Failed to fetch about:", error);
     return null;
   }
 }
-
 
 export async function updateAbout(formData: FormData) {
   try {
@@ -29,15 +30,25 @@ export async function updateAbout(formData: FormData) {
     const stats = statsStr ? JSON.parse(statsStr) : null;
     const features = featuresStr ? JSON.parse(featuresStr) : null;
     
-    const existing = await getAbout();
+    const db = await getDb();
+    const existing = await db.collection("abouts").findOne({});
+
+    const payload = {
+      description,
+      stats,
+      features,
+      updatedAt: new Date()
+    };
 
     if (existing) {
-      await db.update(abouts)
-        .set({ description, stats, features })
-        .where(eq(abouts.id, existing.id));
+      await db.collection("abouts").updateOne(
+        { _id: existing._id },
+        { $set: payload }
+      );
     } else {
-      await db.insert(abouts).values({
-        description, stats, features
+      await db.collection("abouts").insertOne({
+        ...payload,
+        _id: crypto.randomUUID()
       });
     }
 

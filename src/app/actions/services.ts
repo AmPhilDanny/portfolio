@@ -1,29 +1,37 @@
 "use server";
-import { db } from "@/lib/db";
-import { services } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+
+import { getDb } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 /**
  * Fetches all service offerings from the database.
- * Powers the services section on the public site and admin management.
  */
 export async function getServices() {
   try {
-    return await db.select().from(services);
+    const db = await getDb();
+    const services = await db.collection("services").find({}).toArray();
+    return services.map(s => ({ ...s, id: s._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch services:", error);
     return [];
   }
 }
 
-
 export async function createService(formData: FormData) {
   try {
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const icon = formData.get("icon") as string;
-    await db.insert(services).values({ title, description, icon });
+    
+    const db = await getDb();
+    await db.collection("services").insertOne({
+      _id: crypto.randomUUID(),
+      title,
+      description,
+      icon,
+      createdAt: new Date()
+    });
+
     revalidatePath("/");
     revalidatePath("/admin/services");
     return { success: true };
@@ -32,7 +40,8 @@ export async function createService(formData: FormData) {
 
 export async function deleteService(id: string) {
   try {
-    await db.delete(services).where(eq(services.id, id));
+    const db = await getDb();
+    await db.collection("services").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/services");
     return { success: true };
@@ -45,9 +54,11 @@ export async function updateService(id: string, formData: FormData) {
     const description = formData.get("description") as string;
     const icon = formData.get("icon") as string;
     
-    await db.update(services)
-      .set({ title, description, icon })
-      .where(eq(services.id, id));
+    const db = await getDb();
+    await db.collection("services").updateOne(
+      { _id: id },
+      { $set: { title, description, icon, updatedAt: new Date() } }
+    );
       
     revalidatePath("/");
     revalidatePath("/admin/services");

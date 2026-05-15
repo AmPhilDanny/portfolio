@@ -1,8 +1,6 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { media } from "@/lib/schema";
-import { desc, eq } from "drizzle-orm";
+import { getDb } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -11,15 +9,13 @@ import { revalidatePath } from "next/cache";
  */
 export async function getMedia() {
   try {
-    return await db.select({
-      id: media.id,
-      name: media.name,
-      url: media.url,
-      type: media.type,
-      size: media.size,
-      mimeType: media.mimeType,
-      createdAt: media.createdAt,
-    }).from(media).orderBy(desc(media.createdAt));
+    const db = await getDb();
+    const mediaItems = await db.collection("media")
+      .find({}, { projection: { content: 0 } }) // Exclude binary content for listing
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    return mediaItems.map(m => ({ ...m, id: m._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch media:", error);
     return [];
@@ -31,7 +27,12 @@ export async function getMedia() {
  */
 export async function addMedia(data: { name: string; url: string; type: string; size?: string }) {
   try {
-    await db.insert(media).values(data);
+    const db = await getDb();
+    await db.collection("media").insertOne({
+      ...data,
+      _id: crypto.randomUUID(),
+      createdAt: new Date()
+    });
     revalidatePath("/admin/media");
     return { success: true };
   } catch (error) {
@@ -42,11 +43,11 @@ export async function addMedia(data: { name: string; url: string; type: string; 
 
 /**
  * Removes a media record from the database.
- * Note: Actual binary storage cleanup (if external) should happen here too.
  */
 export async function deleteMedia(id: string) {
   try {
-    await db.delete(media).where(eq(media.id, id));
+    const db = await getDb();
+    await db.collection("media").deleteOne({ _id: id });
     revalidatePath("/admin/media");
     return { success: true };
   } catch (error) {
@@ -54,4 +55,3 @@ export async function deleteMedia(id: string) {
     return { success: false, error: "Failed to delete media" };
   }
 }
-

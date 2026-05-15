@@ -1,12 +1,7 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { 
-  socialMediaInsights, socialPlatformMetrics, 
-  contentCalendar, aiConfig, settings
-} from "@/lib/schema";
+import { getDb } from "@/lib/db";
 import { callAi } from "@/lib/ai-provider";
-import { eq, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 type AiModel = 'gemini-vision' | 'gemini-pro' | 'mistral-large' | 'gpt-4o';
@@ -21,14 +16,19 @@ async function resolveModel(
   fallback: AiModel
 ): Promise<AiModel> {
   if (explicit) return explicit;
+  
+  const db = await getDb();
+  
   // Try per-platform config
-  const config = await db.select().from(aiConfig).where(eq(aiConfig.platform, platform)).limit(1);
-  const platformModel = config[0]?.preferredModel as AiModel | null;
+  const config = await db.collection("ai_config").findOne({ platform });
+  const platformModel = config?.preferredModel as AiModel | null;
   if (platformModel) return platformModel;
+  
   // Try global settings
-  const globalConfig = await db.select().from(settings).limit(1);
-  const globalModel = globalConfig[0]?.globalAiModel as AiModel | null;
+  const globalConfig = await db.collection("settings").findOne({});
+  const globalModel = globalConfig?.globalAiModel as AiModel | null;
   if (globalModel) return globalModel;
+  
   return fallback;
 }
 
@@ -37,21 +37,24 @@ async function resolveModel(
  */
 export async function trackGrowthMetric(platform: string, type: string, value: string) {
   try {
-    await db.insert(socialPlatformMetrics).values({
+    const db = await getDb();
+    await db.collection("social_platform_metrics").insertOne({
+      _id: crypto.randomUUID(),
       platform,
       metricType: type,
       value,
+      recordedAt: new Date()
     });
     revalidatePath("/admin/social-ai");
     return { success: true };
   } catch (error: any) {
+    console.error("Failed to track metric:", error);
     return { success: false, error: error.message };
   }
 }
 
 /**
  * Analyze a social media profile screenshot.
- * @param model - Optional: 'gemini-vision' or 'gpt-4o'. Mistral is excluded (no vision).
  */
 export async function analyzeScreenshot(
   platform: string,
@@ -59,7 +62,6 @@ export async function analyzeScreenshot(
   model?: AiModel
 ) {
   try {
-    // Vision analysis only works with Gemini or GPT-4o
     const visionModel = model === 'gpt-4o' ? 'gpt-4o' : 'gemini-vision';
 
     const response = await callAi({
@@ -88,7 +90,6 @@ export async function analyzeScreenshot(
       data = { summary: response.content };
     }
 
-    // Robustness checks
     const finalIdentity = typeof data.identity === 'object' && data.identity !== null
       ? JSON.stringify(data.identity)
       : String(data.identity || "");
@@ -97,8 +98,9 @@ export async function analyzeScreenshot(
       ? data.content_pillars 
       : (data.content_pillars ? [String(data.content_pillars)] : []);
 
-    // Save insight to DB
-    await db.insert(socialMediaInsights).values({
+    const db = await getDb();
+    await db.collection("social_media_insights").insertOne({
+      _id: crypto.randomUUID(),
       platform,
       handle: String(data.handle || ""),
       followerCount: String(data.followers || ""),
@@ -108,7 +110,8 @@ export async function analyzeScreenshot(
       contentPillars: finalPillars,
       analysisSummary: data.summary || response.content,
       screenshotUrl: imageUrl,
-      rawAiResponse: response.content
+      rawAiResponse: response.content,
+      lastAnalyzed: new Date()
     });
 
     await trackGrowthMetric(platform, 'followers', String(data.followers || "0"));
@@ -116,14 +119,13 @@ export async function analyzeScreenshot(
     revalidatePath("/admin/social-ai");
     return { success: true, data };
   } catch (error: any) {
+    console.error("Failed to analyze screenshot:", error);
     return { success: false, error: error.message };
   }
 }
 
 /**
  * Generate a new social media post.
- * @param model - Optional model to use; falls back to platform config then global settings.
- * @param customContext - Optional extra context (e.g. Project title/desc) to base the post on.
  */
 export async function generateSocialPost(
   platform: string, 
@@ -132,29 +134,29 @@ export async function generateSocialPost(
   customContext?: string
 ) {
   try {
+    const db = await getDb();
+    
     // 1. Get platform config
-    const config = await db.select().from(aiConfig).where(eq(aiConfig.platform, platform)).limit(1);
-    const brandVoice = config[0]?.brandVoice || "Professional and engaging";
-    const targetAudience = config[0]?.targetAudience || "General tech audience";
-    const goals = config[0]?.growthGoals || "Increase reach and engagement";
+    const config = await db.collection("ai_config").findOne({ platform });
+    const brandVoice = config?.brandVoice || "Professional and engaging";
+    const targetAudience = config?.targetAudience || "General tech audience";
+    const goals = config?.growthGoals || "Increase reach and engagement";
 
     // 2. Get latest insights for context
-    const insights = await db.select()
-      .from(socialMediaInsights)
-      .where(eq(socialMediaInsights.platform, platform))
-      .orderBy(desc(socialMediaInsights.lastAnalyzed))
-      .limit(1);
+    const insight = await db.collection("social_media_insights")
+      .find({ platform })
+      .sort({ lastAnalyzed: -1 })
+      .limit(1)
+      .next();
 
-    const brandContext = insights[0] 
-      ? `Identity: ${insights[0].identity || "N/A"}
-         Content Pillars: ${Array.isArray(insights[0].contentPillars) ? (insights[0].contentPillars as string[]).join(", ") : "N/A"}
-         Growth Summary: ${insights[0].analysisSummary}` 
+    const brandContext = insight 
+      ? `Identity: ${insight.identity || "N/A"}
+         Content Pillars: ${Array.isArray(insight.contentPillars) ? insight.contentPillars.join(", ") : "N/A"}
+         Growth Summary: ${insight.analysisSummary}` 
       : "No previous analysis available.";
 
-    // 3. Resolve model
     const resolvedModel = await resolveModel(model, platform, 'mistral-large');
 
-    // 4. Determine platform-specific constraints
     const platformLimits: Record<string, string> = {
       'X': 'strictly under 280 characters',
       'Twitter': 'strictly under 280 characters',
@@ -164,7 +166,6 @@ export async function generateSocialPost(
     };
     const limit = platformLimits[platform] || 'engaging and professionally sized';
 
-    // 5. Call AI
     const response = await callAi({
       model: resolvedModel,
       prompt: `Act as a Social Media Strategist for ${platform}. 
@@ -188,17 +189,19 @@ export async function generateSocialPost(
 
     if (response.error) throw new Error(response.error);
 
-    // 5. Save to content calendar
-    await db.insert(contentCalendar).values({
+    await db.collection("content_calendar").insertOne({
+      _id: crypto.randomUUID(),
       platform,
       content: response.content,
       status: 'draft',
-      suggestedPostDate: new Date()
+      suggestedPostDate: new Date(),
+      createdAt: new Date()
     });
 
     revalidatePath("/admin/social-ai");
     return { success: true, content: response.content };
   } catch (error: any) {
+    console.error("Failed to generate post:", error);
     return { success: false, error: error.message };
   }
 }
@@ -215,18 +218,22 @@ export async function updateAiConfig(data: {
   profileUrl?: string;
 }) {
   try {
-    const existing = await db.select().from(aiConfig).where(eq(aiConfig.platform, data.platform)).limit(1);
+    const db = await getDb();
+    const { platform, ...updateData } = data;
     
-    if (existing.length > 0) {
-      const { platform, ...updateData } = data;
-      await db.update(aiConfig).set(updateData).where(eq(aiConfig.platform, platform));
-    } else {
-      await db.insert(aiConfig).values(data);
-    }
+    await db.collection("ai_config").updateOne(
+      { platform: platform },
+      { 
+        $set: { ...updateData, updatedAt: new Date() },
+        $setOnInsert: { _id: crypto.randomUUID() }
+      },
+      { upsert: true }
+    );
 
     revalidatePath("/admin/social-ai");
     return { success: true };
   } catch (error: any) {
+    console.error("Failed to update AI config:", error);
     return { success: false, error: error.message };
   }
 }
@@ -236,8 +243,12 @@ export async function updateAiConfig(data: {
  */
 export async function getAiConfig(platform: string) {
   try {
-    const config = await db.select().from(aiConfig).where(eq(aiConfig.platform, platform)).limit(1);
-    return config[0] || null;
+    const db = await getDb();
+    const config = await db.collection("ai_config").findOne({ platform });
+    if (config) {
+      return { ...config, id: config._id.toString() };
+    }
+    return null;
   } catch (error) {
     console.error("Failed to fetch AI config:", error);
     return null;
@@ -246,8 +257,6 @@ export async function getAiConfig(platform: string) {
 
 /**
  * Analyze a social media profile by fetching its public URL.
- * Works best with GitHub, LinkedIn public pages. JS-heavy sites (Instagram, X)
- * may return limited content — combine with screenshot analysis for best results.
  */
 export async function analyzeProfileUrl(
   platform: string,
@@ -255,7 +264,6 @@ export async function analyzeProfileUrl(
   model?: AiModel
 ) {
   try {
-    // Fetch the page HTML server-side
     const res = await fetch(profileUrl, {
       headers: { "User-Agent": "Mozilla/5.0 (compatible; NovaxFolioBot/1.0)" },
       signal: AbortSignal.timeout(10000),
@@ -263,38 +271,22 @@ export async function analyzeProfileUrl(
     if (!res.ok) throw new Error(`Failed to fetch ${profileUrl} (status ${res.status})`);
 
     const html = await res.text();
-
-    // Strip HTML tags and collapse whitespace to get readable text
     const text = html
       .replace(/<script[\s\S]*?<\/script>/gi, "")
       .replace(/<style[\s\S]*?<\/style>/gi, "")
       .replace(/<[^>]+>/g, " ")
       .replace(/\s{2,}/g, " ")
       .trim()
-      .slice(0, 6000); // Keep within token budget
+      .slice(0, 6000);
 
     const resolvedModel = await resolveModel(model, platform, 'gemini-pro');
 
     const response = await callAi({
       model: resolvedModel,
       prompt: `You are an elite Social Media Analyst. Analyze this public ${platform} profile data for a professional brand.
-
-Page content (extracted text from ${profileUrl}):
----
-${text}
----
-
-Extract the following as a structured JSON object:
-- handle: The username or professional display name.
-- followers: Total followers/subscribers (e.g., "1.2k", "500").
-- following: Total accounts followed.
-- engagement_rate: An estimated engagement level based on visible activity (e.g., "High", "3.2%", "N/A").
-- bio: A concise summary of their professional identity.
-- identity: The core "Brand Voice" detected (e.g., "Sarcastic & Technical", "Visionary", "Educational").
-- content_pillars: Key topics they frequently post about.
-- summary: A 2-3 sentence strategic insight on their growth and specific recommendations for improvement.
-
-Return ONLY valid JSON.`,
+      Page content: ${text}
+      Extract: handle, followers, following, engagement_rate, bio, identity, content_pillars, summary.
+      Return ONLY valid JSON.`,
     });
 
     if (response.error) throw new Error(response.error);
@@ -307,7 +299,6 @@ Return ONLY valid JSON.`,
       data = { summary: response.content };
     }
 
-    // Ensure identity is a string and contentPillars is an array (robustness)
     const finalIdentity = typeof data.identity === 'object' && data.identity !== null
       ? JSON.stringify(data.identity)
       : String(data.identity || "");
@@ -316,8 +307,9 @@ Return ONLY valid JSON.`,
       ? data.content_pillars 
       : (data.content_pillars ? [String(data.content_pillars)] : []);
 
-    // Save to DB
-    await db.insert(socialMediaInsights).values({
+    const db = await getDb();
+    await db.collection("social_media_insights").insertOne({
+      _id: crypto.randomUUID(),
       platform,
       handle: String(data.handle || ""),
       followerCount: String(data.followers || ""),
@@ -328,6 +320,7 @@ Return ONLY valid JSON.`,
       analysisSummary: data.summary || response.content,
       screenshotUrl: null,
       rawAiResponse: response.content,
+      lastAnalyzed: new Date()
     });
 
     if (data.followers) await trackGrowthMetric(platform, 'followers', String(data.followers));
@@ -335,6 +328,7 @@ Return ONLY valid JSON.`,
     revalidatePath("/admin/social-ai");
     return { success: true, data };
   } catch (error: any) {
+    console.error("Failed to analyze URL:", error);
     return { success: false, error: error.message };
   }
 }
@@ -344,11 +338,13 @@ Return ONLY valid JSON.`,
  */
 export async function getSocialInsights(platform: string) {
   try {
-    return await db.select()
-      .from(socialMediaInsights)
-      .where(eq(socialMediaInsights.platform, platform))
-      .orderBy(desc(socialMediaInsights.lastAnalyzed))
-      .limit(5);
+    const db = await getDb();
+    const insights = await db.collection("social_media_insights")
+      .find({ platform })
+      .sort({ lastAnalyzed: -1 })
+      .limit(5)
+      .toArray();
+    return insights.map(i => ({ ...i, id: i._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch insights:", error);
     return [];
@@ -360,11 +356,13 @@ export async function getSocialInsights(platform: string) {
  */
 export async function getContentDrafts(platform: string) {
   try {
-    return await db.select()
-      .from(contentCalendar)
-      .where(eq(contentCalendar.platform, platform))
-      .orderBy(desc(contentCalendar.createdAt))
-      .limit(10);
+    const db = await getDb();
+    const drafts = await db.collection("content_calendar")
+      .find({ platform })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .toArray();
+    return drafts.map(d => ({ ...d, id: d._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch drafts:", error);
     return [];

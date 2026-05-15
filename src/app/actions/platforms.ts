@@ -1,8 +1,6 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { aiConfig, socialMediaInsights } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { getDb } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 /**
@@ -10,8 +8,9 @@ import { revalidatePath } from "next/cache";
  */
 export async function getAiPlatforms() {
   try {
-    const platforms = await db.select().from(aiConfig);
-    return platforms;
+    const db = await getDb();
+    const platforms = await db.collection("ai_config").find({}).toArray();
+    return platforms.map(p => ({ ...p, id: p._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch AI platforms:", error);
     return [];
@@ -23,20 +22,25 @@ export async function getAiPlatforms() {
  */
 export async function addAiPlatform(platform: string) {
   try {
+    const db = await getDb();
+    
     // Check if already exists
-    const existing = await db.select().from(aiConfig).where(eq(aiConfig.platform, platform)).limit(1);
-    if (existing.length > 0) return { success: false, error: "Platform already exists" };
+    const existing = await db.collection("ai_config").findOne({ platform });
+    if (existing) return { success: false, error: "Platform already exists" };
 
-    await db.insert(aiConfig).values({
+    await db.collection("ai_config").insertOne({
+      _id: crypto.randomUUID(),
       platform,
       brandVoice: "Professional and Technical",
       targetAudience: "Tech community",
-      growthGoals: "Increase visibility and engagement"
+      growthGoals: "Increase visibility and engagement",
+      createdAt: new Date()
     });
 
     revalidatePath("/admin/social-ai");
     return { success: true };
   } catch (error: any) {
+    console.error("Failed to add AI platform:", error);
     return { success: false, error: error.message };
   }
 }
@@ -46,10 +50,12 @@ export async function addAiPlatform(platform: string) {
  */
 export async function deleteAiPlatform(id: string) {
   try {
-    await db.delete(aiConfig).where(eq(aiConfig.id, id));
+    const db = await getDb();
+    await db.collection("ai_config").deleteOne({ _id: id });
     revalidatePath("/admin/social-ai");
     return { success: true };
   } catch (error: any) {
+    console.error("Failed to delete AI platform:", error);
     return { success: false, error: error.message };
   }
 }

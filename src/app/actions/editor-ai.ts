@@ -1,8 +1,7 @@
 "use server";
 
 import { callAi } from "@/lib/ai-provider";
-import { db } from "@/lib/db";
-import { settings } from "@/lib/schema";
+import { getDb } from "@/lib/db";
 
 type EditorAiAction = 
   | 'improve'
@@ -48,13 +47,12 @@ export async function generateEditorContent(
       }
     }
 
-    // Attempt to read the user's preferred global model from settings.
-    // If not available, fallback to gemini-pro.
     let model: 'gemini-pro' | 'gemini-vision' | 'mistral-large' | 'gpt-4o' = 'gemini-pro';
     try {
-      const globalConfig = await db.select().from(settings).limit(1);
-      if (globalConfig[0]?.globalAiModel) {
-         model = globalConfig[0].globalAiModel as any;
+      const db = await getDb();
+      const globalConfig = await db.collection("settings").findOne({});
+      if (globalConfig?.globalAiModel) {
+         model = globalConfig.globalAiModel as any;
       }
     } catch (e) {
       console.error("Error fetching AI settings, defaulting to gemini-pro", e);
@@ -69,6 +67,7 @@ export async function generateEditorContent(
 
     return { success: true, content: response.content };
   } catch (error: any) {
+    console.error("Editor AI Error:", error);
     return { success: false, error: error.message };
   }
 }

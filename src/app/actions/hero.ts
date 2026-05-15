@@ -1,18 +1,20 @@
 "use server";
 
-import { db } from "@/lib/db";
-import { heroes } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { getDb } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 /**
  * Fetches the current hero section data from the database.
- * Returns the first row or null if the table is empty.
+ * Returns the first row or null if the collection is empty.
  */
 export async function getHero() {
   try {
-    const hero = await db.select().from(heroes).limit(1);
-    return hero.length > 0 ? hero[0] : null;
+    const db = await getDb();
+    const hero = await db.collection("heroes").findOne({});
+    if (hero) {
+      return { ...hero, id: hero._id.toString() };
+    }
+    return null;
   } catch (error) {
     console.error("Failed to fetch hero:", error);
     return null;
@@ -24,25 +26,36 @@ export async function getHero() {
  * Revalidates the home page and admin dashboard to reflect changes instantly.
  */
 export async function updateHero(formData: FormData) {
-
   try {
     const name = formData.get("name") as string;
     const title = formData.get("title") as string;
     const description = formData.get("description") as string;
     const cvUrl = formData.get("cvUrl") as string;
     const imageUrl = formData.get("imageUrl") as string;
-
     const badgeText = formData.get("badgeText") as string;
 
-    const existing = await getHero();
+    const db = await getDb();
+    const hero = await db.collection("heroes").findOne({});
 
-    if (existing) {
-      await db.update(heroes)
-        .set({ name, title, description, badgeText, cvUrl, imageUrl })
-        .where(eq(heroes.id, existing.id));
+    const payload = {
+      name,
+      title,
+      description,
+      badgeText,
+      cvUrl,
+      imageUrl,
+      updatedAt: new Date()
+    };
+
+    if (hero) {
+      await db.collection("heroes").updateOne(
+        { _id: hero._id },
+        { $set: payload }
+      );
     } else {
-      await db.insert(heroes).values({
-        name, title, description, badgeText, cvUrl, imageUrl
+      await db.collection("heroes").insertOne({
+        ...payload,
+        _id: crypto.randomUUID() // Keep using UUIDs as strings for consistency
       });
     }
 

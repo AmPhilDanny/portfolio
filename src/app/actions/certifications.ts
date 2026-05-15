@@ -1,22 +1,21 @@
 "use server";
-import { db } from "@/lib/db";
-import { certifications } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+
+import { getDb } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 /**
  * Fetches all certification records from the database.
- * Used to populate the public certifications section and admin list.
  */
 export async function getCertifications() {
   try {
-    return await db.select().from(certifications);
+    const db = await getDb();
+    const certifications = await db.collection("certifications").find({}).toArray();
+    return certifications.map(c => ({ ...c, id: c._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch certifications:", error);
     return [];
   }
 }
-
 
 export async function createCertification(formData: FormData) {
   try {
@@ -27,25 +26,36 @@ export async function createCertification(formData: FormData) {
     const link = formData.get("link") as string;
     const imageUrl = formData.get("imageUrl") as string;
 
-    await db.insert(certifications).values({
-      name, issuer, date, description, link, imageUrl
+    const db = await getDb();
+    await db.collection("certifications").insertOne({
+      _id: crypto.randomUUID(),
+      name,
+      issuer,
+      date,
+      description,
+      link,
+      imageUrl,
+      createdAt: new Date()
     });
 
     revalidatePath("/");
     revalidatePath("/admin/certifications");
     return { success: true };
   } catch (error) {
+    console.error("Failed to create certification:", error);
     return { success: false, error: "Failed to create certification." };
   }
 }
 
 export async function deleteCertification(id: string) {
   try {
-    await db.delete(certifications).where(eq(certifications.id, id));
+    const db = await getDb();
+    await db.collection("certifications").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/certifications");
     return { success: true };
   } catch (error) {
+    console.error("Failed to delete certification:", error);
     return { success: false, error: "Failed to delete certification." };
   }
 }

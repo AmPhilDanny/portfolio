@@ -1,16 +1,16 @@
 "use server";
-import { db } from "@/lib/db";
-import { skillCategories } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+
+import { getDb } from "@/lib/db";
 import { revalidatePath } from "next/cache";
 
 /**
  * Fetches all technical skill categories and their associated skills.
- * Powers the tiered skills section on the public site and admin management.
  */
 export async function getSkillCategories() {
   try {
-    return await db.select().from(skillCategories);
+    const db = await getDb();
+    const categories = await db.collection("skill_categories").find({}).toArray();
+    return categories.map(c => ({ ...c, id: c._id.toString() }));
   } catch (error) {
     console.error("Failed to fetch skills:", error);
     return [];
@@ -18,12 +18,19 @@ export async function getSkillCategories() {
 }
 
 export async function createSkillCategory(formData: FormData) {
-
   try {
     const category = formData.get("category") as string;
     const skillsRaw = formData.get("skills") as string;
     const skills = skillsRaw.split(",").map((s) => s.trim()).filter(Boolean);
-    await db.insert(skillCategories).values({ category, skills });
+
+    const db = await getDb();
+    await db.collection("skill_categories").insertOne({
+      _id: crypto.randomUUID(),
+      category,
+      skills,
+      createdAt: new Date()
+    });
+
     revalidatePath("/");
     revalidatePath("/admin/skills");
     return { success: true };
@@ -32,7 +39,8 @@ export async function createSkillCategory(formData: FormData) {
 
 export async function deleteSkillCategory(id: string) {
   try {
-    await db.delete(skillCategories).where(eq(skillCategories.id, id));
+    const db = await getDb();
+    await db.collection("skill_categories").deleteOne({ _id: id });
     revalidatePath("/");
     revalidatePath("/admin/skills");
     return { success: true };
