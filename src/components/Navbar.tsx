@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { Menu, X, LogIn, LogOut, Terminal } from "lucide-react";
+import { 
+  Menu01Icon as Menu, 
+  Cancel01Icon as X, 
+  Login03Icon as LogIn, 
+  Logout03Icon as LogOut, 
+  TerminalBrowserIcon as Terminal 
+} from "hugeicons-react";
 import { ThemeToggle } from "./ThemeToggle";
 
 /**

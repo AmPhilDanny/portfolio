@@ -3,22 +3,22 @@
 import { useState, useEffect, useRef } from "react";
 import { getMedia, addMedia } from "@/app/actions/media";
 import {
-  Image as ImageIcon,
-  Upload,
-  Search,
-  X,
-  Check,
-  FileText,
-  Video,
-  CloudUpload,
-  FolderOpen,
-  Loader2,
-  AlertCircle,
-  FileArchive,
-  FileSpreadsheet,
-  FileCode,
-  FileBox,
-} from "lucide-react";
+  Image01Icon as ImageIcon,
+  Upload01Icon as Upload,
+  Search01Icon as Search,
+  Cancel01Icon as X,
+  Tick01Icon as Check,
+  DocumentCodeIcon as FileText,
+  Video01Icon as Video,
+  CloudUploadIcon as CloudUpload,
+  Folder01Icon as FolderOpen,
+  AiLoaderIcon as Loader2,
+  AlertCircleIcon as AlertCircle,
+  FileZipIcon as FileArchive,
+  SpreadsheetIcon as FileSpreadsheet,
+  CodeSnippet01Icon as FileCode,
+  PackageIcon as FileBox,
+} from "hugeicons-react";
 
 
 interface MediaItem {
@@ -487,7 +487,7 @@ export default function MediaPicker({
                               ? "PDF, DOCX, XLSX, PPTX, TXT"
                               : "All files including ZIP, RAR, 7Z"}
 
-                            {" · "}Max 10MB
+                            {" · "}Max 15MB
                           </p>
                         </div>
                       </div>

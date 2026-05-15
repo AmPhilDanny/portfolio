@@ -1,10 +1,22 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import {
-  Sparkles, Plus, BarChart3, MessageSquare, Settings as SettingsIcon,
-  Upload, Loader2, CheckCircle2, AlertCircle, Globe, History, X, Trash2
-} from "lucide-react";
+  SparklesIcon as Sparkles,
+  Plus02Icon as Plus,
+  BarChart02Icon as BarChart3,
+  Message01Icon as MessageSquare,
+  Settings02Icon as SettingsIcon,
+  Upload02Icon as Upload,
+  AiLoaderIcon as Loader2,
+  Tick02Icon as CheckCircle2,
+  AlertCircleIcon as AlertCircle,
+  GlobalIcon as Globe,
+  TimeHistoryIcon as History,
+  Cancel01Icon as X,
+  Delete02Icon as Trash2
+} from "hugeicons-react";
 import MediaPicker from "@/components/MediaPicker";
 import {
   generateSocialPost, analyzeScreenshot, analyzeProfileUrl, updateAiConfig, getAiConfig,
@@ -43,6 +55,26 @@ function StatusBanner({ message, onDismiss }: { message: { type: 'success' | 'er
       <span className="flex-1">{message.text}</span>
       <button onClick={onDismiss} className="opacity-60 hover:opacity-100"><X className="w-4 h-4" /></button>
     </div>
+  );
+}
+
+function MarkdownPreview({ content }: { content: string }) {
+  // Simple regex-based markdown parser for preview
+  const html = content
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+    .replace(/^\* (.*$)/gim, '<li>$1</li>')
+    .replace(/^\- (.*$)/gim, '<li>$1</li>')
+    .replace(/\n/g, '<br />');
+
+  return (
+    <div 
+      className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed prose-sm dark:prose-invert max-w-none"
+      dangerouslySetInnerHTML={{ __html: html }}
+    />
   );
 }
 
@@ -416,7 +448,7 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
                       <span className="text-[10px] font-bold uppercase tracking-widest text-primary px-2 py-0.5 bg-primary/10 rounded-full">{d.status}</span>
                       <span className="text-[10px] text-zinc-400">{new Date(d.createdAt).toLocaleDateString()}</span>
                     </div>
-                    <p className="text-sm text-zinc-600 dark:text-zinc-300 leading-relaxed whitespace-pre-wrap line-clamp-4">{d.content}</p>
+                    <MarkdownPreview content={d.content} />
                   </div>
                 ))}
               </div>
@@ -491,6 +523,7 @@ function PlatformTab({ platform, onDelete }: { platform: any; onDelete: () => vo
 }
 
 export default function SocialAiPage() {
+  const router = useRouter();
   const [platforms, setPlatforms] = useState<any[]>([]);
   const [activePlatform, setActivePlatform] = useState<string>("");
   const [showAddModal, setShowAddModal] = useState(false);
@@ -515,6 +548,7 @@ export default function SocialAiPage() {
       setActivePlatform(newPlatformName.trim());
       setNewPlatformName("");
       setShowAddModal(false);
+      router.refresh();
     } else {
       setAddError(res.error || "Failed to add platform.");
     }
@@ -526,6 +560,7 @@ export default function SocialAiPage() {
     const list = await getAiPlatforms();
     setPlatforms(list);
     if (activePlatform === platformName) setActivePlatform(list[0]?.platform || "");
+    router.refresh();
   };
 
   const activePlatformData = platforms.find((p) => p.platform === activePlatform);

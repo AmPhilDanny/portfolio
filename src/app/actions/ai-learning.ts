@@ -178,12 +178,12 @@ export async function generateSocialPost(
       Topic/Request: ${topic || "Recent achievements in Data Analysis and Web Development"}
       
       Requirements:
-      1. Length: ${limit}.
+      1. Length: ${limit}. You MUST provide a complete, high-value post that utilizes the maximum space allowed for the platform while remaining concise.
       2. Style: High-impact, engaging, and professional.
-      3. Format: Use HTML-style Markdown (e.g. <b>bold</b>, <i>italics</i>, bullet points).
-      4. Strategy: Include a soft call-to-action if appropriate.
+      3. Format: Use Markdown for formatting (e.g. **bold**, *italics*, bullet points, and proper spacing).
+      4. Strategy: Include a soft call-to-action and relevant hashtags.
       
-      Return ONLY the final post content with formatting.`
+      Return ONLY the final post content. Do not include any meta-talk or JSON wrapper.`
     });
 
     if (response.error) throw new Error(response.error);
@@ -218,7 +218,8 @@ export async function updateAiConfig(data: {
     const existing = await db.select().from(aiConfig).where(eq(aiConfig.platform, data.platform)).limit(1);
     
     if (existing.length > 0) {
-      await db.update(aiConfig).set(data).where(eq(aiConfig.platform, data.platform));
+      const { platform, ...updateData } = data;
+      await db.update(aiConfig).set(updateData).where(eq(aiConfig.platform, platform));
     } else {
       await db.insert(aiConfig).values(data);
     }

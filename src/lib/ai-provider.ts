@@ -39,8 +39,8 @@ export async function callAi(options: AiCallOptions): Promise<{ content: string;
 async function callGemini(options: AiCallOptions, apiKey?: string | null) {
   if (!apiKey) throw new Error("Gemini API Key is missing in settings.");
 
-  // Use Gemini 2.5 Flash — latest preview model
-  const modelName = "gemini-2.5-flash-preview-04-17";
+  // Use Gemini 2.5 Flash — latest stable model
+  const modelName = "gemini-2.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
   const contents: any[] = [];

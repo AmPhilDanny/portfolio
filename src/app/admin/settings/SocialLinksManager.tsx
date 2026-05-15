@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createSocialLink, deleteSocialLink, updateSocialLink } from "@/app/actions/social";
 import { Trash2, Plus, Globe, Mail, AlertCircle, Edit2, Check, X as CloseIcon } from "lucide-react";
 import SocialIcon from "@/components/SocialIcon";
 
 export default function SocialLinksManager({ initialLinks }: { initialLinks: any[] }) {
+  const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -20,6 +22,7 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
       const res = await createSocialLink(formData);
       if (res.success) {
         (e.target as HTMLFormElement).reset();
+        router.refresh();
       } else {
         setError(res.error || "Failed to add link");
       }
@@ -39,6 +42,7 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
       const res = await updateSocialLink(id, formData);
       if (res.success) {
         setEditingId(null);
+        router.refresh();
       } else {
         setError(res.error || "Update failed");
       }
@@ -54,6 +58,7 @@ export default function SocialLinksManager({ initialLinks }: { initialLinks: any
     setLoading(id);
     await deleteSocialLink(id);
     setLoading(null);
+    router.refresh();
   };
 
   return (
