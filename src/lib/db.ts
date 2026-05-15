@@ -8,7 +8,7 @@
 
 import { MongoClient } from 'mongodb';
 
-const uri = process.env.DATABASE_URL || process.env.MONGODB_URI || "";
+const uri = process.env.MONGODB_URI || "";
 
 // Create a singleton MongoDB client
 let client: MongoClient | null = null;
