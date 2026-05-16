@@ -4,11 +4,7 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
-import { 
-  Bold, Italic, List, ListOrdered, Quote, Undo, Redo, Link as LinkIcon, 
-  Strikethrough, Underline as UnderlineIcon, Code, Sparkles, Loader2,
-  Wand2, Briefcase, AlignLeft, AlignJustify, CheckCircle
-} from 'lucide-react';
+import { TextBoldIcon as Bold, TextItalicIcon as Italic, TextUnderlineIcon as UnderlineIcon, TextStrikethroughIcon as Strikethrough, CodeIcon as Code, LeftToRightListBulletIcon as List, LeftToRightListNumberIcon as ListOrdered, QuoteUpIcon as Quote, UndoIcon as Undo, RedoIcon as Redo, Link01Icon as LinkIcon, SparklesIcon as Sparkles, Loading02Icon as Loader2, MagicWand01Icon as Wand2, Briefcase02Icon as Briefcase, AlignLeftIcon as AlignLeft, TextAlignJustifyCenterIcon as AlignJustify, TickDouble01Icon as CheckCircle } from "hugeicons-react";
 import { useState, useRef, useEffect } from 'react';
 import { generateEditorContent } from '@/app/actions/editor-ai';
 

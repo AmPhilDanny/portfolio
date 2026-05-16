@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Trash2, Pencil, Share2 } from "lucide-react";
+import { Delete02Icon as Trash2, PencilEdit01Icon as Pencil, Share01Icon as Share2 } from "hugeicons-react";
 import { deleteExperience } from "@/app/actions/experience";
 import ExperienceForm from "./ExperienceForm";
 import SocialShareModal from "@/components/SocialShareModal";

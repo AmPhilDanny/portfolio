@@ -3,9 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, LogOut, Briefcase, FileText, UserCircle, Star, Settings, Award, Code, FolderGit2, Home, Image as ImageIcon, Menu, X, Layers, Sparkles
-} from "lucide-react";
+import { DashboardSquare01Icon as LayoutDashboard, Logout01Icon as LogOut, Briefcase02Icon as Briefcase, File02Icon as FileText, UserCircleIcon as UserCircle, StarIcon as Star, Settings01Icon as Settings, Award02Icon as Award, CodeIcon as Code, Folder01Icon as FolderGit2, Home01Icon as Home, Image01Icon as ImageIcon, Menu01Icon as Menu, Cancel01Icon as X, Layers01Icon as Layers, SparklesIcon as Sparkles } from "hugeicons-react";
 
 export function AdminSidebar({ email }: { email?: string | null }) {
   const [isOpen, setIsOpen] = useState(false);

@@ -46,3 +46,27 @@ export async function deleteSkillCategory(id: string) {
     return { success: true };
   } catch { return { success: false }; }
 }
+
+export async function updateSkillCategory(id: string, formData: FormData) {
+  try {
+    const category = formData.get("category") as string;
+    const skillsRaw = formData.get("skills") as string;
+    const skills = skillsRaw.split(",").map((s) => s.trim()).filter(Boolean);
+
+    const db = await getDb();
+    await db.collection<any>("skill_categories").updateOne(
+      { _id: id },
+      {
+        $set: {
+          category,
+          skills,
+          updatedAt: new Date()
+        }
+      }
+    );
+
+    revalidatePath("/");
+    revalidatePath("/admin/skills");
+    return { success: true };
+  } catch { return { success: false }; }
+}

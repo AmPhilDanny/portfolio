@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { updateSectionConfig } from "@/app/actions/sections";
-import { Save } from "lucide-react";
+import { FloppyDiskIcon as Save } from "hugeicons-react";
 
 const SECTIONS = [
   { id: "about", defaultTitle: "About Me" },

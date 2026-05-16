@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Download, Mail, Code } from "lucide-react";
+import { ArrowRight01Icon as ArrowRight, Download01Icon as Download, Mail01Icon as Mail, CodeIcon as Code } from "hugeicons-react";
 import Link from "next/link";
 import Image from "next/image";
 

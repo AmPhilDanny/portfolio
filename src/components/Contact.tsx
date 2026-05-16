@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mail, Phone, MapPin, Send } from "lucide-react";
+import { Mail01Icon as Mail, SmartPhone01Icon as Phone, Location01Icon as MapPin, SentIcon as Send } from "hugeicons-react";
 
 /**
  * Contact Section: Displays contact information and a lead-generation form.

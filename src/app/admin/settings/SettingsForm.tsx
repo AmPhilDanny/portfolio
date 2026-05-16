@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { updateSettings } from "@/app/actions/settings";
-import { Save, Palette, Type, Globe, Image as ImageIcon, Cpu, Key, Eye, EyeOff } from "lucide-react";
+import { FloppyDiskIcon as Save, PaintBoardIcon as Palette, TextFontIcon as Type, GlobeIcon as Globe, Image01Icon as ImageIcon, CpuIcon as Cpu, Key01Icon as Key, ViewIcon as Eye, ViewOffIcon as EyeOff } from "hugeicons-react";
 import MediaPicker from "@/components/MediaPicker";
 import SocialLinksManager from "./SocialLinksManager";
 

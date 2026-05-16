@@ -1,45 +1,49 @@
 "use client";
 
 import { useState } from "react";
-import { createProject } from "@/app/actions/projects";
-import { Plus } from "lucide-react";
+import { createProject, updateProject } from "@/app/actions/projects";
+import { PlusSignIcon, FloppyDiskIcon, Cancel01Icon } from "hugeicons-react";
 import MediaPicker from "@/components/MediaPicker";
 import RichTextEditor from "@/components/RichTextEditor";
 
-/**
- * ProjectForm: A comprehensive interface for adding new portfolio items.
- * Supports:
- * - Direct image uploads and binary asset attachment via MediaPicker.
- * - Dynamic tag management and multi-URL (GitHub, Live Site) support.
- * - Auto-reset behavior upon successful project creation.
- */
-export default function ProjectForm() {
+interface ProjectFormProps {
+  initialData?: any;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export default function ProjectForm({ initialData, onSuccess, onCancel }: ProjectFormProps = {}) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-  const [fileUrl, setFileUrl] = useState("");
-  const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState(initialData?.image || "");
+  const [fileUrl, setFileUrl] = useState(initialData?.projectFileUrl || "");
+  const [description, setDescription] = useState(initialData?.description || "");
 
+  const isEditMode = !!initialData;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-
     e.preventDefault();
     setLoading(true);
     setMessage("");
     
     const form = e.currentTarget;
     const formData = new FormData(form);
-    const result = await createProject(formData);
+    
+    const result = isEditMode 
+      ? await updateProject(initialData.id, formData)
+      : await createProject(formData);
     
     if (result.success) {
-      setMessage("Project added successfully.");
-      form.reset();
-      setImageUrl("");
-      setFileUrl("");
-      setDescription("");
+      setMessage(`Project ${isEditMode ? 'updated' : 'added'} successfully.`);
+      if (!isEditMode) {
+        form.reset();
+        setImageUrl("");
+        setFileUrl("");
+        setDescription("");
+      }
+      if (onSuccess) onSuccess();
     } else {
-
-      setMessage("Failed to add project.");
+      setMessage(`Failed to ${isEditMode ? 'update' : 'add'} project.`);
     }
     setLoading(false);
   };
@@ -53,7 +57,7 @@ export default function ProjectForm() {
       )}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
-        <input type="text" name="title" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" required />
+        <input type="text" name="title" defaultValue={initialData?.title} className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" required />
       </div>
       
       <RichTextEditor 
@@ -65,16 +69,16 @@ export default function ProjectForm() {
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags (Comma separated)</label>
-        <input type="text" name="tags" placeholder="React, Tailwind, Node.js" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" required />
+        <input type="text" name="tags" defaultValue={initialData?.tags?.join(", ")} placeholder="React, Tailwind, Node.js" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" required />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">GitHub URL</label>
-          <input type="url" name="githubUrl" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" />
+          <input type="url" name="githubUrl" defaultValue={initialData?.githubUrl} className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" />
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Live URL</label>
-          <input type="url" name="liveUrl" className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" />
+          <input type="url" name="liveUrl" defaultValue={initialData?.liveUrl} className="w-full px-3 py-2 bg-white dark:bg-zinc-800 border dark:border-zinc-700 rounded-lg outline-none" />
         </div>
       </div>
       
@@ -95,11 +99,16 @@ export default function ProjectForm() {
       <input type="hidden" name="image" value={imageUrl} />
       <input type="hidden" name="projectFileUrl" value={fileUrl} />
 
-
-      <div className="pt-2">
-        <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 transition-colors">
-          <Plus className="w-4 h-4" /> Add Project
+      <div className="flex gap-3 pt-2">
+        <button type="submit" disabled={loading} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg disabled:opacity-50 transition-colors">
+          {loading ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : (isEditMode ? <FloppyDiskIcon className="w-4 h-4" /> : <PlusSignIcon className="w-4 h-4" />)}
+          {isEditMode ? "Save Changes" : "Add Project"}
         </button>
+        {isEditMode && onCancel && (
+          <button type="button" onClick={onCancel} disabled={loading} className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-gray-300 rounded-lg transition-colors">
+            <Cancel01Icon className="w-4 h-4" /> Cancel
+          </button>
+        )}
       </div>
     </form>
   );

@@ -60,3 +60,41 @@ export async function deleteProject(id: string) {
     return { success: false, error: "Failed to delete project." };
   }
 }
+
+export async function updateProject(id: string, formData: FormData) {
+  try {
+    const title = formData.get("title") as string;
+    const description = formData.get("description") as string;
+    const image = formData.get("image") as string;
+    const tagsString = formData.get("tags") as string;
+    const githubUrl = formData.get("githubUrl") as string;
+    const liveUrl = formData.get("liveUrl") as string;
+    const projectFileUrl = formData.get("projectFileUrl") as string;
+
+    const tags = tagsString ? tagsString.split(",").map(t => t.trim()) : [];
+
+    const db = await getDb();
+    await db.collection<any>("projects").updateOne(
+      { _id: id },
+      {
+        $set: {
+          title,
+          description,
+          image,
+          tags,
+          githubUrl,
+          liveUrl,
+          projectFileUrl,
+          updatedAt: new Date()
+        }
+      }
+    );
+
+    revalidatePath("/");
+    revalidatePath("/admin/projects");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update project:", error);
+    return { success: false, error: "Failed to update project." };
+  }
+}

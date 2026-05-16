@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Briefcase, Calendar } from "lucide-react";
+import { Briefcase02Icon as Briefcase, Calendar01Icon as Calendar } from "hugeicons-react";
 
 /**
  * Experience Section: Displays professional career history in a timeline format.

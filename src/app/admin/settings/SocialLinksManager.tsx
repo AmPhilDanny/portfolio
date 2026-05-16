@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createSocialLink, deleteSocialLink, updateSocialLink } from "@/app/actions/social";
-import { Trash2, Plus, Globe, Mail, AlertCircle, Edit2, Check, X as CloseIcon } from "lucide-react";
+import { Delete02Icon as Trash2, PlusSignIcon as Plus, GlobeIcon as Globe, Mail01Icon as Mail, Alert01Icon as AlertCircle, PencilEdit01Icon as Edit2, Tick01Icon as Check, Cancel01Icon as CloseIcon } from "hugeicons-react";
 import SocialIcon from "@/components/SocialIcon";
 
 export default function SocialLinksManager({ initialLinks }: { initialLinks: any[] }) {

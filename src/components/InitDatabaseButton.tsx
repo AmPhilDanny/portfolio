@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { initializeDatabase } from "@/app/actions/init";
-import { Database, Loader2, CheckCircle } from "lucide-react";
+import { Database01Icon as Database, Loading02Icon as Loader2, TickDouble01Icon as CheckCircle } from "hugeicons-react";
 
 export default function InitDatabaseButton() {
   const [loading, setLoading] = useState(false);

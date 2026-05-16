@@ -59,3 +59,37 @@ export async function deleteCertification(id: string) {
     return { success: false, error: "Failed to delete certification." };
   }
 }
+
+export async function updateCertification(id: string, formData: FormData) {
+  try {
+    const name = formData.get("name") as string;
+    const issuer = formData.get("issuer") as string;
+    const date = formData.get("date") as string;
+    const description = formData.get("description") as string;
+    const link = formData.get("link") as string;
+    const imageUrl = formData.get("imageUrl") as string;
+
+    const db = await getDb();
+    await db.collection<any>("certifications").updateOne(
+      { _id: id },
+      {
+        $set: {
+          name,
+          issuer,
+          date,
+          description,
+          link,
+          imageUrl,
+          updatedAt: new Date()
+        }
+      }
+    );
+
+    revalidatePath("/");
+    revalidatePath("/admin/certifications");
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update certification:", error);
+    return { success: false, error: "Failed to update certification." };
+  }
+}

@@ -1,9 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Copy, Check, Share2, MoreVertical, Trash2 
-} from "lucide-react";
+import { Copy01Icon as Copy, Tick01Icon as Check, Share01Icon as Share2, MoreVerticalIcon as MoreVertical, Delete02Icon as Trash2 } from "hugeicons-react";
 import { GithubIcon, TwitterIcon, LinkedinIcon, InstagramIcon } from "@/components/Icons";
 
 interface PostCardProps {

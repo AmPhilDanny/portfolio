@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { updateContact } from "@/app/actions/contact";
-import { Save, Mail, Phone, MapPin } from "lucide-react";
+import { FloppyDiskIcon as Save, Mail01Icon as Mail, SmartPhone01Icon as Phone, Location01Icon as MapPin } from "hugeicons-react";
 
 export default function ContactForm({ initialData }: { initialData: any }) {
   const [loading, setLoading] = useState(false);

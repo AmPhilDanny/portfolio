@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight01Icon as ArrowRight } from "hugeicons-react";
 import InitDatabaseButton from "@/components/InitDatabaseButton";
 
 /**

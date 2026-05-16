@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { createExperience, updateExperience } from "@/app/actions/experience";
-import { Plus, Save, X } from "lucide-react";
+import { PlusSignIcon as Plus, FloppyDiskIcon as Save, Cancel01Icon as X } from "hugeicons-react";
 import RichTextEditor from "@/components/RichTextEditor";
 
 interface ExperienceFormProps {

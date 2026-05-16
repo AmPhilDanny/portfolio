@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { getMedia, addMedia, deleteMedia } from "@/app/actions/media";
-import { Upload, Trash2, ExternalLink, FileText, Image as ImageIcon, Video, Search } from "lucide-react";
+import { Upload01Icon as Upload, Delete02Icon as Trash2, LinkSquare02Icon as ExternalLink, File02Icon as FileText, Image01Icon as ImageIcon, Video01Icon as Video, Search01Icon as Search } from "hugeicons-react";
 import Image from "next/image";
 
 export default function MediaManager() {

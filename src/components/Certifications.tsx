@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Award, ExternalLink } from "lucide-react";
+import { Award02Icon as Award, LinkSquare02Icon as ExternalLink } from "hugeicons-react";
 
 /**
  * Certifications Section: Displays official credentials with issuer and date.

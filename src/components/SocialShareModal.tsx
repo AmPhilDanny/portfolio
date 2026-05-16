@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { Sparkles, X, Copy, Check, Loader2, Send, Share2 } from "lucide-react";
+import { SparklesIcon as Sparkles, Cancel01Icon as X, Copy01Icon as Copy, Tick01Icon as Check, Loading02Icon as Loader2, SentIcon as Send, Share01Icon as Share2 } from "hugeicons-react";
 import { generateSocialPost } from "@/app/actions/ai-learning";
 import { getAiPlatforms } from "@/app/actions/platforms";
 

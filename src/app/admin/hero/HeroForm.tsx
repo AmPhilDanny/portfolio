@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { updateHero } from "@/app/actions/hero";
-import { Save } from "lucide-react";
+import { FloppyDiskIcon as Save } from "hugeicons-react";
 import MediaPicker from "@/components/MediaPicker";
 import RichTextEditor from "@/components/RichTextEditor";
 

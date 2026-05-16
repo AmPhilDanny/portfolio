@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Trash2, Pencil, Layers, Share2 } from "lucide-react";
+import { Delete02Icon as Trash2, PencilEdit01Icon as Pencil, Layers01Icon as Layers, Share01Icon as Share2 } from "hugeicons-react";
 import { deleteService } from "@/app/actions/services";
 import ServicesForm from "./ServicesForm";
 import SocialShareModal from "@/components/SocialShareModal";

@@ -1,6 +1,6 @@
 import { getContact } from "@/app/actions/contact";
 import ContactForm from "./ContactForm";
-import { Mail, ShieldCheck } from "lucide-react";
+import { Mail01Icon as Mail, Shield01Icon as ShieldCheck } from "hugeicons-react";
 
 export default async function AdminContactPage() {
   const contactData = await getContact();

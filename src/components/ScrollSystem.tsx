@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, useScroll, useSpring, AnimatePresence } from "framer-motion";
-import { ChevronUp } from "lucide-react";
+import { ArrowUp01Icon as ChevronUp } from "hugeicons-react";
 
 /**
  * ScrollSystem Component: Global navigation and feedback system.

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { updateAbout } from "@/app/actions/about";
-import { Save, Plus, Trash2 } from "lucide-react";
+import { FloppyDiskIcon as Save, PlusSignIcon as Plus, Delete02Icon as Trash2 } from "hugeicons-react";
 import RichTextEditor from "@/components/RichTextEditor";
 
 export default function AboutForm({ initialData }: { initialData: any }) {

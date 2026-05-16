@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ExternalLink, FolderOpen } from "lucide-react";
+import { LinkSquare02Icon as ExternalLink, FolderOpenIcon as FolderOpen } from "hugeicons-react";
 import { GithubIcon } from "@/components/Icons";
 
 const projects = [

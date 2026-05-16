@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Mail } from "lucide-react";
+import { Mail01Icon as Mail } from "hugeicons-react";
 import SocialIcon from "@/components/SocialIcon";
 
 /**

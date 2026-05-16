@@ -1,6 +1,6 @@
-import { getSkillCategories, deleteSkillCategory } from "@/app/actions/skills";
+import { getSkillCategories } from "@/app/actions/skills";
 import SkillsForm from "./SkillsForm";
-import { Trash2, Code2 } from "lucide-react";
+import SkillItem from "./SkillItem";
 
 export default async function AdminSkillsPage() {
   const skillsList = await getSkillCategories();
@@ -20,25 +20,7 @@ export default async function AdminSkillsPage() {
             <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>No skill categories yet. Fallback data will be shown on the site.</p>
           ) : (
             skillsList.map((cat: any) => (
-              <div key={cat.id} className="p-4 rounded-xl border flex justify-between items-start gap-3"
-                style={{ background: "var(--card)", borderColor: "var(--border)" }}>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Code2 className="w-4 h-4 shrink-0" style={{ color: "var(--primary)" }} />
-                    <h3 className="font-bold text-sm" style={{ color: "var(--foreground)" }}>{cat.category}</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {(cat.skills as string[]).map((s: string) => (
-                      <span key={s} className="code-badge">{s}</span>
-                    ))}
-                  </div>
-                </div>
-                <form action={async () => { "use server"; await deleteSkillCategory(cat.id); }}>
-                  <button type="submit" className="p-2 rounded-lg transition-colors text-red-500 hover:bg-red-500/10">
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </form>
-              </div>
+              <SkillItem key={cat.id} cat={cat} />
             ))
           )}
         </div>

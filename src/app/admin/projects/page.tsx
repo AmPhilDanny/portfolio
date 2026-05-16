@@ -1,7 +1,7 @@
 import { getProjects, deleteProject } from "@/app/actions/projects";
 import ProjectForm from "./ProjectForm";
 import ProjectItem from "./ProjectItem";
-import { Trash2 } from "lucide-react";
+import { Delete02Icon as Trash2 } from "hugeicons-react";
 
 /**
  * AdminProjectsPage: Central hub for portfolio work management.

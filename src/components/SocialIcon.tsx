@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 import * as SiIcons from "react-icons/si";
-import * as LuIcons from "lucide-react";
+import * as LuIcons from "hugeicons-react";
 
 interface SocialIconProps {
   platform: string;
@@ -50,6 +50,6 @@ export default function SocialIcon({ platform, className }: SocialIconProps) {
     return <IconComponent className={className} />;
   }
 
-  // Fallback to Lucide Globe if unknown
-  return <LuIcons.Globe className={className} />;
+  // Fallback to HugeIcons Globe if unknown
+  return <LuIcons.GlobeIcon className={className} />;
 }

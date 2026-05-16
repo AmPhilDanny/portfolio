@@ -1,7 +1,7 @@
 import { getExperiences } from "@/app/actions/experience";
 import ExperienceForm from "./ExperienceForm";
 import ExperienceItem from "./ExperienceItem";
-import { Briefcase } from "lucide-react";
+import { Briefcase02Icon as Briefcase } from "hugeicons-react";
 
 export default async function AdminExperiencePage() {
   const experiencesList = await getExperiences();
