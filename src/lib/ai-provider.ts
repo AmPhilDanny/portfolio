@@ -22,7 +22,7 @@ export async function callAi(options: AiCallOptions): Promise<{ content: string;
     const keys: any = await db.collection<any>("settings").findOne({}) || {};
 
     if (options.model === 'gemini-vision' || options.model === 'gemini-pro') {
-      return await callGemini(options, keys.geminiApiKey);
+      return await callGemini(options, keys.geminiApiKey, db);
     } else if (options.model === 'mistral-large') {
       return await callMistral(options, keys.mistralApiKey);
     } else {
@@ -38,8 +38,10 @@ export async function callAi(options: AiCallOptions): Promise<{ content: string;
 /**
  * Call Google Gemini API (text + vision)
  */
-async function callGemini(options: AiCallOptions, apiKey?: string | null) {
+async function callGemini(options: AiCallOptions, apiKey?: string | null, db?: any) {
   if (!apiKey) throw new Error("Gemini API Key is missing in settings.");
+  // If db wasn't passed, fetch it ourselves (fallback)
+  const database = db || (await getDb());
 
   const modelName = "gemini-2.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
@@ -51,21 +53,41 @@ async function callGemini(options: AiCallOptions, apiKey?: string | null) {
     let mimeType = "image/png";
 
     if (options.image.startsWith("data:")) {
+      // Already a base64 data URL — extract directly
       const match = options.image.match(/^data:(.*);base64,(.*)$/);
       if (match) {
         mimeType = match[1];
         base64Data = match[2];
       }
+    } else if (options.image.includes("/api/media/")) {
+      // Internal MongoDB media URL — read the binary directly from the DB
+      // to avoid a fragile HTTP round-trip that may return HTML on the server.
+      const mediaId = options.image.split("/api/media/").pop()?.split("?")[0];
+      if (mediaId) {
+        const mediaDoc = await database.collection<any>("media").findOne({ _id: mediaId });
+        if (mediaDoc?.content) {
+          const buf = mediaDoc.content.buffer
+            ? Buffer.from(mediaDoc.content.buffer)
+            : Buffer.from(mediaDoc.content);
+          base64Data = buf.toString("base64");
+          mimeType = mediaDoc.mimeType || "image/png";
+        }
+      }
     } else if (options.image.startsWith("http") || options.image.startsWith("/")) {
-      // Resolve relative URLs: use NEXTAUTH_URL, fall back to localhost for local dev
+      // External or relative URL — fetch with a reliable base URL
       const baseUrl =
         process.env.NEXTAUTH_URL ||
-        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000";
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000");
       const fullUrl = options.image.startsWith("/") ? `${baseUrl}${options.image}` : options.image;
       const res = await fetch(fullUrl);
+      if (!res.ok) throw new Error(`Failed to fetch image: ${res.status} ${res.statusText}`);
+      const contentType = res.headers.get("Content-Type") || "";
+      if (contentType.includes("text/html")) {
+        throw new Error(`Image URL returned HTML instead of an image. Check the URL is correct.`);
+      }
       const buffer = await res.arrayBuffer();
       base64Data = Buffer.from(buffer).toString("base64");
-      mimeType = res.headers.get("Content-Type") || "image/png";
+      mimeType = contentType || "image/png";
     }
 
     if (base64Data) {
