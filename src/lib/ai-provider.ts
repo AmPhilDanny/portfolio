@@ -9,6 +9,7 @@
  */
 
 import { getDb } from "./db";
+import type { Db } from "mongodb";
 
 interface AiCallOptions {
   model: 'gemini-vision' | 'gemini-pro' | 'mistral-large' | 'gpt-4o';
@@ -38,10 +39,10 @@ export async function callAi(options: AiCallOptions): Promise<{ content: string;
 /**
  * Call Google Gemini API (text + vision)
  */
-async function callGemini(options: AiCallOptions, apiKey?: string | null, db?: any) {
+async function callGemini(options: AiCallOptions, apiKey?: string | null, db?: Db) {
   if (!apiKey) throw new Error("Gemini API Key is missing in settings.");
   // If db wasn't passed, fetch it ourselves (fallback)
-  const database = db || (await getDb());
+  const database: Db = db || (await getDb());
 
   const modelName = "gemini-2.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
