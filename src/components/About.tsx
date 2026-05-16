@@ -38,7 +38,7 @@ export default function About({ data, config }: { data?: any, config?: any }) {
 
   return (
     <section id="about" className="py-24 bg-white dark:bg-black relative">
-      <div className="container px-4 mx-auto max-w-6xl">
+      <div className="container px-6 sm:px-10 lg:px-16 mx-auto max-w-6xl">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <motion.div
             initial={{ opacity: 0, x: -20 }}

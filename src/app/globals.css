@@ -62,6 +62,34 @@
   box-sizing: border-box;
 }
 
+/* ========== RESPONSIVE CONTAINER PADDING ========== */
+/* Overrides the Tailwind px-4 default used in all section components */
+.container {
+  padding-left: 1.5rem;   /* 24px */
+  padding-right: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding-left: 2.5rem;  /* 40px */
+    padding-right: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding-left: 4rem;    /* 64px */
+    padding-right: 4rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .container {
+    padding-left: 5rem;    /* 80px */
+    padding-right: 5rem;
+  }
+}
+
 html {
   scroll-behavior: smooth;
 }

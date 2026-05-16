@@ -46,7 +46,7 @@ export default function Hero({
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[128px] -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
-      <div className="container px-4 mx-auto relative z-10 w-full">
+      <div className="container px-6 sm:px-10 lg:px-16 mx-auto relative z-10 w-full">
         <div className="flex flex-col lg:flex-row items-center justify-between gap-12 max-w-6xl mx-auto">
           {/* Left Text Column */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left flex-1">

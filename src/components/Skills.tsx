@@ -29,7 +29,7 @@ export default function Skills({ data, config }: { data?: any[], config?: any })
 
   return (
     <section id="skills" className="py-24 bg-zinc-50 dark:bg-zinc-900/50">
-      <div className="container px-4 mx-auto max-w-6xl">
+      <div className="container px-6 sm:px-10 lg:px-16 mx-auto max-w-6xl">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
