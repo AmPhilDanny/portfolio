@@ -29,13 +29,13 @@ type AiModel = 'gemini-vision' | 'gemini-pro' | 'mistral-large' | 'gpt-4o';
 
 const VISION_MODELS = [
   { value: 'gemini-vision', label: 'Gemini 2.5 Flash (Vision)' },
-  { value: 'gpt-4o', label: 'GPT-4o (OpenRouter)' },
+  { value: 'gpt-4o', label: 'OpenRouter Auto (Free)' },
 ];
 
 const TEXT_MODELS = [
   { value: 'mistral-large', label: 'Mistral Large' },
   { value: 'gemini-pro', label: 'Gemini 2.5 Flash' },
-  { value: 'gpt-4o', label: 'GPT-4o (OpenRouter)' },
+  { value: 'gpt-4o', label: 'OpenRouter Auto (Free)' },
 ];
 
 const BRAND_VOICES = [

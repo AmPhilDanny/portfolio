@@ -1,8 +1,11 @@
 /**
  * NovaxFolio AI Provider
- * 
- * This module handles communication with various AI models (Gemini, Mistral, OpenRouter).
- * It fetches API keys directly from the database to ensure a 'Zero-Setup' experience.
+ *
+ * Handles communication with Gemini, Mistral, and OpenRouter.
+ * OpenRouter is configured to use `openrouter/auto` — the free smart router
+ * that automatically selects the best available free model for each request.
+ *
+ * API keys are fetched from the database at call-time (Zero-Setup).
  */
 
 import { getDb } from "./db";
@@ -10,12 +13,11 @@ import { getDb } from "./db";
 interface AiCallOptions {
   model: 'gemini-vision' | 'gemini-pro' | 'mistral-large' | 'gpt-4o';
   prompt: string;
-  image?: string; // URL or base64 — only valid for gemini-vision and gpt-4o
+  image?: string; // URL or base64 — only valid for gemini-vision
 }
 
 export async function callAi(options: AiCallOptions): Promise<{ content: string; error?: string }> {
   try {
-    // 1. Fetch API Keys from DB
     const db = await getDb();
     const keys: any = await db.collection<any>("settings").findOne({}) || {};
 
@@ -24,6 +26,7 @@ export async function callAi(options: AiCallOptions): Promise<{ content: string;
     } else if (options.model === 'mistral-large') {
       return await callMistral(options, keys.mistralApiKey);
     } else {
+      // 'gpt-4o' model key maps to OpenRouter with auto free-model routing
       return await callOpenRouter(options, keys.openrouterApiKey, keys.openrouterModel);
     }
   } catch (error: any) {
@@ -33,16 +36,14 @@ export async function callAi(options: AiCallOptions): Promise<{ content: string;
 }
 
 /**
- * Call Google Gemini API
+ * Call Google Gemini API (text + vision)
  */
 async function callGemini(options: AiCallOptions, apiKey?: string | null) {
   if (!apiKey) throw new Error("Gemini API Key is missing in settings.");
 
-  // Use Gemini 2.5 Flash — latest stable model
   const modelName = "gemini-2.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
-  const contents: any[] = [];
   const parts: any[] = [{ text: options.prompt }];
 
   if (options.image) {
@@ -56,36 +57,32 @@ async function callGemini(options: AiCallOptions, apiKey?: string | null) {
         base64Data = match[2];
       }
     } else if (options.image.startsWith("http") || options.image.startsWith("/")) {
-        const fullUrl = options.image.startsWith("/") ? `${process.env.NEXTAUTH_URL}${options.image}` : options.image;
-        const res = await fetch(fullUrl);
-        const buffer = await res.arrayBuffer();
-        base64Data = Buffer.from(buffer).toString("base64");
-        mimeType = res.headers.get("Content-Type") || "image/png";
+      // Resolve relative URLs: use NEXTAUTH_URL, fall back to localhost for local dev
+      const baseUrl =
+        process.env.NEXTAUTH_URL ||
+        process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:3000";
+      const fullUrl = options.image.startsWith("/") ? `${baseUrl}${options.image}` : options.image;
+      const res = await fetch(fullUrl);
+      const buffer = await res.arrayBuffer();
+      base64Data = Buffer.from(buffer).toString("base64");
+      mimeType = res.headers.get("Content-Type") || "image/png";
     }
 
     if (base64Data) {
-      parts.push({
-        inline_data: {
-          mime_type: mimeType,
-          data: base64Data
-        }
-      });
+      parts.push({ inline_data: { mime_type: mimeType, data: base64Data } });
     }
   }
-
-  contents.push({ parts });
 
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ contents })
+    body: JSON.stringify({ contents: [{ parts }] }),
   });
 
   const data = await response.json();
   if (data.error) throw new Error(data.error.message);
 
-  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-  return { content: text };
+  return { content: data.candidates?.[0]?.content?.parts?.[0]?.text || "" };
 }
 
 /**
@@ -98,12 +95,13 @@ async function callMistral(options: AiCallOptions, apiKey?: string | null) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
       model: "mistral-large-latest",
-      messages: [{ role: "user", content: options.prompt }]
-    })
+      messages: [{ role: "user", content: options.prompt }],
+      max_tokens: 1024,
+    }),
   });
 
   const data = await response.json();
@@ -113,27 +111,48 @@ async function callMistral(options: AiCallOptions, apiKey?: string | null) {
 }
 
 /**
- * Call OpenRouter API
+ * Call OpenRouter API using the free auto-router (`openrouter/auto`).
+ *
+ * `openrouter/auto` is OpenRouter's smart free router — it selects the best
+ * available free model for your request automatically, supporting text,
+ * vision, tool calling, and structured outputs as needed.
+ *
+ * If the user has configured a custom OpenRouter model in Settings, that
+ * model is used instead (allows power users to pin a specific model).
+ *
+ * max_tokens is capped at 800 to stay well within free-tier limits.
  */
-async function callOpenRouter(options: AiCallOptions, apiKey?: string | null, model?: string | null) {
+async function callOpenRouter(
+  options: AiCallOptions,
+  apiKey?: string | null,
+  customModel?: string | null
+) {
   if (!apiKey) throw new Error("OpenRouter API Key is missing in settings.");
+
+  // Use the user's custom model if set and not the legacy default,
+  // otherwise fall back to the free auto-router.
+  const isLegacyDefault = !customModel || customModel === "openai/gpt-4o";
+  const model = isLegacyDefault ? "openrouter/auto" : customModel;
+
+  const body: any = {
+    model,
+    messages: [{ role: "user", content: options.prompt }],
+    max_tokens: 800, // Stay within free tier limits
+  };
 
   const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${apiKey}`,
-      "HTTP-Referer": "https://novaxfolio.vercel.app", 
-      "X-Title": "NovaxFolio"
+      Authorization: `Bearer ${apiKey}`,
+      "HTTP-Referer": "https://novaxfolio.vercel.app",
+      "X-Title": "NovaxFolio",
     },
-    body: JSON.stringify({
-      model: model || "openai/gpt-4o",
-      messages: [{ role: "user", content: options.prompt }]
-    })
+    body: JSON.stringify(body),
   });
 
   const data = await response.json();
-  if (data.error) throw new Error(data.error.message);
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
 
   return { content: data.choices?.[0]?.message?.content || "" };
 }

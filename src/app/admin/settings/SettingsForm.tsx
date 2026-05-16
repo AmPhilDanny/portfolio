@@ -24,10 +24,10 @@ const COLOR_PRESETS = [
 ];
 
 const AI_MODELS = [
-  { value: "mistral-large", label: "Mistral Large", description: "Fast, high quality text generation" },
-  { value: "gemini-pro", label: "Gemini 2.5 Flash", description: "Google's ultra-fast flash model" },
-  { value: "gemini-vision", label: "Gemini 2.5 Flash (Vision)", description: "Image + text analysis" },
-  { value: "gpt-4o", label: "OpenRouter (Custom)", description: "Use any model via OpenRouter" },
+  { value: "mistral-large", label: "Mistral Large", description: "Fast, high quality text generation (requires Mistral API key)" },
+  { value: "gemini-pro", label: "Gemini 2.5 Flash", description: "Google's ultra-fast flash model (requires Gemini API key)" },
+  { value: "gemini-vision", label: "Gemini 2.5 Flash (Vision)", description: "Image + text analysis (requires Gemini API key)" },
+  { value: "gpt-4o", label: "OpenRouter Auto (Free)", description: "Free smart router — auto-selects the best free model for each task (requires OpenRouter key)" },
 ];
 
 type Section = "branding" | "colors" | "typography" | "links" | "ai";
